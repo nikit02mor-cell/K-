@@ -1,0 +1,19 @@
+# Gradle / Android
+.gradle/
+build/
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Android Studio
+.idea/
+*.iml
+
+# Ключи подписи: никогда не публикуйте
+*.jks
+*.keystore
+
+# Системные файлы
+.DS_Store
+Thumbs.db
