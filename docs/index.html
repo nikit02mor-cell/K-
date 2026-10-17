@@ -2,8 +2,17 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Физика от SvinCompany</title>
+<meta name="description" content="Решатель задач по физике: Дано / Решение / Ответ">
+<meta name="theme-color" content="#1d5fbf">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Физика">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
   html, body { margin: 0; }
@@ -668,5 +677,53 @@
 })();
 </script>
 
+<style>
+  .ios-hint {
+    position: fixed; left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    z-index: 50; display: none; align-items: flex-start; gap: 12px;
+    max-width: 480px; margin: 0 auto; padding: 12px 14px;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.18); font-size: 14px; line-height: 1.4;
+  }
+  .ios-hint.show { display: flex; }
+  .ios-hint b { font-weight: 600; }
+  .ios-hint button {
+    margin-left: auto; flex: none; min-width: 44px; min-height: 44px; margin-block: -8px -8px;
+    border: 0; background: transparent; color: var(--muted); font-size: 22px; line-height: 1; cursor: pointer;
+  }
+</style>
+<div class="ios-hint" id="iosHint" role="note">
+  <div><b>Установить на iPhone:</b> нажмите «Поделиться»
+    <span aria-hidden="true">&#x2191;&#xFE0E;</span> в Safari и выберите «На экран “Домой”».</div>
+  <button type="button" id="iosHintClose" aria-label="Закрыть подсказку">&times;</button>
+</div>
+<script>
+(function () {
+  // Офлайн-режим и установка как приложения (только по http/https).
+  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    });
+  }
+  // Подсказка для iPhone/iPad: у Safari нет кнопки «Установить», ставится через «Поделиться».
+  try {
+    var ua = navigator.userAgent || "";
+    var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    var standalone = window.navigator.standalone === true ||
+      (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+    var seen = false;
+    try { seen = localStorage.getItem("iosHintSeen") === "1"; } catch (e) {}
+    var hint = document.getElementById("iosHint");
+    if (isIOS && !standalone && !seen && hint) {
+      hint.classList.add("show");
+      document.getElementById("iosHintClose").onclick = function () {
+        hint.classList.remove("show");
+        try { localStorage.setItem("iosHintSeen", "1"); } catch (e) {}
+      };
+    }
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>
