@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Геометрия от SvinCompany</title>
+<meta name="description" content="Решатель задач по геометрии: Дано / Решение / Ответ">
+<meta name="theme-color" content="#1d5fbf">
+<link rel="manifest" href="manifest-geometry.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Геометрия">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  html, body { margin: 0; }
+  body { -webkit-text-size-adjust: 100%; }
+</style>
+<style>
+  /* Layout: tool-first, same system as the physics and algebra solvers. Header with brand,
+     category tabs, task chips, then a form column beside a graph-paper
+     "notebook" panel with Дано / Решение / Ответ. */
+  :root {
+    --bg: #f2f5f9;
+    --surface: #ffffff;
+    --ink: #132033;
+    --muted: #566678;
+    --line: #d6dee8;
+    --accent: #1d5fbf;
+    --accent-ink: #ffffff;
+    --accent-soft: #e3edfa;
+    --grid: #e7edf4;
+    --warn: #b3261e;
+    --sans: "IBM Plex Sans", system-ui, "Segoe UI", Roboto, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e141b; --surface: #16202a; --ink: #e5ecf4; --muted: #92a3b5;
+      --line: #263341; --accent: #6aa6ff; --accent-ink: #0b1522; --accent-soft: #1a2a3f;
+      --grid: #1c2733; --warn: #ff8a80; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e141b; --surface: #16202a; --ink: #e5ecf4; --muted: #92a3b5;
+    --line: #263341; --accent: #6aa6ff; --accent-ink: #0b1522; --accent-soft: #1a2a3f;
+    --grid: #1c2733; --warn: #ff8a80; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font: 15px/1.5 var(--sans);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 20px 48px;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+  button, input, select { font: inherit; color: inherit; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; }
+  .brand { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .brand svg { display: block; flex: none; }
+  .brand span { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+  h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+
+  .cats { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--line); min-width: 0; }
+  .cats button { border: 0; background: none; padding: 8px 14px; cursor: pointer; color: var(--muted); white-space: nowrap;
+    border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; }
+  .cats button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: 14px; }
+  .chips button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); font-weight: 500; }
+
+  .grid { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 20px; align-items: start; }
+  @media (max-width: 820px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+  .form { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .hint { margin: 0; color: var(--muted); font-size: 13px; }
+  .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .field label { font-size: 13px; color: var(--muted); }
+  .field label b { font-family: var(--mono); font-weight: 600; color: var(--ink); margin-right: 6px; }
+  .inp { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); min-width: 0; }
+  .inp input, .inp select { flex: 1; min-width: 0; border: 0; background: none; padding: 9px 10px; font-family: var(--mono); font-size: 15px; }
+  .inp select { font-family: var(--sans); }
+  .inp .u { padding: 9px 10px 9px 0; color: var(--muted); font-size: 13px; align-self: center; white-space: nowrap; }
+  .inp:focus-within { border-color: var(--accent); }
+  .note { margin: 0; font-size: 12.5px; color: var(--muted); background: var(--accent-soft); border-radius: 6px; padding: 6px 10px; }
+
+  .paper { border: 1px solid var(--line); border-radius: 10px; padding: 20px; min-width: 0; background-color: var(--surface);
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 24px 24px; display: flex; flex-direction: column; gap: 18px; }
+  .paper h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .given { display: flex; flex-wrap: wrap; gap: 4px 22px; font-family: var(--mono); }
+  .given span em { font-style: normal; color: var(--muted); font-size: 13px; }
+  .step { padding: 8px 0; border-top: 1px dashed var(--line); font-family: var(--mono); font-size: 14px; overflow-x: auto; }
+  .step:first-of-type { border-top: 0; padding-top: 0; }
+  .step .f { color: var(--muted); }
+  .step .c { color: var(--ink); }
+  .step.t { font-family: var(--sans); color: var(--muted); font-size: 14px; }
+  .answer { background: var(--accent-soft); border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; }
+  .answer div { font-family: var(--mono); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .answer div small { font-weight: 400; font-size: 14px; color: var(--muted); }
+  .msg { color: var(--muted); margin: 0; }
+  .msg.err { color: var(--warn); }
+  .plot { overflow-x: auto; }
+  .plot svg { display: block; max-width: 100%; height: auto; }
+  .actions { display: flex; gap: 8px; align-items: center; }
+  .actions button { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 13px; }
+  .actions span { font-size: 13px; color: var(--muted); }
+  footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); }
+  footer b { font-family: var(--mono); font-weight: 600; color: var(--ink); letter-spacing: 0.04em; }
+  sup { font-size: 0.75em; line-height: 0; }
+</style>
+
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand">
+        <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="5" fill="var(--accent)"/><path d="M4 17 L11 4.5 L18 17 Z" fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linejoin="round"/><circle cx="11" cy="4.5" r="1.8" fill="var(--accent-ink)"/></svg>
+        <span>SvinCompany</span>
+      </div>
+      <h1>Решатель задач по геометрии</h1>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;"><a href="index.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">← Физика</a><a href="algebra.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Алгебра</a></div>
+  </header>
+  <nav class="cats" id="cats" aria-label="Раздел"></nav>
+  <div class="chips" id="chips"></div>
+  <div class="grid">
+    <form class="form" id="form" autocomplete="off"></form>
+    <section class="paper" id="paper" aria-live="polite"></section>
+  </div>
+  <footer><span>Сделано в <b>SvinCompany</b></span><span>Единицы длины любые, но одинаковые; площадь получается в квадратных единицах, объём — в кубических</span></footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Форматирование и общие помощники ---------- */
+  const fmt = (n) => {
+    if (typeof n !== "number") return String(n);
+    if (!isFinite(n)) return "∞";
+    if (n === 0) return "0";
+    const a = Math.abs(n);
+    if (a >= 1e6 || a < 1e-3) {
+      const [m, e] = n.toExponential(3).split("e");
+      return Number(m) + "·10^" + Number(e);
+    }
+    const prec = Math.max(4, Math.floor(Math.log10(a)) + 1);
+    return String(Number(n.toPrecision(prec)));
+  };
+  const p = (n) => (n < 0 ? "(" + fmt(n) + ")" : fmt(n));
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const html = (s) => esc(s).replace(/10\^(-?\d+)/g, "10<sup>$1</sup>");
+  const has = (v) => v !== null && v !== undefined && !Number.isNaN(v);
+  const S = (f, c) => ({ f, c });          // шаг: формула + подстановка
+  const N = (t) => ({ t });                // текстовый шаг
+  const A = (sym, val, unit) => [sym, val, unit || ""];
+  const fail = (m) => { throw new Error(m); };
+
+  /* ---------- Геометрия: общие помощники ---------- */
+  const PI = Math.PI;
+  const toRad = (d) => (d * PI) / 180;
+  const toDeg = (r) => (r * 180) / PI;
+  const degS = (d) => fmt(d) + "°";
+  const clamp1 = (v) => Math.max(-1, Math.min(1, v));
+  const pos = (v, name) => { if (!(v > 0)) fail(`${name}: введите положительное число.`); };
+  const near = (v) => Math.abs(v - Math.round(v)) < 1e-9;
+  /* coef·π: «25π ≈ 78.54», если коэффициент целый или с знаменателем 2 или 3, иначе просто число */
+  function withPi(coef) {
+    const v = coef * PI;
+    let s = null;
+    if (near(coef)) s = Math.round(coef) === 1 ? "π" : `${Math.round(coef)}π`;
+    else if (near(coef * 2)) s = `${Math.round(coef * 2)}π/2`;
+    else if (near(coef * 3)) s = `${Math.round(coef * 3)}π/3`;
+    else if (near(coef * 4)) s = `${Math.round(coef * 4)}π/4`;
+    return s ? `${s} ≈ ${fmt(v)}` : fmt(v);
+  }
+  const ang = (name, v) => A("∠" + name, degS(v));
+
+  /* ---------- Чертежи ---------- */
+  /* Многоугольник по точкам в «математических» координатах (ось y вверх).
+     names — подписи вершин, sides — подписи сторон ({i, j, t}), extra — пунктирные отрезки ({p, q, dash, t}),
+     rights — номера вершин с прямым углом. */
+  function shape(o) {
+    const W = 520, H = 250, pad = 44;
+    const all = o.pts.slice();
+    (o.extra || []).forEach((e) => all.push(e.p, e.q));
+    const minx = Math.min(...all.map((q) => q[0])), maxx = Math.max(...all.map((q) => q[0]));
+    const miny = Math.min(...all.map((q) => q[1])), maxy = Math.max(...all.map((q) => q[1]));
+    const w = Math.max(maxx - minx, 1e-9), h = Math.max(maxy - miny, 1e-9);
+    const s = Math.min((W - 2 * pad) / w, (H - 2 * pad) / h);
+    const ox = (W - w * s) / 2, oy = (H - h * s) / 2;
+    const X = (x) => ox + (x - minx) * s, Y = (y) => H - oy - (y - miny) * s;
+    const P = o.pts.map((q) => [X(q[0]), Y(q[1])]);
+    const cx = P.reduce((t, q) => t + q[0], 0) / P.length, cy = P.reduce((t, q) => t + q[1], 0) / P.length;
+    const out = (x, y, dist) => { const dx = x - cx, dy = y - cy, l = Math.hypot(dx, dy) || 1; return [x + (dx / l) * dist, y + (dy / l) * dist]; };
+    const f1 = (v) => v.toFixed(1);
+    let g = `<polygon points="${P.map((q) => f1(q[0]) + "," + f1(q[1])).join(" ")}" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>`;
+    (o.extra || []).forEach((e) => {
+      const x1 = X(e.p[0]), y1 = Y(e.p[1]), x2 = X(e.q[0]), y2 = Y(e.q[1]);
+      g += `<line x1="${f1(x1)}" y1="${f1(y1)}" x2="${f1(x2)}" y2="${f1(y2)}" stroke="var(--muted)" stroke-width="1.5"${e.dash ? ' stroke-dasharray="5 4"' : ""}/>`;
+      if (e.t) g += `<text x="${f1((x1 + x2) / 2 + (e.dx === undefined ? 6 : e.dx))}" y="${f1((y1 + y2) / 2 + (e.dy === undefined ? -5 : e.dy))}" fill="var(--ink)">${esc(e.t)}</text>`;
+    });
+    (o.rights || []).forEach((i) => {
+      const n = P.length, v = P[i], a = P[(i + 1) % n], b = P[(i - 1 + n) % n], k = 11;
+      const ua = [a[0] - v[0], a[1] - v[1]], ub = [b[0] - v[0], b[1] - v[1]];
+      const la = Math.hypot(...ua) || 1, lb = Math.hypot(...ub) || 1;
+      const p1 = [v[0] + (ua[0] / la) * k, v[1] + (ua[1] / la) * k], p3 = [v[0] + (ub[0] / lb) * k, v[1] + (ub[1] / lb) * k];
+      const p2 = [p1[0] + (ub[0] / lb) * k, p1[1] + (ub[1] / lb) * k];
+      g += `<polyline points="${f1(p1[0])},${f1(p1[1])} ${f1(p2[0])},${f1(p2[1])} ${f1(p3[0])},${f1(p3[1])}" fill="none" stroke="var(--muted)" stroke-width="1.5"/>`;
+    });
+    (o.names || []).forEach((nm, i) => {
+      const [lx, ly] = out(P[i][0], P[i][1], 14);
+      g += `<text x="${f1(lx)}" y="${f1(ly + 4)}" text-anchor="middle" fill="var(--ink)" font-weight="600">${esc(nm)}</text>`;
+    });
+    (o.sides || []).forEach((sd) => {
+      const A1 = P[sd.i], B1 = P[sd.j], mx = (A1[0] + B1[0]) / 2, my = (A1[1] + B1[1]) / 2;
+      const ex = B1[0] - A1[0], ey = B1[1] - A1[1], el = Math.hypot(ex, ey) || 1;
+      let nx = -ey / el, ny = ex / el;
+      if (nx * (mx - cx) + ny * (my - cy) < 0) { nx = -nx; ny = -ny; }   // нормаль наружу
+      // у боковых сторон подпись выравниваем по краю, чтобы она не наезжала на линию
+      const anchor = nx > 0.4 ? "start" : nx < -0.4 ? "end" : "middle";
+      const dist = anchor === "middle" ? 16 : 9;
+      g += `<text x="${f1(mx + nx * dist)}" y="${f1(my + ny * dist + 4)}" text-anchor="${anchor}" fill="var(--muted)">${esc(sd.t)}</text>`;
+    });
+    return `<svg viewBox="0 0 ${W} ${H}" width="${W}" role="img" aria-label="${esc(o.label || "Чертёж")}" style="font:12px var(--mono);fill:var(--muted)">${g}</svg>`;
+  }
+
+  /* Круг (alpha не задан) или сектор с центральным углом alpha (градусы). */
+  function circleSvg(alpha) {
+    const W = 520, H = 240, cx = W / 2, cy = H / 2, R = 88;
+    let g = "";
+    if (alpha) {
+      const a = toRad(alpha), ex = cx + R * Math.cos(a), ey = cy - R * Math.sin(a), large = alpha > 180 ? 1 : 0, m = a / 2;
+      g += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 4"/>`;
+      g += `<path d="M ${cx} ${cy} L ${cx + R} ${cy} A ${R} ${R} 0 ${large} 0 ${ex.toFixed(1)} ${ey.toFixed(1)} Z" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>`;
+      g += `<text x="${(cx + 34 * Math.cos(m)).toFixed(1)}" y="${(cy - 34 * Math.sin(m) + 4).toFixed(1)}" text-anchor="middle" fill="var(--ink)">α</text>`;
+    } else {
+      g += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>`;
+      g += `<line x1="${cx}" y1="${cy}" x2="${cx + R}" y2="${cy}" stroke="var(--accent)" stroke-width="2"/>`;
+    }
+    g += `<circle cx="${cx}" cy="${cy}" r="3.5" fill="var(--ink)"/><text x="${cx - 8}" y="${cy + 16}" text-anchor="end" fill="var(--ink)" font-weight="600">O</text>`;
+    g += `<text x="${cx + R / 2}" y="${cy + 16}" text-anchor="middle" fill="var(--ink)">r</text>`;
+    return `<svg viewBox="0 0 ${W} ${H}" width="${W}" role="img" aria-label="${alpha ? "Сектор круга" : "Круг"}" style="font:12px var(--mono);fill:var(--muted)">${g}</svg>`;
+  }
+
+  function triPoints(a, b, c) {
+    // A в начале координат, B на оси x; a = BC, b = CA, c = AB
+    const cosA = clamp1((b * b + c * c - a * a) / (2 * b * c));
+    return [[0, 0], [c, 0], [b * cosA, b * Math.sqrt(Math.max(0, 1 - cosA * cosA))]];
+  }
+  function triPlot(a, b, c, extra, rights) {
+    return shape({
+      pts: triPoints(a, b, c), names: ["A", "B", "C"], extra, rights, label: "Чертёж треугольника",
+      sides: [{ i: 1, j: 2, t: `a = ${fmt(a)}` }, { i: 2, j: 0, t: `b = ${fmt(b)}` }, { i: 0, j: 1, t: `c = ${fmt(c)}` }],
+    });
+  }
+
+  /* ---------- Треугольник ---------- */
+  function triCheck(a, b, c) {
+    pos(a, "Сторона a"); pos(b, "Сторона b"); pos(c, "Сторона c");
+    if (a + b <= c || a + c <= b || b + c <= a) fail("Такого треугольника не существует: каждая сторона должна быть меньше суммы двух других.");
+  }
+  function triAngles(a, b, c) {
+    const cosA = clamp1((b * b + c * c - a * a) / (2 * b * c));
+    const cosB = clamp1((a * a + c * c - b * b) / (2 * a * c));
+    const cosC = clamp1((a * a + b * b - c * c) / (2 * a * b));
+    return { cosA, cosB, cosC, A: toDeg(Math.acos(cosA)), B: toDeg(Math.acos(cosB)), C: toDeg(Math.acos(cosC)) };
+  }
+  function triKind(a, b, c) {
+    const s = [a, b, c].sort((x, y) => x - y);
+    const d = s[0] * s[0] + s[1] * s[1] - s[2] * s[2];
+    const byAngle = Math.abs(d) <= 1e-9 * s[2] * s[2] ? "прямоугольный" : d > 0 ? "остроугольный" : "тупоугольный";
+    const eq = (x, y) => Math.abs(x - y) <= 1e-9 * Math.max(x, y);
+    const bySide = eq(s[0], s[2]) ? "равносторонний" : eq(s[0], s[1]) || eq(s[1], s[2]) ? "равнобедренный" : "разносторонний";
+    return `${bySide}, ${byAngle}`;
+  }
+
+  /* 1. Треугольник по трём сторонам */
+  function solveHeron(x) {
+    const { a, b, c } = x;
+    triCheck(a, b, c);
+    const P = a + b + c, hp = P / 2, prod = hp * (hp - a) * (hp - b) * (hp - c), area = Math.sqrt(prod);
+    const k = triAngles(a, b, c);
+    const R = (a * b * c) / (4 * area), r = area / hp;
+    const steps = [
+      S("P = a + b + c", `P = ${fmt(a)} + ${fmt(b)} + ${fmt(c)} = ${fmt(P)}`),
+      S("p = P / 2  (полупериметр)", `p = ${fmt(P)} / 2 = ${fmt(hp)}`),
+      S("S = √(p·(p − a)·(p − b)·(p − c))  (формула Герона)", `S = √(${fmt(hp)}·${fmt(hp - a)}·${fmt(hp - b)}·${fmt(hp - c)}) = √${fmt(prod)} = ${fmt(area)}`),
+      N("Углы находим по теореме косинусов."),
+      S("cos A = (b² + c² − a²) / (2bc)", `cos A = (${fmt(b * b)} + ${fmt(c * c)} − ${fmt(a * a)}) / (2·${fmt(b)}·${fmt(c)}) = ${fmt(k.cosA)}  ⇒  ∠A = ${degS(k.A)}`),
+      S("cos B = (a² + c² − b²) / (2ac)", `cos B = (${fmt(a * a)} + ${fmt(c * c)} − ${fmt(b * b)}) / (2·${fmt(a)}·${fmt(c)}) = ${fmt(k.cosB)}  ⇒  ∠B = ${degS(k.B)}`),
+      S("cos C = (a² + b² − c²) / (2ab)", `cos C = (${fmt(a * a)} + ${fmt(b * b)} − ${fmt(c * c)}) / (2·${fmt(a)}·${fmt(b)}) = ${fmt(k.cosC)}  ⇒  ∠C = ${degS(k.C)}`),
+      N("Проверка: ∠A + ∠B + ∠C = 180°."),
+      S("R = abc / (4S)", `R = ${fmt(a)}·${fmt(b)}·${fmt(c)} / (4·${fmt(area)}) = ${fmt(R)}`),
+      S("r = S / p", `r = ${fmt(area)} / ${fmt(hp)} = ${fmt(r)}`),
+    ];
+    return {
+      steps, plot: triPlot(a, b, c),
+      answers: [A("S", area), A("P", P), ang("A", k.A), ang("B", k.B), ang("C", k.C), A("Вид", triKind(a, b, c)), A("R (описанная окружность)", R), A("r (вписанная окружность)", r)],
+    };
+  }
+
+  /* 2. Прямоугольный треугольник */
+  function solveRight(x) {
+    const { a, mode } = x;
+    pos(a, "Катет a"); pos(x.b, mode === "leg_hyp" ? "Гипотенуза c" : "Катет b");
+    const steps = [];
+    let b, c;
+    if (mode === "leg_hyp") {
+      c = x.b;
+      if (c <= a) fail("Гипотенуза должна быть больше катета.");
+      b = Math.sqrt(c * c - a * a);
+      steps.push(S("b = √(c² − a²)  (теорема Пифагора)", `b = √(${fmt(c)}² − ${fmt(a)}²) = √${fmt(c * c - a * a)} = ${fmt(b)}`));
+    } else {
+      b = x.b;
+      c = Math.sqrt(a * a + b * b);
+      steps.push(S("c = √(a² + b²)  (теорема Пифагора)", `c = √(${fmt(a)}² + ${fmt(b)}²) = √${fmt(a * a + b * b)} = ${fmt(c)}`));
+    }
+    const area = (a * b) / 2, P = a + b + c, Ad = toDeg(Math.atan2(a, b)), Bd = 90 - Ad, h = (a * b) / c;
+    steps.push(S("S = ab / 2", `S = ${fmt(a)}·${fmt(b)} / 2 = ${fmt(area)}`));
+    steps.push(S("P = a + b + c", `P = ${fmt(a)} + ${fmt(b)} + ${fmt(c)} = ${fmt(P)}`));
+    steps.push(S("tg A = a / b  (противолежащий катет к прилежащему)", `tg A = ${fmt(a)} / ${fmt(b)} = ${fmt(a / b)}  ⇒  ∠A = ${degS(Ad)}`));
+    steps.push(S("∠B = 90° − ∠A", `∠B = 90° − ${degS(Ad)} = ${degS(Bd)}`));
+    steps.push(S("h = ab / c  (высота к гипотенузе)", `h = ${fmt(a)}·${fmt(b)} / ${fmt(c)} = ${fmt(h)}`));
+    steps.push(S("R = c / 2  (центр описанной окружности — середина гипотенузы)", `R = ${fmt(c)} / 2 = ${fmt(c / 2)}`));
+    steps.push(S("r = (a + b − c) / 2", `r = (${fmt(a)} + ${fmt(b)} − ${fmt(c)}) / 2 = ${fmt((a + b - c) / 2)}`));
+    const k = (a * a + b * b);
+    const foot = [(a * b * b) / k, (a * a * b) / k];
+    const plot = shape({
+      pts: [[0, b], [a, 0], [0, 0]], names: ["A", "B", "C"], rights: [2], label: "Чертёж прямоугольного треугольника",
+      sides: [{ i: 1, j: 2, t: `a = ${fmt(a)}` }, { i: 2, j: 0, t: `b = ${fmt(b)}` }, { i: 0, j: 1, t: `c = ${fmt(c)}` }],
+      extra: [{ p: [0, 0], q: foot, dash: true, t: "h" }],
+    });
+    return { steps, plot, answers: [mode === "leg_hyp" ? A("b", b) : A("c", c), A("S", area), A("P", P), ang("A", Ad), ang("B", Bd), A("h", h), A("R", c / 2), A("r", (a + b - c) / 2)] };
+  }
+
+  /* 3. Теорема косинусов: две стороны и угол между ними */
+  function solveCosine(x) {
+    const { a, b, gamma } = x;
+    pos(a, "Сторона a"); pos(b, "Сторона b");
+    if (!(gamma > 0 && gamma < 180)) fail("Угол должен быть больше 0° и меньше 180°.");
+    const g = toRad(gamma), cg = Math.cos(g), sg = Math.sin(g);
+    const c2 = a * a + b * b - 2 * a * b * cg, c = Math.sqrt(c2);
+    const area = 0.5 * a * b * sg;
+    const k = triAngles(a, b, c);
+    const steps = [
+      S("c² = a² + b² − 2ab·cos C  (теорема косинусов)", `c² = ${fmt(a)}² + ${fmt(b)}² − 2·${fmt(a)}·${fmt(b)}·cos ${degS(gamma)} = ${fmt(a * a)} + ${fmt(b * b)} − ${fmt(2 * a * b * cg)} = ${fmt(c2)}`),
+      S("c = √(c²)", `c = √${fmt(c2)} = ${fmt(c)}`),
+      S("S = ½·a·b·sin C", `S = ½·${fmt(a)}·${fmt(b)}·sin ${degS(gamma)} = ${fmt(area)}`),
+      S("cos A = (b² + c² − a²) / (2bc)", `cos A = (${fmt(b * b)} + ${fmt(c * c)} − ${fmt(a * a)}) / (2·${fmt(b)}·${fmt(c)}) = ${fmt(k.cosA)}  ⇒  ∠A = ${degS(k.A)}`),
+      S("∠B = 180° − ∠A − ∠C", `∠B = 180° − ${degS(k.A)} − ${degS(gamma)} = ${degS(180 - k.A - gamma)}`),
+      S("P = a + b + c", `P = ${fmt(a)} + ${fmt(b)} + ${fmt(c)} = ${fmt(a + b + c)}`),
+    ];
+    return { steps, plot: triPlot(a, b, c), answers: [A("c", c), A("S", area), A("P", a + b + c), ang("A", k.A), ang("B", 180 - k.A - gamma)] };
+  }
+
+  /* 4. Теорема синусов: сторона и два угла */
+  function solveSine(x) {
+    const { a, A: Ad, B: Bd } = x;
+    pos(a, "Сторона a");
+    if (!(Ad > 0) || !(Bd > 0) || Ad + Bd >= 180) fail("Углы должны быть положительными, а их сумма — меньше 180°.");
+    const Cd = 180 - Ad - Bd, sA = Math.sin(toRad(Ad)), sB = Math.sin(toRad(Bd)), sC = Math.sin(toRad(Cd));
+    const b = (a * sB) / sA, c = (a * sC) / sA, R = a / (2 * sA), area = 0.5 * a * b * sC;
+    const steps = [
+      S("∠C = 180° − ∠A − ∠B", `∠C = 180° − ${degS(Ad)} − ${degS(Bd)} = ${degS(Cd)}`),
+      S("a / sin A = b / sin B  ⇒  b = a·sin B / sin A", `b = ${fmt(a)}·sin ${degS(Bd)} / sin ${degS(Ad)} = ${fmt(a)}·${fmt(sB)} / ${fmt(sA)} = ${fmt(b)}`),
+      S("c = a·sin C / sin A", `c = ${fmt(a)}·sin ${degS(Cd)} / sin ${degS(Ad)} = ${fmt(a)}·${fmt(sC)} / ${fmt(sA)} = ${fmt(c)}`),
+      S("R = a / (2·sin A)  (радиус описанной окружности)", `R = ${fmt(a)} / (2·${fmt(sA)}) = ${fmt(R)}`),
+      S("S = ½·a·b·sin C", `S = ½·${fmt(a)}·${fmt(b)}·${fmt(sC)} = ${fmt(area)}`),
+    ];
+    return { steps, plot: triPlot(a, b, c), answers: [A("b", b), A("c", c), ang("C", Cd), A("R", R), A("S", area), A("P", a + b + c)] };
+  }
+
+  /* 5. Площадь по основанию и высоте */
+  function solveTriBH(x) {
+    const { a, h } = x;
+    pos(a, "Основание"); pos(h, "Высота");
+    return { steps: [S("S = a·h / 2", `S = ${fmt(a)}·${fmt(h)} / 2 = ${fmt((a * h) / 2)}`)], answers: [A("S", (a * h) / 2)] };
+  }
+
+  /* ---------- Четырёхугольники ---------- */
+  function solveRect(x) {
+    const { a, b } = x;
+    pos(a, "Сторона a"); pos(b, "Сторона b");
+    const d = Math.sqrt(a * a + b * b);
+    const steps = [
+      S("S = a·b", `S = ${fmt(a)}·${fmt(b)} = ${fmt(a * b)}`),
+      S("P = 2(a + b)", `P = 2·(${fmt(a)} + ${fmt(b)}) = ${fmt(2 * (a + b))}`),
+      S("d = √(a² + b²)  (диагональ по теореме Пифагора)", `d = √(${fmt(a)}² + ${fmt(b)}²) = √${fmt(a * a + b * b)} = ${fmt(d)}`),
+    ];
+    const plot = shape({
+      pts: [[0, 0], [a, 0], [a, b], [0, b]], rights: [0, 1, 2, 3], label: "Чертёж прямоугольника",
+      sides: [{ i: 0, j: 1, t: `a = ${fmt(a)}` }, { i: 1, j: 2, t: `b = ${fmt(b)}` }],
+      extra: [{ p: [0, 0], q: [a, b], dash: true, t: "d" }],
+    });
+    return { steps, plot, answers: [A("S", a * b), A("P", 2 * (a + b)), A("d", d)] };
+  }
+
+  function solvePara(x) {
+    const { a, b, alpha } = x;
+    pos(a, "Сторона a"); pos(b, "Сторона b");
+    if (!(alpha > 0 && alpha < 180)) fail("Угол должен быть больше 0° и меньше 180°.");
+    const al = toRad(alpha), sa = Math.sin(al), ca = Math.cos(al);
+    const area = a * b * sa, h = b * sa;
+    const d1 = Math.sqrt(a * a + b * b - 2 * a * b * ca), d2 = Math.sqrt(a * a + b * b + 2 * a * b * ca);
+    const steps = [
+      S("S = a·b·sin α", `S = ${fmt(a)}·${fmt(b)}·sin ${degS(alpha)} = ${fmt(area)}`),
+      S("h = b·sin α  (высота, проведённая к стороне a)", `h = ${fmt(b)}·sin ${degS(alpha)} = ${fmt(h)}`),
+      S("P = 2(a + b)", `P = 2·(${fmt(a)} + ${fmt(b)}) = ${fmt(2 * (a + b))}`),
+      S("d₁ = √(a² + b² − 2ab·cos α)", `d₁ = √(${fmt(a * a)} + ${fmt(b * b)} − ${fmt(2 * a * b * ca)}) = ${fmt(d1)}`),
+      S("d₂ = √(a² + b² + 2ab·cos α)", `d₂ = √(${fmt(a * a)} + ${fmt(b * b)} + ${fmt(2 * a * b * ca)}) = ${fmt(d2)}`),
+    ];
+    const bx = b * ca, by = b * sa;
+    const plot = shape({
+      pts: [[0, 0], [a, 0], [a + bx, by], [bx, by]], names: ["A", "B", "C", "D"], label: "Чертёж параллелограмма",
+      sides: [{ i: 0, j: 1, t: `a = ${fmt(a)}` }, { i: 3, j: 0, t: `b = ${fmt(b)}` }],
+      extra: [{ p: [bx, by], q: [bx, 0], dash: true, t: "h" }],
+    });
+    return { steps, plot, answers: [A("S", area), A("P", 2 * (a + b)), A("h", h), A("d₁", d1), A("d₂", d2)] };
+  }
+
+  function solveRhomb(x) {
+    const { d1, d2 } = x;
+    pos(d1, "Диагональ d₁"); pos(d2, "Диагональ d₂");
+    const a = Math.sqrt((d1 / 2) ** 2 + (d2 / 2) ** 2);
+    const steps = [
+      S("S = d₁·d₂ / 2", `S = ${fmt(d1)}·${fmt(d2)} / 2 = ${fmt((d1 * d2) / 2)}`),
+      N("Диагонали ромба перпендикулярны и точкой пересечения делятся пополам — получается прямоугольный треугольник с катетами d₁/2 и d₂/2."),
+      S("a = √((d₁/2)² + (d₂/2)²)", `a = √(${fmt(d1 / 2)}² + ${fmt(d2 / 2)}²) = √${fmt((d1 / 2) ** 2 + (d2 / 2) ** 2)} = ${fmt(a)}`),
+      S("P = 4a", `P = 4·${fmt(a)} = ${fmt(4 * a)}`),
+      S("h = S / a  (высота ромба)", `h = ${fmt((d1 * d2) / 2)} / ${fmt(a)} = ${fmt((d1 * d2) / 2 / a)}`),
+    ];
+    const plot = shape({
+      pts: [[d1 / 2, 0], [0, d2 / 2], [-d1 / 2, 0], [0, -d2 / 2]], label: "Чертёж ромба",
+      sides: [{ i: 0, j: 1, t: `a = ${fmt(a)}` }],
+      extra: [{ p: [-d1 / 2, 0], q: [d1 / 2, 0], dash: true, t: "d₁" }, { p: [0, -d2 / 2], q: [0, d2 / 2], dash: true, t: "d₂" }],
+    });
+    return { steps, plot, answers: [A("S", (d1 * d2) / 2), A("a", a), A("P", 4 * a), A("h", (d1 * d2) / 2 / a)] };
+  }
+
+  function solveTrap(x) {
+    const { a, b, h } = x;
+    pos(a, "Основание a"); pos(b, "Основание b"); pos(h, "Высота h");
+    const m = (a + b) / 2, area = m * h;
+    const steps = [
+      S("m = (a + b) / 2  (средняя линия)", `m = (${fmt(a)} + ${fmt(b)}) / 2 = ${fmt(m)}`),
+      S("S = (a + b) / 2 · h = m·h", `S = ${fmt(m)}·${fmt(h)} = ${fmt(area)}`),
+    ];
+    const plot = shape({
+      pts: [[0, 0], [a, 0], [(a + b) / 2, h], [(a - b) / 2, h]], label: "Чертёж трапеции",
+      sides: [{ i: 0, j: 1, t: `a = ${fmt(a)}` }, { i: 2, j: 3, t: `b = ${fmt(b)}` }],
+      extra: [{ p: [(a - b) / 2, h], q: [(a - b) / 2, 0], dash: true, t: "h" }],
+    });
+    return { steps, plot, answers: [A("m", m), A("S", area)] };
+  }
+
+  /* ---------- Окружность ---------- */
+  function solveCircle(x) {
+    const { v, mode } = x;
+    pos(v, "Значение");
+    let r;
+    const steps = [];
+    if (mode === "d") { r = v / 2; steps.push(S("r = d / 2", `r = ${fmt(v)} / 2 = ${fmt(r)}`)); }
+    else if (mode === "C") { r = v / (2 * PI); steps.push(S("r = C / (2π)", `r = ${fmt(v)} / (2π) = ${fmt(r)}`)); }
+    else r = v;
+    steps.push(S("d = 2r", `d = 2·${fmt(r)} = ${fmt(2 * r)}`));
+    steps.push(S("C = 2πr", `C = 2·π·${fmt(r)} = ${withPi(2 * r)}`));
+    steps.push(S("S = πr²", `S = π·${fmt(r)}² = π·${fmt(r * r)} = ${withPi(r * r)}`));
+    return { steps, plot: circleSvg(), answers: [A("r", r), A("d", 2 * r), A("C", withPi(2 * r)), A("S", withPi(r * r))] };
+  }
+
+  function solveSector(x) {
+    const { r, alpha } = x;
+    pos(r, "Радиус");
+    if (!(alpha > 0 && alpha < 360)) fail("Центральный угол должен быть больше 0° и меньше 360°.");
+    const lc = (r * alpha) / 180, ac = (r * r * alpha) / 360, chord = 2 * r * Math.sin(toRad(alpha) / 2);
+    const steps = [
+      N(`Сектор — это ${fmt(alpha)}/360 часть круга.`),
+      S("l = π·r·α / 180  (длина дуги)", `l = π·${fmt(r)}·${fmt(alpha)} / 180 = ${withPi(lc)}`),
+      S("S = π·r²·α / 360  (площадь сектора)", `S = π·${fmt(r)}²·${fmt(alpha)} / 360 = ${withPi(ac)}`),
+      S("AB = 2r·sin(α/2)  (хорда, стягивающая дугу)", `AB = 2·${fmt(r)}·sin ${degS(alpha / 2)} = ${fmt(chord)}`),
+    ];
+    return { steps, plot: circleSvg(alpha), answers: [A("l", withPi(lc)), A("S сектора", withPi(ac)), A("Хорда", chord)] };
+  }
+
+  /* ---------- Многоугольники ---------- */
+  function checkN(n) {
+    if (!Number.isInteger(n) || n < 3 || n > 100) fail("Число сторон n должно быть целым числом от 3 до 100.");
+  }
+  function solvePolyAngles(x) {
+    const { n } = x;
+    checkN(n);
+    const sum = 180 * (n - 2), each = sum / n, ext = 360 / n, diag = (n * (n - 3)) / 2;
+    const steps = [
+      S("Сумма углов = 180°·(n − 2)", `Сумма = 180°·(${n} − 2) = ${degS(sum)}`),
+      S("Угол правильного n-угольника = 180°·(n − 2) / n", `Угол = ${degS(sum)} / ${n} = ${degS(each)}`),
+      S("Внешний угол = 360° / n", `Внешний = 360° / ${n} = ${degS(ext)}`),
+      S("Число диагоналей = n·(n − 3) / 2", `Диагоналей = ${n}·(${n} − 3) / 2 = ${fmt(diag)}`),
+    ];
+    return { steps, answers: [A("Сумма углов", degS(sum)), A("Угол правильного n-угольника", degS(each)), A("Внешний угол", degS(ext)), A("Диагоналей", diag)] };
+  }
+
+  function solveRegPoly(x) {
+    const { n, a } = x;
+    checkN(n); pos(a, "Сторона a");
+    const t = Math.tan(PI / n), sn = Math.sin(PI / n);
+    const apo = a / (2 * t), R = a / (2 * sn), P = n * a, area = (P * apo) / 2;
+    const steps = [
+      S("P = n·a", `P = ${n}·${fmt(a)} = ${fmt(P)}`),
+      S("r = a / (2·tg(180°/n))  (апофема — радиус вписанной окружности)", `r = ${fmt(a)} / (2·tg ${degS(180 / n)}) = ${fmt(a)} / (2·${fmt(t)}) = ${fmt(apo)}`),
+      S("R = a / (2·sin(180°/n))  (радиус описанной окружности)", `R = ${fmt(a)} / (2·sin ${degS(180 / n)}) = ${fmt(a)} / (2·${fmt(sn)}) = ${fmt(R)}`),
+      S("S = P·r / 2", `S = ${fmt(P)}·${fmt(apo)} / 2 = ${fmt(area)}`),
+    ];
+    let plot = null;
+    if (n <= 24) {
+      const pts = [];
+      for (let k = 0; k < n; k++) { const th = -PI / 2 - PI / n + (2 * PI * k) / n; pts.push([Math.cos(th), Math.sin(th)]); }
+      const mid = [0, -Math.cos(PI / n)];
+      plot = shape({
+        pts, label: "Правильный многоугольник", sides: [{ i: 0, j: 1, t: `a = ${fmt(a)}` }],
+        extra: [{ p: [0, 0], q: pts[0], dash: true, t: "R", dx: -16, dy: 2 }, { p: [0, 0], q: mid, dash: true, t: "r", dx: 6, dy: 4 }],
+      });
+    }
+    return { steps, plot, answers: [A("P", P), A("r (апофема)", apo), A("R", R), A("S", area)] };
+  }
+
+  /* ---------- Координаты ---------- */
+  function rangeFor(values, pad = 0.25, minSpan = 6) {
+    const vals = values.filter(Number.isFinite).concat([0]);
+    let lo = Math.min(...vals), hi = Math.max(...vals);
+    if (hi - lo < minSpan) { const c = (hi + lo) / 2; lo = c - minSpan / 2; hi = c + minSpan / 2; }
+    const pd = (hi - lo) * pad;
+    return [lo - pd, hi + pd];
+  }
+  function niceStepSpan(span) {
+    const raw = span / 5, mag = Math.pow(10, Math.floor(Math.log10(raw))), r = raw / mag;
+    return (r <= 1 ? 1 : r <= 2 ? 2 : r <= 5 ? 5 : 10) * mag;
+  }
+  function ticks(lo, hi) {
+    const step = niceStepSpan(hi - lo);
+    const start = Math.ceil(lo / step - 1e-9) * step;
+    const n = Math.max(0, Math.round((hi - start) / step));
+    const arr = [];
+    for (let i = 0; i <= n; i++) arr.push(+(start + i * step).toFixed(10));
+    return arr;
+  }
+  function plotXY({ pts, xr, yr, markers = [] }) {
+    const W = 520, padL = 48, padR = 16, padT = 20, padB = 34, phH = 210;
+    const H = padT + phH + padB, pw = W - padL - padR;
+    const sx = pw / (xr[1] - xr[0]), sy = phH / (yr[1] - yr[0]);
+    const X = (v) => padL + (v - xr[0]) * sx;
+    const Y = (v) => padT + phH - (v - yr[0]) * sy;
+    const lbl = (v) => String(Number(v.toPrecision(3)));
+    let g = "";
+    ticks(xr[0], xr[1]).forEach((v) => {
+      g += `<line x1="${X(v)}" y1="${padT}" x2="${X(v)}" y2="${padT + phH}" stroke="var(--grid)"/><text x="${X(v)}" y="${padT + phH + 16}" text-anchor="middle" fill="var(--muted)">${lbl(v)}</text>`;
+    });
+    ticks(yr[0], yr[1]).forEach((v) => {
+      g += `<line x1="${padL}" y1="${Y(v)}" x2="${padL + pw}" y2="${Y(v)}" stroke="var(--grid)"/><text x="${padL - 8}" y="${Y(v) + 4}" text-anchor="end" fill="var(--muted)">${lbl(v)}</text>`;
+    });
+    if (xr[0] <= 0 && 0 <= xr[1]) g += `<line x1="${X(0)}" y1="${padT}" x2="${X(0)}" y2="${padT + phH}" stroke="var(--muted)" stroke-width="1.5"/>`;
+    if (yr[0] <= 0 && 0 <= yr[1]) g += `<line x1="${padL}" y1="${Y(0)}" x2="${padL + pw}" y2="${Y(0)}" stroke="var(--muted)" stroke-width="1.5"/>`;
+    const d = pts.map((q, i) => (i ? "L" : "M") + X(q[0]).toFixed(1) + " " + Y(q[1]).toFixed(1)).join(" ");
+    let marks = "";
+    markers.forEach((m) => {
+      const mx = X(m.x), my = Y(m.y);
+      const labelY = my < padT + 24 ? my + 16 : my - 10;
+      marks += `<circle cx="${mx}" cy="${my}" r="4" fill="var(--accent)"/><text x="${mx}" y="${labelY}" text-anchor="middle" fill="var(--ink)">${esc(m.label)}</text>`;
+    });
+    return `<svg viewBox="0 0 ${W} ${H}" width="${W}" role="img" aria-label="Отрезок на координатной плоскости" style="font:11px var(--mono);fill:var(--muted)">
+      <rect x="${padL}" y="${padT}" width="${pw}" height="${phH}" fill="none" stroke="var(--line)"/>
+      ${g}<path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2"/>${marks}
+      <text x="${W - padR}" y="${H - 4}" text-anchor="end" fill="var(--muted)">x</text><text x="4" y="12" fill="var(--muted)">y</text></svg>`;
+  }
+
+  function solveSegment(x) {
+    const { x1, y1, x2, y2 } = x;
+    const dx = x2 - x1, dy = y2 - y1;
+    if (dx === 0 && dy === 0) fail("Точки совпадают — отрезок вырожден.");
+    const d = Math.sqrt(dx * dx + dy * dy), mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+    const steps = [
+      S("d = √((x₂ − x₁)² + (y₂ − y₁)²)", `d = √((${fmt(x2)} − ${p(x1)})² + (${fmt(y2)} − ${p(y1)})²) = √(${fmt(dx * dx)} + ${fmt(dy * dy)}) = √${fmt(dx * dx + dy * dy)} = ${fmt(d)}`),
+      S("M = ((x₁ + x₂)/2; (y₁ + y₂)/2)  (середина отрезка)", `M = ((${fmt(x1)} + ${p(x2)})/2; (${fmt(y1)} + ${p(y2)})/2) = (${fmt(mx)}; ${fmt(my)})`),
+    ];
+    let line;
+    if (dx === 0) {
+      steps.push(N("x₁ = x₂ — прямая AB вертикальная."));
+      line = `x = ${fmt(x1)}`;
+    } else {
+      const k = dy / dx, b = y1 - k * x1;
+      steps.push(S("k = (y₂ − y₁) / (x₂ − x₁)", `k = (${fmt(y2)} − ${p(y1)}) / (${fmt(x2)} − ${p(x1)}) = ${fmt(k)}`));
+      if (k === 0) { steps.push(N("k = 0 — прямая AB горизонтальная.")); line = `y = ${fmt(y1)}`; }
+      else {
+        steps.push(S("b = y₁ − k·x₁", `b = ${fmt(y1)} − ${p(k)}·${p(x1)} = ${fmt(b)}`));
+        line = `y = ${fmt(k)}x ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}`;
+        if (b === 0) line = `y = ${fmt(k)}x`;
+      }
+    }
+    const [xmin, xmax] = rangeFor([x1, x2]), [ymin, ymax] = rangeFor([y1, y2]);
+    const plot = plotXY({
+      pts: [[x1, y1], [x2, y2]], xr: [xmin, xmax], yr: [ymin, ymax],
+      markers: [{ x: x1, y: y1, label: `A(${fmt(x1)}; ${fmt(y1)})` }, { x: x2, y: y2, label: `B(${fmt(x2)}; ${fmt(y2)})` }, { x: mx, y: my, label: "M" }],
+    });
+    return { steps, plot, answers: [A("|AB|", d), A("M", `(${fmt(mx)}; ${fmt(my)})`), A("Прямая AB", line)] };
+  }
+
+  /* ---------- Объёмные тела ---------- */
+  function solveCuboid(x) {
+    const { a, b, c } = x;
+    pos(a, "Ребро a"); pos(b, "Ребро b"); pos(c, "Ребро c");
+    const V = a * b * c, Sf = 2 * (a * b + b * c + a * c), d = Math.sqrt(a * a + b * b + c * c);
+    const steps = [
+      S("V = a·b·c", `V = ${fmt(a)}·${fmt(b)}·${fmt(c)} = ${fmt(V)}`),
+      S("S = 2(ab + bc + ac)", `S = 2·(${fmt(a * b)} + ${fmt(b * c)} + ${fmt(a * c)}) = ${fmt(Sf)}`),
+      S("d = √(a² + b² + c²)  (диагональ)", `d = √(${fmt(a * a)} + ${fmt(b * b)} + ${fmt(c * c)}) = √${fmt(a * a + b * b + c * c)} = ${fmt(d)}`),
+    ];
+    return { steps, answers: [A("V", V), A("S поверхности", Sf), A("d", d)] };
+  }
+  function solveCylinder(x) {
+    const { r, h } = x;
+    pos(r, "Радиус r"); pos(h, "Высота h");
+    const steps = [
+      S("V = π·r²·h", `V = π·${fmt(r)}²·${fmt(h)} = ${withPi(r * r * h)}`),
+      S("S бок = 2π·r·h", `S бок = 2·π·${fmt(r)}·${fmt(h)} = ${withPi(2 * r * h)}`),
+      S("S полн = 2π·r·(r + h)", `S полн = 2·π·${fmt(r)}·(${fmt(r)} + ${fmt(h)}) = ${withPi(2 * r * (r + h))}`),
+    ];
+    return { steps, answers: [A("V", withPi(r * r * h)), A("S боковая", withPi(2 * r * h)), A("S полная", withPi(2 * r * (r + h)))] };
+  }
+  function solveCone(x) {
+    const { r, h } = x;
+    pos(r, "Радиус r"); pos(h, "Высота h");
+    const l = Math.sqrt(r * r + h * h);
+    const steps = [
+      S("l = √(r² + h²)  (образующая)", `l = √(${fmt(r)}² + ${fmt(h)}²) = √${fmt(r * r + h * h)} = ${fmt(l)}`),
+      S("V = π·r²·h / 3", `V = π·${fmt(r)}²·${fmt(h)} / 3 = ${withPi((r * r * h) / 3)}`),
+      S("S бок = π·r·l", `S бок = π·${fmt(r)}·${fmt(l)} = ${withPi(r * l)}`),
+      S("S полн = π·r·(r + l)", `S полн = π·${fmt(r)}·(${fmt(r)} + ${fmt(l)}) = ${withPi(r * (r + l))}`),
+    ];
+    return { steps, answers: [A("l", l), A("V", withPi((r * r * h) / 3)), A("S боковая", withPi(r * l)), A("S полная", withPi(r * (r + l)))] };
+  }
+  function solveSphere(x) {
+    const { r } = x;
+    pos(r, "Радиус r");
+    const steps = [
+      S("V = 4/3·π·r³", `V = 4/3·π·${fmt(r)}³ = 4/3·π·${fmt(r ** 3)} = ${withPi((4 * r ** 3) / 3)}`),
+      S("S = 4π·r²", `S = 4·π·${fmt(r)}² = ${withPi(4 * r * r)}`),
+    ];
+    return { steps, answers: [A("V", withPi((4 * r ** 3) / 3)), A("S поверхности", withPi(4 * r * r))] };
+  }
+
+  /* ---------- Каталог задач ---------- */
+  const fl = (id, sy, label, unit, extra) => Object.assign({ id, sym: sy, label, unit }, extra || {});
+  const TASKS = [
+    { cat: "Треугольник", id: "tri_sss", title: "По трём сторонам", hint: "Площадь, углы и радиусы окружностей по формуле Герона и теореме косинусов.",
+      fields: [fl("a", "a", "сторона a", ""), fl("b", "b", "сторона b", ""), fl("c", "c", "сторона c", "")],
+      ex: { a: "13", b: "14", c: "15" }, solve: solveHeron },
+    { cat: "Треугольник", id: "tri_right", title: "Прямоугольный треугольник", hint: "Теорема Пифагора, углы, высота к гипотенузе, радиусы окружностей.",
+      fields: [fl("a", "a", "катет a", ""), fl("b", "b", "второе значение (катет b или гипотенуза c)", ""),
+               fl("mode", "", "что задано", "", { select: [["legs", "два катета a и b"], ["leg_hyp", "катет a и гипотенуза c"]] })],
+      ex: { a: "3", b: "4", mode: "legs" }, solve: solveRight },
+    { cat: "Треугольник", id: "tri_cos", title: "Две стороны и угол (теорема косинусов)", hint: "Известны стороны a, b и угол C между ними.",
+      fields: [fl("a", "a", "сторона a", ""), fl("b", "b", "сторона b", ""), fl("gamma", "C", "угол между ними", "°")],
+      ex: { a: "7", b: "8", gamma: "60" }, solve: solveCosine },
+    { cat: "Треугольник", id: "tri_sin", title: "Сторона и два угла (теорема синусов)", hint: "Известны сторона a и углы A, B.",
+      fields: [fl("a", "a", "сторона a", ""), fl("A", "A", "угол A", "°"), fl("B", "B", "угол B", "°")],
+      ex: { a: "10", A: "40", B: "75" }, solve: solveSine },
+    { cat: "Треугольник", id: "tri_bh", title: "Площадь по основанию и высоте", hint: "S = a·h / 2.",
+      fields: [fl("a", "a", "основание", ""), fl("h", "h", "высота к нему", "")],
+      ex: { a: "12", h: "5" }, solve: solveTriBH },
+
+    { cat: "Четырёхугольники", id: "rect", title: "Прямоугольник", hint: "Площадь, периметр, диагональ.",
+      fields: [fl("a", "a", "сторона a", ""), fl("b", "b", "сторона b", "")],
+      ex: { a: "6", b: "8" }, solve: solveRect },
+    { cat: "Четырёхугольники", id: "para", title: "Параллелограмм", hint: "Стороны a, b и угол α между ними.",
+      fields: [fl("a", "a", "сторона a", ""), fl("b", "b", "сторона b", ""), fl("alpha", "α", "угол между сторонами", "°")],
+      ex: { a: "10", b: "6", alpha: "30" }, solve: solvePara },
+    { cat: "Четырёхугольники", id: "rhomb", title: "Ромб", hint: "Известны диагонали d₁ и d₂.",
+      fields: [fl("d1", "d₁", "первая диагональ", ""), fl("d2", "d₂", "вторая диагональ", "")],
+      ex: { d1: "6", d2: "8" }, solve: solveRhomb },
+    { cat: "Четырёхугольники", id: "trap", title: "Трапеция", hint: "Основания a, b и высота h.",
+      fields: [fl("a", "a", "нижнее основание", ""), fl("b", "b", "верхнее основание", ""), fl("h", "h", "высота", "")],
+      ex: { a: "10", b: "6", h: "4" }, solve: solveTrap },
+
+    { cat: "Окружность", id: "circle", title: "Окружность и круг", hint: "Длина окружности и площадь круга. Ответ и через π, и числом.",
+      fields: [fl("v", "", "значение", ""), fl("mode", "", "что задано", "", { select: [["r", "радиус r"], ["d", "диаметр d"], ["C", "длина окружности C"]] })],
+      ex: { v: "5", mode: "r" }, solve: solveCircle },
+    { cat: "Окружность", id: "sector", title: "Сектор и дуга", hint: "Длина дуги и площадь сектора по радиусу и центральному углу.",
+      fields: [fl("r", "r", "радиус", ""), fl("alpha", "α", "центральный угол", "°")],
+      ex: { r: "6", alpha: "60" }, solve: solveSector },
+
+    { cat: "Многоугольники", id: "poly_angles", title: "Углы многоугольника", hint: "Сумма углов, угол правильного n-угольника, диагонали.",
+      fields: [fl("n", "n", "число сторон", "")],
+      ex: { n: "6" }, solve: solvePolyAngles },
+    { cat: "Многоугольники", id: "reg_poly", title: "Правильный многоугольник", hint: "Периметр, апофема, радиус описанной окружности, площадь.",
+      fields: [fl("n", "n", "число сторон", ""), fl("a", "a", "длина стороны", "")],
+      ex: { n: "6", a: "4" }, solve: solveRegPoly },
+
+    { cat: "Координаты", id: "segment", title: "Отрезок по координатам", hint: "Длина, середина и уравнение прямой через две точки A и B.",
+      fields: [fl("x1", "x₁", "x точки A", ""), fl("y1", "y₁", "y точки A", ""), fl("x2", "x₂", "x точки B", ""), fl("y2", "y₂", "y точки B", "")],
+      ex: { x1: "1", y1: "2", x2: "5", y2: "5" }, solve: solveSegment },
+
+    { cat: "Объёмные тела", id: "cuboid", title: "Параллелепипед", hint: "Прямоугольный параллелепипед: объём, поверхность, диагональ.",
+      fields: [fl("a", "a", "ребро a", ""), fl("b", "b", "ребро b", ""), fl("c", "c", "ребро c", "")],
+      ex: { a: "3", b: "4", c: "12" }, solve: solveCuboid },
+    { cat: "Объёмные тела", id: "cylinder", title: "Цилиндр", hint: "Объём и площади поверхности.",
+      fields: [fl("r", "r", "радиус основания", ""), fl("h", "h", "высота", "")],
+      ex: { r: "3", h: "5" }, solve: solveCylinder },
+    { cat: "Объёмные тела", id: "cone", title: "Конус", hint: "Образующая, объём и площади поверхности.",
+      fields: [fl("r", "r", "радиус основания", ""), fl("h", "h", "высота", "")],
+      ex: { r: "3", h: "4" }, solve: solveCone },
+    { cat: "Объёмные тела", id: "sphere", title: "Шар", hint: "Объём шара и площадь сферы.",
+      fields: [fl("r", "r", "радиус", "")],
+      ex: { r: "3" }, solve: solveSphere },
+  ];
+
+  /* ---------- Состояние ---------- */
+  const $ = (id) => document.getElementById(id);
+  const state = { id: "tri_sss", cat: "Треугольник" };
+  try {
+    const st = localStorage.getItem("geometry.task"); const t = TASKS.find((k) => k.id === st);
+    if (t) { state.id = t.id; state.cat = t.cat; }
+  } catch (e) { /* хранилище недоступно */ }
+  const save = () => { try { localStorage.setItem("geometry.task", state.id); } catch (e) {} };
+  const task = () => TASKS.find((k) => k.id === state.id);
+  let showExampleNote = true;
+
+  /* ---------- Интерфейс ---------- */
+  function renderNav() {
+    const cats = [...new Set(TASKS.map((k) => k.cat))];
+    $("cats").innerHTML = "";
+    cats.forEach((c) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = c; b.setAttribute("aria-pressed", String(c === state.cat));
+      b.onclick = () => { state.cat = c; selectTask(TASKS.find((k) => k.cat === c).id); };
+      $("cats").appendChild(b);
+    });
+    $("chips").innerHTML = "";
+    TASKS.filter((k) => k.cat === state.cat).forEach((k) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = k.title; b.setAttribute("aria-pressed", String(k.id === state.id));
+      b.onclick = () => selectTask(k.id);
+      $("chips").appendChild(b);
+    });
+  }
+
+  function renderForm() {
+    const t = task(), form = $("form");
+    form.innerHTML = "";
+    const hint = document.createElement("p"); hint.className = "hint"; hint.textContent = t.hint; form.appendChild(hint);
+    t.fields.forEach((f) => {
+      const wrap = document.createElement("div"); wrap.className = "field";
+      const lab = document.createElement("label"); lab.htmlFor = "f-" + f.id;
+      lab.innerHTML = (f.sym ? `<b>${esc(f.sym)}</b>` : "") + esc(f.label);
+      const box = document.createElement("div"); box.className = "inp";
+      let inp;
+      if (f.select) {
+        inp = document.createElement("select");
+        f.select.forEach(([v, l]) => inp.add(new Option(l, v)));
+      } else {
+        inp = document.createElement("input"); inp.type = "text"; inp.inputMode = "decimal";
+        inp.placeholder = f.opt ? "неизвестно" : (f.def !== undefined ? String(f.def) : "");
+      }
+      inp.id = "f-" + f.id;
+      inp.addEventListener("input", () => { showExampleNote = false; solve(); });
+      inp.addEventListener("change", () => { showExampleNote = false; solve(); });
+      box.appendChild(inp);
+      if (f.unit) { const u = document.createElement("span"); u.className = "u"; u.textContent = f.unit; box.appendChild(u); }
+      wrap.append(lab, box); form.appendChild(wrap);
+    });
+    const ex = t.ex || {};
+    t.fields.forEach((f) => { if (ex[f.id] !== undefined) $("f-" + f.id).value = ex[f.id]; });
+    form.addEventListener("submit", (e) => e.preventDefault(), { once: true });
+  }
+
+  function collect() {
+    const t = task(), x = {}, given = [], missing = [];
+    for (const f of t.fields) {
+      const el = $("f-" + f.id); const raw = el.value.trim();
+      if (f.select) { x[f.id] = raw; continue; }
+      if (raw === "") {
+        if (f.def !== undefined) { x[f.id] = f.def; continue; }
+        x[f.id] = null; if (!f.opt) missing.push(f.sym || f.label); continue;
+      }
+      const n = Number(raw.replace(",", "."));
+      if (!isFinite(n)) throw new Error(`Поле «${f.sym || f.label}»: введите число.`);
+      x[f.id] = n; given.push(A(f.sym, n, f.unit));
+    }
+    if (missing.length) { const e = new Error("Заполните: " + missing.join(", ") + "."); e.soft = true; throw e; }
+    return { x, given };
+  }
+
+  let lastText = "";
+  function solve() {
+    const paper = $("paper"), t = task();
+    let out, given;
+    try {
+      const c = collect(); given = c.given;
+      out = t.solve(c.x);
+    } catch (e) {
+      paper.innerHTML = `<p class="msg${e.soft ? "" : " err"}">${html(e.message)}</p>`;
+      lastText = ""; return;
+    }
+    const line = (a) => `${a[0]} = ${typeof a[1] === "number" ? fmt(a[1]) : a[1]}${a[2] ? " " + a[2] : ""}`;
+    let h = "";
+    if (showExampleNote) h += `<p class="note">Подставлен пример. Измените числа слева, решение пересчитается.</p>`;
+    if (given.length) {
+      h += `<div><h2>Дано</h2><div class="given">${given.map((a) => `<span>${html(a[0])} = ${html(fmt(a[1]))} <em>${html(a[2])}</em></span>`).join("")}</div></div>`;
+    }
+    h += `<div><h2>Решение</h2>${out.steps.map((s) => s.t ? `<div class="step t">${html(s.t)}</div>` : `<div class="step"><div class="f">${html(s.f)}</div><div class="c">${html(s.c)}</div></div>`).join("")}</div>`;
+    if (out.plot) h += `<div class="plot">${out.plot}</div>`;
+    h += `<div><h2>Ответ</h2><div class="answer">${out.answers.map((a) => `<div>${html(a[0])} = ${html(typeof a[1] === "number" ? fmt(a[1]) : a[1])} <small>${html(a[2])}</small></div>`).join("")}</div></div>`;
+    h += `<div class="actions"><button type="button" id="copy">Копировать решение</button><span id="copied"></span></div>`;
+    paper.innerHTML = h;
+    lastText = [t.title, "", "Дано:", ...given.map(line), "", "Решение:", ...out.steps.map((s) => (s.t ? s.t : s.f + "\n" + s.c)), "", "Ответ:", ...out.answers.map(line)].join("\n");
+    $("copy").onclick = copy;
+  }
+  function copy() {
+    const done = (m) => { $("copied").textContent = m; setTimeout(() => { const c = $("copied"); if (c) c.textContent = ""; }, 2000); };
+    const fallback = () => {
+      const ta = document.createElement("textarea"); ta.value = lastText; document.body.appendChild(ta); ta.select();
+      let ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+      ta.remove(); done(ok ? "Скопировано" : "Не удалось скопировать");
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(lastText).then(() => done("Скопировано"), fallback);
+    else fallback();
+  }
+
+  function selectTask(id) {
+    state.id = id; state.cat = task().cat; showExampleNote = true; save();
+    renderNav(); renderForm(); solve();
+  }
+  $("form").addEventListener("submit", (e) => e.preventDefault());
+  renderNav(); renderForm(); solve();
+})();
+</script>
+
+<style>
+  .ios-hint {
+    position: fixed; left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    z-index: 50; display: none; align-items: flex-start; gap: 12px;
+    max-width: 480px; margin: 0 auto; padding: 12px 14px;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.18); font-size: 14px; line-height: 1.4;
+  }
+  .ios-hint.show { display: flex; }
+  .ios-hint b { font-weight: 600; }
+  .ios-hint button {
+    margin-left: auto; flex: none; min-width: 44px; min-height: 44px; margin-block: -8px -8px;
+    border: 0; background: transparent; color: var(--muted); font-size: 22px; line-height: 1; cursor: pointer;
+  }
+</style>
+<div class="ios-hint" id="iosHint" role="note">
+  <div><b>Установить на iPhone:</b> нажмите «Поделиться»
+    <span aria-hidden="true">&#x2191;&#xFE0E;</span> в Safari и выберите «На экран “Домой”».</div>
+  <button type="button" id="iosHintClose" aria-label="Закрыть подсказку">&times;</button>
+</div>
+<script>
+(function () {
+  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw-geometry.js").catch(function () {});
+    });
+  }
+  try {
+    var ua = navigator.userAgent || "";
+    var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    var standalone = window.navigator.standalone === true ||
+      (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+    var seen = false;
+    try { seen = localStorage.getItem("iosHintSeenGeometry") === "1"; } catch (e) {}
+    var hint = document.getElementById("iosHint");
+    if (isIOS && !standalone && !seen && hint) {
+      hint.classList.add("show");
+      document.getElementById("iosHintClose").onclick = function () {
+        hint.classList.remove("show");
+        try { localStorage.setItem("iosHintSeenGeometry", "1"); } catch (e) {}
+      };
+    }
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>
