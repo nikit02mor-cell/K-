@@ -1,0 +1,942 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Алгебра от SvinCompany</title>
+<meta name="description" content="Решатель задач по алгебре 7-9 класс: Дано / Решение / Ответ">
+<meta name="theme-color" content="#1d5fbf">
+<link rel="manifest" href="manifest-algebra.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Алгебра">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  html, body { margin: 0; }
+  body { -webkit-text-size-adjust: 100%; }
+</style>
+<style>
+  /* Layout: tool-first, same system as the physics solver. Header with brand,
+     category tabs, task chips, then a form column beside a graph-paper
+     "notebook" panel with Дано / Решение / Ответ. */
+  :root {
+    --bg: #f2f5f9;
+    --surface: #ffffff;
+    --ink: #132033;
+    --muted: #566678;
+    --line: #d6dee8;
+    --accent: #1d5fbf;
+    --accent-ink: #ffffff;
+    --accent-soft: #e3edfa;
+    --grid: #e7edf4;
+    --warn: #b3261e;
+    --sans: "IBM Plex Sans", system-ui, "Segoe UI", Roboto, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e141b; --surface: #16202a; --ink: #e5ecf4; --muted: #92a3b5;
+      --line: #263341; --accent: #6aa6ff; --accent-ink: #0b1522; --accent-soft: #1a2a3f;
+      --grid: #1c2733; --warn: #ff8a80; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e141b; --surface: #16202a; --ink: #e5ecf4; --muted: #92a3b5;
+    --line: #263341; --accent: #6aa6ff; --accent-ink: #0b1522; --accent-soft: #1a2a3f;
+    --grid: #1c2733; --warn: #ff8a80; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font: 15px/1.5 var(--sans);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 20px 48px;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+  button, input, select { font: inherit; color: inherit; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; }
+  .brand { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .brand svg { display: block; flex: none; }
+  .brand span { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+  h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+
+  .cats { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--line); min-width: 0; }
+  .cats button { border: 0; background: none; padding: 8px 14px; cursor: pointer; color: var(--muted); white-space: nowrap;
+    border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; }
+  .cats button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: 14px; }
+  .chips button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); font-weight: 500; }
+
+  .grid { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 20px; align-items: start; }
+  @media (max-width: 820px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+  .form { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .hint { margin: 0; color: var(--muted); font-size: 13px; }
+  .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .field label { font-size: 13px; color: var(--muted); }
+  .field label b { font-family: var(--mono); font-weight: 600; color: var(--ink); margin-right: 6px; }
+  .inp { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); min-width: 0; }
+  .inp input, .inp select { flex: 1; min-width: 0; border: 0; background: none; padding: 9px 10px; font-family: var(--mono); font-size: 15px; }
+  .inp select { font-family: var(--sans); }
+  .inp .u { padding: 9px 10px 9px 0; color: var(--muted); font-size: 13px; align-self: center; white-space: nowrap; }
+  .inp:focus-within { border-color: var(--accent); }
+  .note { margin: 0; font-size: 12.5px; color: var(--muted); background: var(--accent-soft); border-radius: 6px; padding: 6px 10px; }
+
+  .paper { border: 1px solid var(--line); border-radius: 10px; padding: 20px; min-width: 0; background-color: var(--surface);
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 24px 24px; display: flex; flex-direction: column; gap: 18px; }
+  .paper h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .given { display: flex; flex-wrap: wrap; gap: 4px 22px; font-family: var(--mono); }
+  .given span em { font-style: normal; color: var(--muted); font-size: 13px; }
+  .step { padding: 8px 0; border-top: 1px dashed var(--line); font-family: var(--mono); font-size: 14px; overflow-x: auto; }
+  .step:first-of-type { border-top: 0; padding-top: 0; }
+  .step .f { color: var(--muted); }
+  .step .c { color: var(--ink); }
+  .step.t { font-family: var(--sans); color: var(--muted); font-size: 14px; }
+  .answer { background: var(--accent-soft); border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; }
+  .answer div { font-family: var(--mono); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .answer div small { font-weight: 400; font-size: 14px; color: var(--muted); }
+  .msg { color: var(--muted); margin: 0; }
+  .msg.err { color: var(--warn); }
+  .plot { overflow-x: auto; }
+  .plot svg { display: block; max-width: 100%; height: auto; }
+  .actions { display: flex; gap: 8px; align-items: center; }
+  .actions button { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 13px; }
+  .actions span { font-size: 13px; color: var(--muted); }
+  footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); }
+  footer b { font-family: var(--mono); font-weight: 600; color: var(--ink); letter-spacing: 0.04em; }
+  sup { font-size: 0.75em; line-height: 0; }
+</style>
+
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand">
+        <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="5" fill="var(--accent)"/><path d="M4 16 Q11 2 18 16" fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round"/><circle cx="4" cy="16" r="1.8" fill="var(--accent-ink)"/><circle cx="18" cy="16" r="1.8" fill="var(--accent-ink)"/></svg>
+        <span>SvinCompany</span>
+      </div>
+      <h1>Решатель задач по алгебре · 7–9 класс</h1>
+    </div>
+    <a href="index.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">← Физика</a>
+  </header>
+  <nav class="cats" id="cats" aria-label="Раздел"></nav>
+  <div class="chips" id="chips"></div>
+  <div class="grid">
+    <form class="form" id="form" autocomplete="off"></form>
+    <section class="paper" id="paper" aria-live="polite"></section>
+  </div>
+  <footer><span>Сделано в <b>SvinCompany</b></span><span>Результаты округлены для удобства чтения</span></footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Форматирование и общие помощники ---------- */
+  const fmt = (n) => {
+    if (typeof n !== "number") return String(n);
+    if (!isFinite(n)) return "∞";
+    if (n === 0) return "0";
+    const a = Math.abs(n);
+    if (a >= 1e6 || a < 1e-3) {
+      const [m, e] = n.toExponential(3).split("e");
+      return Number(m) + "·10^" + Number(e);
+    }
+    const prec = Math.max(4, Math.floor(Math.log10(a)) + 1);
+    return String(Number(n.toPrecision(prec)));
+  };
+  const p = (n) => (n < 0 ? "(" + fmt(n) + ")" : fmt(n));
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const html = (s) => esc(s).replace(/10\^(-?\d+)/g, "10<sup>$1</sup>");
+  const has = (v) => v !== null && v !== undefined && !Number.isNaN(v);
+  const S = (f, c) => ({ f, c });          // шаг: формула + подстановка
+  const N = (t) => ({ t });                // текстовый шаг
+  const A = (sym, val, unit) => [sym, val, unit || ""];
+  const fail = (m) => { throw new Error(m); };
+
+  /* ---------- Неравенства: общие помощники ---------- */
+  const FLIP = { ">": "<", "<": ">", ">=": "<=", "<=": ">=" };
+  const SYM = { ">": ">", "<": "<", ">=": "≥", "<=": "≤" };
+  const flip = (c) => FLIP[c];
+  const sym = (c) => SYM[c];
+  const cmpTrue = (lhs, c, rhs) => {
+    if (c === ">") return lhs > rhs;
+    if (c === "<") return lhs < rhs;
+    if (c === ">=") return lhs >= rhs;
+    return lhs <= rhs;
+  };
+
+  /* ---------- Квадратное уравнение: общий решатель корней ---------- */
+  function quadRoots(a, b, c) {
+    const D = b * b - 4 * a * c;
+    if (D > 0) {
+      const s = Math.sqrt(D);
+      const r1 = (-b - s) / (2 * a), r2 = (-b + s) / (2 * a);
+      return { D, lo: Math.min(r1, r2), hi: Math.max(r1, r2) };
+    }
+    if (D === 0) return { D, x0: -b / (2 * a) };
+    return { D };
+  }
+
+  /* ---------- Дроби: вспомогательные функции ---------- */
+  function gcd(a, b) {
+    a = Math.round(Math.abs(a)); b = Math.round(Math.abs(b));
+    while (b) { [a, b] = [b, a % b]; }
+    return a || 1;
+  }
+  function lcm(a, b) { return Math.abs(a * b) / gcd(a, b); }
+  function simplifyFrac(n, d) {
+    if (d < 0) { n = -n; d = -d; }
+    const g = gcd(n, d);
+    return [n / g, d / g];
+  }
+  function fracStr(n, d) { const [sn, sd] = simplifyFrac(n, d); return sd === 1 ? `${sn}` : `${sn}/${sd}`; }
+
+  /* ---------- 1. Линейное уравнение: ax + b = c ---------- */
+  function solveLinEq(x) {
+    const { a, b, c } = x;
+    if (a === 0) {
+      if (b === c) return { steps: [N(`При a = 0 уравнение принимает вид ${fmt(b)} = ${fmt(c)} — это верно при любом x.`)], answers: [A("x", "любое число")] };
+      return { steps: [N(`При a = 0 уравнение принимает вид ${fmt(b)} = ${fmt(c)} — это неверно ни при каком x.`)], answers: [A("x", "нет решений")] };
+    }
+    const xv = (c - b) / a;
+    const steps = [
+      S("ax = c − b", `${fmt(a)}x = ${fmt(c)} − ${fmt(b)} = ${fmt(c - b)}`),
+      S("x = (c − b) / a", `x = ${fmt(c - b)} / ${fmt(a)} = ${fmt(xv)}`),
+    ];
+    return { steps, answers: [A("x", xv)] };
+  }
+
+  /* ---------- 2. Квадратное уравнение: ax² + bx + c = 0 ---------- */
+  function solveQuadEq(x) {
+    const { a, b, c } = x;
+    if (a === 0) fail("Коэффициент a не должен быть равен нулю — иначе это не квадратное уравнение. Используйте линейное уравнение.");
+    const { D, lo, hi, x0 } = quadRoots(a, b, c);
+    const steps = [S("D = b² − 4ac", `D = ${p(b)}² − 4·${p(a)}·${p(c)} = ${fmt(D)}`)];
+    if (D > 0) {
+      steps.push(S("x = (−b ± √D) / (2a)", `x₁ = (${p(-b)} − √${fmt(D)}) / (2·${p(a)}) = ${fmt(lo)},  x₂ = (${p(-b)} + √${fmt(D)}) / (2·${p(a)}) = ${fmt(hi)}`));
+      steps.push(N(`Проверка по теореме Виета: x₁ + x₂ = −b/a = ${fmt(-b / a)}, x₁·x₂ = c/a = ${fmt(c / a)}.`));
+      return { steps, answers: [A("x₁", lo), A("x₂", hi)] };
+    }
+    if (D === 0) {
+      steps.push(S("x₀ = −b / (2a)", `x₀ = ${p(-b)} / (2·${p(a)}) = ${fmt(x0)}`));
+      steps.push(N("D = 0 — уравнение имеет один (двукратный) корень."));
+      return { steps, answers: [A("x", x0)] };
+    }
+    steps.push(N("D < 0 — действительных корней нет."));
+    return { steps, answers: [A("x", "нет действительных корней")] };
+  }
+
+  /* ---------- 3. Система двух линейных уравнений ---------- */
+  function solveSystem(x) {
+    const { a1, b1, c1, a2, b2, c2 } = x;
+    const D = a1 * b2 - a2 * b1;
+    const Dx = c1 * b2 - c2 * b1;
+    const Dy = a1 * c2 - a2 * c1;
+    const steps = [
+      S("D = a₁b₂ − a₂b₁", `D = ${fmt(a1)}·${fmt(b2)} − ${fmt(a2)}·${fmt(b1)} = ${fmt(D)}`),
+    ];
+    if (D === 0) {
+      steps.push(N(Dx === 0 && Dy === 0
+        ? "D = 0, и числители тоже равны нулю — уравнения пропорциональны, решений бесконечно много."
+        : "D = 0, а хотя бы один из числителей не равен нулю — прямые параллельны, решений нет."));
+      return { steps, answers: [A("Решение", Dx === 0 && Dy === 0 ? "бесконечно много решений" : "нет решений")] };
+    }
+    steps.push(S("Dₓ = c₁b₂ − c₂b₁", `Dₓ = ${fmt(c1)}·${fmt(b2)} − ${fmt(c2)}·${fmt(b1)} = ${fmt(Dx)}`));
+    steps.push(S("D_y = a₁c₂ − a₂c₁", `D_y = ${fmt(a1)}·${fmt(c2)} − ${fmt(a2)}·${fmt(c1)} = ${fmt(Dy)}`));
+    const xv = Dx / D, yv = Dy / D;
+    steps.push(S("x = Dₓ / D,  y = D_y / D", `x = ${fmt(Dx)} / ${fmt(D)} = ${fmt(xv)},  y = ${fmt(Dy)} / ${fmt(D)} = ${fmt(yv)}`));
+    return { steps, answers: [A("x", xv), A("y", yv)] };
+  }
+
+  /* ---------- Дроби ---------- */
+  /* Складывает/вычитает/умножает/делит дробь a/b и c/d; возвращает шаги и итоговую несокращённую [n, den]. */
+  function combineFrac(a, b, op, c, d, lbl1, lbl2) {
+    lbl1 = lbl1 || `${a}/${b}`; lbl2 = lbl2 || `${c}/${d}`;
+    const steps = [];
+    let n, den;
+    if (op === "+" || op === "-") {
+      const L = lcm(b, d), k1 = L / b, k2 = L / d;
+      steps.push(N(`Приводим дроби к общему знаменателю — НОК(${b}, ${d}) = ${L}.`));
+      steps.push(S(`${lbl1} ${op} ${lbl2}`, `${a}·${k1}/${L} ${op} ${c}·${k2}/${L} = ${a * k1}/${L} ${op} ${c * k2}/${L}`));
+      n = op === "+" ? a * k1 + c * k2 : a * k1 - c * k2;
+      den = L;
+      steps.push(S("Складываем/вычитаем числители", `(${a * k1} ${op} ${c * k2}) / ${L} = ${n} / ${L}`));
+    } else if (op === "×") {
+      steps.push(S(`${lbl1} × ${lbl2} = (a·c) / (b·d)`, `(${a}·${c}) / (${b}·${d}) = ${a * c} / ${b * d}`));
+      n = a * c; den = b * d;
+    } else {
+      if (c === 0) fail("Нельзя делить на дробь с числителем 0.");
+      steps.push(N("Деление дроби — это умножение на перевёрнутую вторую дробь."));
+      steps.push(S(`${lbl1} ÷ ${lbl2} = ${lbl1} × (перевёрнутая ${lbl2})`, `(${a}·${d}) / (${b}·${c}) = ${a * d} / ${b * c}`));
+      n = a * d; den = b * c;
+    }
+    return { steps, n, den };
+  }
+
+  function finishFrac(steps, n, den) {
+    const g = gcd(n, den);
+    const [sn, sd] = simplifyFrac(n, den);
+    if (g > 1) steps.push(N(`Сокращаем дробь: НОД(${Math.abs(n)}, ${Math.abs(den)}) = ${g}.`));
+    const resultStr = sd === 1 ? `${sn}` : `${sn}/${sd}`;
+    return { steps, answers: [A("Результат", resultStr), A("Десятичная дробь", sn / sd)] };
+  }
+
+  function solveFracOps(x) {
+    const { a, b, op, c, d } = x;
+    if (![a, b, c, d].every(Number.isInteger)) fail("Числитель и знаменатель дроби должны быть целыми числами.");
+    if (b === 0 || d === 0) fail("Знаменатель дроби не может быть равен нулю.");
+    const { steps, n, den } = combineFrac(a, b, op, c, d);
+    return finishFrac(steps, n, den);
+  }
+
+  /* Возводит дробь n/d в целую степень e (отрицательная степень — переворачивает дробь). */
+  function powFrac(n, d, e, label) {
+    if (d === 0) fail(`Знаменатель дроби ${label} не может быть равен нулю.`);
+    if (!Number.isInteger(e)) fail(`Показатель степени у дроби ${label} должен быть целым числом.`);
+    if (Math.abs(e) > 12) fail(`Показатель степени у дроби ${label} слишком большой (допустимо от −12 до 12).`);
+    const steps = [];
+    let bn = n, bd = d;
+    if (e < 0) {
+      if (bn === 0) fail(`Дробь ${label} с числителем 0 нельзя возвести в отрицательную степень.`);
+      steps.push(N(`Отрицательная степень у дроби ${label}: переворачиваем дробь и меняем знак показателя.`));
+      [bn, bd] = [bd, bn];
+      e = -e;
+    }
+    const rn = Math.pow(bn, e), rd = Math.pow(bd, e);
+    steps.push(S(`(${bn}/${bd})^${e}`, `${bn}^${e} / ${bd}^${e} = ${rn} / ${rd}`));
+    return { steps, n: rn, den: rd };
+  }
+
+  function solveFracPowOps(x) {
+    const { a, b, m, op, c, d, n } = x;
+    if (![a, b, m, c, d, n].every(Number.isInteger)) fail("Все числа (числители, знаменатели и показатели степеней) должны быть целыми.");
+    if (b === 0 || d === 0) fail("Знаменатель дроби не может быть равен нулю.");
+    const p1 = powFrac(a, b, m, "№1");
+    const p2 = powFrac(c, d, n, "№2");
+    let steps = [N("Сначала возводим каждую дробь в свою степень:"), ...p1.steps, ...p2.steps];
+    const lbl1 = m === 1 ? `${p1.n}/${p1.den}` : `(${a}/${b})^${m}`;
+    const lbl2 = n === 1 ? `${p2.n}/${p2.den}` : `(${c}/${d})^${n}`;
+    steps.push(N("Теперь выполняем действие над полученными дробями:"));
+    const combined = combineFrac(p1.n, p1.den, op, p2.n, p2.den, lbl1, lbl2);
+    steps = steps.concat(combined.steps);
+    return finishFrac(steps, combined.n, combined.den);
+  }
+
+  function solveFracReduce(x) {
+    const { a, b } = x;
+    if (!Number.isInteger(a) || !Number.isInteger(b)) fail("Числитель и знаменатель дроби должны быть целыми числами.");
+    if (b === 0) fail("Знаменатель не может быть равен нулю.");
+    const steps = [];
+    let na = a, nb = b;
+    if (nb < 0) { na = -na; nb = -nb; steps.push(N("Знак переносим в числитель.")); }
+    const g = gcd(na, nb);
+    steps.push(S("НОД(числитель, знаменатель)", `НОД(${Math.abs(na)}, ${nb}) = ${g}`));
+    const sn = na / g, sd = nb / g;
+    steps.push(S("Делим числитель и знаменатель на НОД", `${na} / ${g} = ${sn},  ${nb} / ${g} = ${sd}`));
+    const resultStr = sd === 1 ? `${sn}` : `${sn}/${sd}`;
+    return { steps, answers: [A("Сокращённая дробь", resultStr), A("Десятичная дробь", sn / sd)] };
+  }
+
+  function solveFracCompare(x) {
+    const { a, b, c, d } = x;
+    if (![a, b, c, d].every(Number.isInteger)) fail("Числитель и знаменатель дроби должны быть целыми числами.");
+    if (b === 0 || d === 0) fail("Знаменатель дроби не может быть равен нулю.");
+    let na = a, nb = b, nc = c, nd = d;
+    if (nb < 0) { na = -na; nb = -nb; }
+    if (nd < 0) { nc = -nc; nd = -nd; }
+    const left = na * nd, right = nc * nb;
+    const steps = [
+      N("Приводим обе дроби к общему знаменателю через перекрёстное умножение."),
+      S("a·d  и  c·b", `${na}·${nd} = ${left},   ${nc}·${nb} = ${right}`),
+    ];
+    const rel = left > right ? ">" : left < right ? "<" : "=";
+    steps.push(N(`Сравниваем: ${left} ${rel} ${right}.`));
+    return { steps, answers: [A("Сравнение", `${a}/${b} ${rel} ${c}/${d}`)] };
+  }
+
+  function solveImproperToMixed(x) {
+    const { a, b } = x;
+    if (!Number.isInteger(a) || !Number.isInteger(b)) fail("Числитель и знаменатель дроби должны быть целыми числами.");
+    if (b === 0) fail("Знаменатель не может быть равен нулю.");
+    let na = a, nb = b;
+    if (nb < 0) { na = -na; nb = -nb; }
+    const sign = na < 0 ? -1 : 1;
+    const absA = Math.abs(na);
+    const whole = Math.floor(absA / nb);
+    const rem = absA - whole * nb;
+    const steps = [
+      S("Целая часть = ⌊|a| / b⌋", `⌊${absA} / ${nb}⌋ = ${whole}`),
+      S("Остаток = |a| − целая·b", `${absA} − ${whole}·${nb} = ${rem}`),
+    ];
+    let mixedStr;
+    if (rem === 0) {
+      mixedStr = `${sign * whole}`;
+      steps.push(N("Остаток равен нулю — дробь представляет собой целое число."));
+    } else {
+      mixedStr = (sign < 0 ? "−" : "") + (whole === 0 ? `${rem}/${nb}` : `${whole} ${rem}/${nb}`);
+    }
+    return { steps, answers: [A("Смешанное число", mixedStr)] };
+  }
+
+  function solveMixedToImproper(x) {
+    const { whole, n, dd } = x;
+    if (!Number.isInteger(whole) || !Number.isInteger(n) || !Number.isInteger(dd)) fail("Все три числа должны быть целыми.");
+    if (dd === 0) fail("Знаменатель дробной части не может быть равен нулю.");
+    if (n < 0) fail("Числитель дробной части должен быть неотрицательным — знак указывайте в целой части.");
+    const sign = whole < 0 ? -1 : 1;
+    const absW = Math.abs(whole);
+    const numerator = sign * (absW * dd + n);
+    const steps = [S("Числитель = (целая часть · знаменатель + числитель) со знаком целой части",
+      `${sign < 0 ? "−" : ""}(${absW}·${dd} + ${n}) = ${sign < 0 ? "−" : ""}${absW * dd + n}`)];
+    const answers = [A("Неправильная дробь", `${numerator}/${dd}`)];
+    const [sn, sdv] = simplifyFrac(numerator, dd);
+    if (sdv !== dd || sn !== numerator) answers.push(A("В несократимом виде", sdv === 1 ? `${sn}` : `${sn}/${sdv}`));
+    return { steps, answers };
+  }
+
+  const lin = (coef, cst) => `${fmt(coef)}x ${cst < 0 ? "−" : "+"} ${fmt(Math.abs(cst))}`;
+
+  function solveRationalEq(x) {
+    const { a, b, c, d, k } = x;
+    if (c === 0 && d === 0) fail("Знаменатель cx + d не может быть тождественно равен нулю (c = 0 и d = 0 одновременно).");
+    if (c === 0) {
+      const steps = [S("(ax + b) / d = k  ⇒  ax + b = k·d", `${lin(a, b)} = ${fmt(k)}·${fmt(d)} = ${fmt(k * d)}`)];
+      if (a === 0) {
+        if (b === k * d) return { steps: steps.concat([N("Коэффициент при x равен нулю, и равенство верно при любом x.")]), answers: [A("x", "любое число")] };
+        return { steps: steps.concat([N("Коэффициент при x равен нулю, равенство неверно ни при каком x.")]), answers: [A("x", "нет решений")] };
+      }
+      const xv = (k * d - b) / a;
+      steps.push(S("x = (k·d − b) / a", `x = (${fmt(k * d)} − ${fmt(b)}) / ${fmt(a)} = ${fmt(xv)}`));
+      return { steps, answers: [A("x", xv)] };
+    }
+    const xExcluded = -d / c;
+    const steps = [N(`Область допустимых значений: cx + d ≠ 0, то есть x ≠ ${fmt(xExcluded)}.`)];
+    steps.push(S("(ax + b) / (cx + d) = k  ⇒  ax + b = k(cx + d)", `${lin(a, b)} = ${fmt(k)}·(${lin(c, d)})`));
+    const coefX = a - k * c, rhs = k * d - b;
+    steps.push(S("(a − kc)x = kd − b", `(${fmt(a)} − ${fmt(k)}·${fmt(c)})x = ${fmt(k)}·${fmt(d)} − ${fmt(b)}  ⇒  ${fmt(coefX)}x = ${fmt(rhs)}`));
+    if (coefX === 0) {
+      if (rhs === 0) return { steps: steps.concat([N("Коэффициент при x обратился в нуль, равенство верно при любом допустимом x.")]), answers: [A("x", `любое число, кроме x = ${fmt(xExcluded)}`)] };
+      return { steps: steps.concat([N("Коэффициент при x обратился в нуль, равенство неверно ни при каком x.")]), answers: [A("x", "нет решений")] };
+    }
+    const xv = rhs / coefX;
+    steps.push(S("x = (kd − b) / (a − kc)", `x = ${fmt(rhs)} / ${fmt(coefX)} = ${fmt(xv)}`));
+    if (Math.abs(xv - xExcluded) < 1e-9) {
+      steps.push(N(`Полученный корень x = ${fmt(xv)} совпадает с исключённым значением (x ≠ ${fmt(xExcluded)}) — это посторонний корень.`));
+      return { steps, answers: [A("x", "нет решений (посторонний корень)")] };
+    }
+    return { steps, answers: [A("x", xv)] };
+  }
+
+  /* ---------- 4. Линейное неравенство: ax + b [cmp] 0 ---------- */
+  function solveLinIneq(x) {
+    const { a, b, cmp } = x;
+    if (a === 0) {
+      const truth = cmpTrue(b, cmp, 0);
+      return {
+        steps: [N(`При a = 0 неравенство принимает вид ${fmt(b)} ${sym(cmp)} 0.`)],
+        answers: [A("Решение", truth ? "любое число" : "нет решений")],
+      };
+    }
+    const steps = [S("ax + b ⋚ 0  ⇒  ax ⋚ −b", `${fmt(a)}x ${sym(cmp)} ${fmt(-b)}`)];
+    let eff = cmp;
+    if (a < 0) {
+      eff = flip(cmp);
+      steps.push(N(`Делим обе части на a = ${fmt(a)} — число отрицательное, поэтому знак неравенства меняется на противоположный: «${sym(eff)}».`));
+    }
+    const bound = -b / a;
+    steps.push(S("x ⋚ (−b) / a", `x ${sym(eff)} ${fmt(-b)} / ${fmt(a)} = ${fmt(bound)}`));
+    const text = { ">": `x > ${fmt(bound)}`, ">=": `x ≥ ${fmt(bound)}`, "<": `x < ${fmt(bound)}`, "<=": `x ≤ ${fmt(bound)}` }[eff];
+    return { steps, answers: [A("Решение", text)] };
+  }
+
+  /* ---------- 5. Квадратное неравенство: ax² + bx + c [cmp] 0 ---------- */
+  function solveQuadIneq(x) {
+    const { a, b, c, cmp } = x;
+    if (a === 0) fail("Коэффициент a не должен быть равен нулю — иначе это не квадратное неравенство. Используйте линейное неравенство.");
+    const { D, lo, hi, x0 } = quadRoots(a, b, c);
+    const steps = [S("D = b² − 4ac", `D = ${p(b)}² − 4·${p(a)}·${p(c)} = ${fmt(D)}`)];
+    let eff = cmp;
+    if (a < 0) {
+      eff = flip(cmp);
+      steps.push(N(`Коэффициент a = ${fmt(a)} < 0 — делим на него, знак неравенства меняется на противоположный: «${sym(eff)}».`));
+    }
+    let text;
+    if (D > 0) {
+      steps.push(S("x = (−b ± √D) / (2a)", `x₁ = ${fmt(lo)},  x₂ = ${fmt(hi)}`));
+      steps.push(N("После деления на положительный старший коэффициент: между корнями парабола отрицательна, вне корней — положительна."));
+      text = {
+        ">": `x < ${fmt(lo)} или x > ${fmt(hi)}`,
+        ">=": `x ≤ ${fmt(lo)} или x ≥ ${fmt(hi)}`,
+        "<": `${fmt(lo)} < x < ${fmt(hi)}`,
+        "<=": `${fmt(lo)} ≤ x ≤ ${fmt(hi)}`,
+      }[eff];
+    } else if (D === 0) {
+      steps.push(S("x₀ = −b / (2a)", `x₀ = ${p(-b)} / (2·${p(a)}) = ${fmt(x0)}`));
+      text = { ">": `любое x, кроме x = ${fmt(x0)}`, ">=": "любое число", "<": "нет решений", "<=": `x = ${fmt(x0)}` }[eff];
+    } else {
+      steps.push(N("D < 0 — действительных корней нет; после деления на положительный старший коэффициент выражение положительно при любом x."));
+      text = { ">": "любое число", ">=": "любое число", "<": "нет решений", "<=": "нет решений" }[eff];
+    }
+    return { steps, answers: [A("Решение", text)] };
+  }
+
+  /* ---------- 6. Арифметическая прогрессия ---------- */
+  function solveArithProg(x) {
+    const { a1, d, n } = x;
+    if (!Number.isInteger(n) || n < 1) fail("n должно быть натуральным числом: 1, 2, 3, …");
+    const an = a1 + (n - 1) * d;
+    const Sn = (n * (a1 + an)) / 2;
+    const steps = [
+      S("aₙ = a₁ + (n − 1)·d", `aₙ = ${fmt(a1)} + (${fmt(n)} − 1)·${fmt(d)} = ${fmt(an)}`),
+      S("Sₙ = n·(a₁ + aₙ) / 2", `Sₙ = ${fmt(n)}·(${fmt(a1)} + ${fmt(an)}) / 2 = ${fmt(Sn)}`),
+    ];
+    return { steps, answers: [A("aₙ", an), A("Sₙ", Sn)] };
+  }
+
+  /* ---------- 7. Геометрическая прогрессия ---------- */
+  function solveGeomProg(x) {
+    const { b1, q, n } = x;
+    if (!Number.isInteger(n) || n < 1) fail("n должно быть натуральным числом: 1, 2, 3, …");
+    if (q === 0) fail("Знаменатель прогрессии q не может быть равен нулю.");
+    const bn = b1 * Math.pow(q, n - 1);
+    const Sn = q === 1 ? n * b1 : (b1 * (Math.pow(q, n) - 1)) / (q - 1);
+    const steps = [
+      S("bₙ = b₁·qⁿ⁻¹", `bₙ = ${fmt(b1)}·${fmt(q)}^${fmt(n - 1)} = ${fmt(bn)}`),
+      S(q === 1 ? "Sₙ = n·b₁ (q = 1)" : "Sₙ = b₁·(qⁿ − 1) / (q − 1)",
+        q === 1 ? `Sₙ = ${fmt(n)}·${fmt(b1)} = ${fmt(Sn)}` : `Sₙ = ${fmt(b1)}·(${fmt(q)}^${fmt(n)} − 1) / (${fmt(q)} − 1) = ${fmt(Sn)}`),
+    ];
+    const answers = [A("bₙ", bn), A("Sₙ", Sn)];
+    if (Math.abs(q) < 1) {
+      const Sinf = b1 / (1 - q);
+      steps.push(N("|q| < 1 — прогрессия бесконечно убывающая, у неё есть сумма всех членов."));
+      steps.push(S("S∞ = b₁ / (1 − q)", `S∞ = ${fmt(b1)} / (1 − ${fmt(q)}) = ${fmt(Sinf)}`));
+      answers.push(A("S∞", Sinf));
+    }
+    return { steps, answers };
+  }
+
+  /* ---------- Построение графиков ---------- */
+  function rangeFor(values, pad = 0.25, minSpan = 6) {
+    const vals = values.filter(Number.isFinite).concat([0]);
+    let lo = Math.min(...vals), hi = Math.max(...vals);
+    if (hi - lo < minSpan) { const c = (hi + lo) / 2; lo = c - minSpan / 2; hi = c + minSpan / 2; }
+    const pd = (hi - lo) * pad;
+    return [lo - pd, hi + pd];
+  }
+  function niceStepSpan(span) {
+    const raw = span / 5, mag = Math.pow(10, Math.floor(Math.log10(raw))), r = raw / mag;
+    return (r <= 1 ? 1 : r <= 2 ? 2 : r <= 5 ? 5 : 10) * mag;
+  }
+  function ticks(lo, hi) {
+    const step = niceStepSpan(hi - lo);
+    const start = Math.ceil(lo / step - 1e-9) * step;
+    const n = Math.max(0, Math.round((hi - start) / step));
+    const arr = [];
+    for (let i = 0; i <= n; i++) arr.push(+(start + i * step).toFixed(10));
+    return arr;
+  }
+  function plotXY({ pts, xr, yr, markers = [] }) {
+    const W = 520, padL = 48, padR = 16, padT = 20, padB = 34, phH = 210;
+    const H = padT + phH + padB, pw = W - padL - padR;
+    const sx = pw / (xr[1] - xr[0]), sy = phH / (yr[1] - yr[0]);
+    const X = (v) => padL + (v - xr[0]) * sx;
+    const Y = (v) => padT + phH - (v - yr[0]) * sy;
+    const lbl = (v) => String(Number(v.toPrecision(3)));
+    let g = "";
+    ticks(xr[0], xr[1]).forEach((v) => {
+      g += `<line x1="${X(v)}" y1="${padT}" x2="${X(v)}" y2="${padT + phH}" stroke="var(--grid)"/><text x="${X(v)}" y="${padT + phH + 16}" text-anchor="middle" fill="var(--muted)">${lbl(v)}</text>`;
+    });
+    ticks(yr[0], yr[1]).forEach((v) => {
+      g += `<line x1="${padL}" y1="${Y(v)}" x2="${padL + pw}" y2="${Y(v)}" stroke="var(--grid)"/><text x="${padL - 8}" y="${Y(v) + 4}" text-anchor="end" fill="var(--muted)">${lbl(v)}</text>`;
+    });
+    if (xr[0] <= 0 && 0 <= xr[1]) g += `<line x1="${X(0)}" y1="${padT}" x2="${X(0)}" y2="${padT + phH}" stroke="var(--muted)" stroke-width="1.5"/>`;
+    if (yr[0] <= 0 && 0 <= yr[1]) g += `<line x1="${padL}" y1="${Y(0)}" x2="${padL + pw}" y2="${Y(0)}" stroke="var(--muted)" stroke-width="1.5"/>`;
+    const d = pts.map((q, i) => (i ? "L" : "M") + X(q[0]).toFixed(1) + " " + Y(q[1]).toFixed(1)).join(" ");
+    let marks = "";
+    markers.forEach((m) => {
+      const mx = X(m.x), my = Y(m.y);
+      const labelY = my < padT + 24 ? my + 16 : my - 10;
+      marks += `<circle cx="${mx}" cy="${my}" r="4" fill="var(--accent)"/><text x="${mx}" y="${labelY}" text-anchor="middle" fill="var(--ink)">${esc(m.label)}</text>`;
+    });
+    return `<svg viewBox="0 0 ${W} ${H}" width="${W}" role="img" aria-label="График функции" style="font:11px var(--mono);fill:var(--muted)">
+      <rect x="${padL}" y="${padT}" width="${pw}" height="${phH}" fill="none" stroke="var(--line)"/>
+      ${g}<path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2"/>${marks}
+      <text x="${W - padR}" y="${H - 4}" text-anchor="end" fill="var(--muted)">x</text><text x="4" y="12" fill="var(--muted)">y</text></svg>`;
+  }
+
+  /* ---------- 8. Линейная функция: y = kx + b ---------- */
+  function solveLinFunc(x) {
+    const { k, b } = x;
+    let steps, answers, x0 = null;
+    if (k === 0) {
+      steps = [N(`При k = 0 функция постоянна: y = ${fmt(b)} для любого x. График — горизонтальная прямая.`)];
+      answers = [A("Нули функции", b === 0 ? "любое x" : "нет"), A("Пересечение с Oy", `(0; ${fmt(b)})`), A("Монотонность", "постоянна")];
+    } else {
+      x0 = -b / k;
+      steps = [
+        S("kx + b = 0  ⇒  x₀ = −b / k", `x₀ = ${fmt(-b)} / ${fmt(k)} = ${fmt(x0)}`),
+        N(k > 0 ? "k > 0 — функция возрастает." : "k < 0 — функция убывает."),
+      ];
+      answers = [A("Нуль функции (x₀)", x0), A("Пересечение с Oy", `(0; ${fmt(b)})`), A("Монотонность", k > 0 ? "возрастает" : "убывает")];
+    }
+    const [xmin, xmax] = rangeFor([0, x0]);
+    const yAt = (xx) => k * xx + b;
+    const [ymin, ymax] = rangeFor([b, yAt(xmin), yAt(xmax)]);
+    const markers = [{ x: 0, y: b, label: `(0; ${fmt(b)})` }];
+    if (k !== 0) markers.push({ x: x0, y: 0, label: `(${fmt(x0)}; 0)` });
+    const plot = plotXY({ pts: [[xmin, yAt(xmin)], [xmax, yAt(xmax)]], xr: [xmin, xmax], yr: [ymin, ymax], markers });
+    return { steps, answers, plot };
+  }
+
+  /* ---------- 9. Квадратичная функция: y = ax² + bx + c ---------- */
+  function solveQuadFunc(x) {
+    const { a, b, c } = x;
+    if (a === 0) fail("Коэффициент a не должен быть равен нулю — иначе это не квадратичная функция.");
+    const x0 = -b / (2 * a), y0 = a * x0 * x0 + b * x0 + c;
+    const { D, lo, hi, x0: dx0 } = quadRoots(a, b, c);
+    const steps = [
+      S("x₀ = −b / (2a)", `x₀ = ${p(-b)} / (2·${p(a)}) = ${fmt(x0)}`),
+      S("y₀ = a·x₀² + b·x₀ + c", `y₀ = ${fmt(a)}·${p(x0)}² + ${fmt(b)}·${p(x0)} + ${fmt(c)} = ${fmt(y0)}`),
+      N(a > 0 ? "a > 0 — ветви параболы направлены вверх, в вершине — минимум." : "a < 0 — ветви параболы направлены вниз, в вершине — максимум."),
+    ];
+    let rootsText, rootPts = [];
+    if (D > 0) { rootsText = `x₁ = ${fmt(lo)}, x₂ = ${fmt(hi)}`; rootPts = [lo, hi]; }
+    else if (D === 0) { rootsText = `x = ${fmt(dx0)} (один корень)`; rootPts = [dx0]; }
+    else { rootsText = "действительных нулей нет"; }
+    steps.push(N(`Нули функции (D = ${fmt(D)}): ${rootsText}.`));
+    const answers = [A("Вершина", `(${fmt(x0)}; ${fmt(y0)})`), A("Направление ветвей", a > 0 ? "вверх" : "вниз"), A("Нули функции", rootsText)];
+
+    const [xmin, xmax] = rangeFor([x0, 0, ...rootPts]);
+    const yFn = (xx) => a * xx * xx + b * xx + c;
+    const pts = [];
+    for (let i = 0; i <= 60; i++) { const xx = xmin + ((xmax - xmin) * i) / 60; pts.push([xx, yFn(xx)]); }
+    const [ymin, ymax] = rangeFor([y0, yFn(xmin), yFn(xmax), c]);
+    const markers = [{ x: x0, y: y0, label: "вершина" }, { x: 0, y: c, label: `(0; ${fmt(c)})` }];
+    rootPts.forEach((r) => markers.push({ x: r, y: 0, label: `(${fmt(r)}; 0)` }));
+    const plot = plotXY({ pts, xr: [xmin, xmax], yr: [ymin, ymax], markers });
+    return { steps, answers, plot };
+  }
+
+  /* ---------- 10–13. Проценты и пропорции ---------- */
+  function solvePercentOf(x) {
+    const { a, pc } = x;
+    const value = (a * pc) / 100;
+    return { steps: [S("Значение = a · p / 100", `${fmt(a)}·${fmt(pc)} / 100 = ${fmt(value)}`)], answers: [A("p% от a", value)] };
+  }
+  function solveNumberByPercent(x) {
+    const { a, pc } = x;
+    if (pc === 0) fail("Процент не может быть равен нулю.");
+    const number = (a * 100) / pc;
+    return { steps: [S("Число = a · 100 / p", `${fmt(a)}·100 / ${fmt(pc)} = ${fmt(number)}`)], answers: [A("Число", number)] };
+  }
+  function solvePercentChange(x) {
+    const { a, pc, mode } = x;
+    const diff = (a * pc) / 100;
+    const result = mode === "increase" ? a + diff : a - diff;
+    const sign = mode === "increase" ? "+" : "−";
+    const steps = [S(
+      mode === "increase" ? "Новое значение = a · (1 + p/100)" : "Новое значение = a · (1 − p/100)",
+      `${fmt(a)}·(1 ${sign} ${fmt(pc)}/100) = ${fmt(result)}`
+    )];
+    return { steps, answers: [A("Изменение", mode === "increase" ? diff : -diff), A("Новое значение", result)] };
+  }
+  function solveProportion(x) {
+    const { a, b, c } = x;
+    if (a === 0) fail("Коэффициент a не может быть равен нулю.");
+    const bc = b * c, xv = bc / a;
+    const steps = [
+      S("a : b = c : x  ⇒  a·x = b·c", `${fmt(a)}·x = ${fmt(b)}·${fmt(c)} = ${fmt(bc)}`),
+      S("x = b·c / a", `x = ${fmt(bc)} / ${fmt(a)} = ${fmt(xv)}`),
+    ];
+    return { steps, answers: [A("x", xv)] };
+  }
+
+  /* ---------- 14. Формулы сокращённого умножения ---------- */
+  function solveAbbrevMult(x) {
+    const { a, b, mode } = x;
+    let title, step1, step2, left, right;
+    if (mode === "sum_sq") {
+      left = (a + b) ** 2; right = a * a + 2 * a * b + b * b;
+      step1 = S("(a + b)²", `(${fmt(a)} + ${fmt(b)})² = ${fmt(a + b)}² = ${fmt(left)}`);
+      step2 = S("a² + 2ab + b²", `${fmt(a)}² + 2·${fmt(a)}·${fmt(b)} + ${fmt(b)}² = ${fmt(a * a)} + ${fmt(2 * a * b)} + ${fmt(b * b)} = ${fmt(right)}`);
+      title = "Квадрат суммы";
+    } else if (mode === "diff_sq") {
+      left = (a - b) ** 2; right = a * a - 2 * a * b + b * b;
+      step1 = S("(a − b)²", `(${fmt(a)} − ${fmt(b)})² = ${fmt(a - b)}² = ${fmt(left)}`);
+      step2 = S("a² − 2ab + b²", `${fmt(a)}² − 2·${fmt(a)}·${fmt(b)} + ${fmt(b)}² = ${fmt(a * a)} − ${fmt(2 * a * b)} + ${fmt(b * b)} = ${fmt(right)}`);
+      title = "Квадрат разности";
+    } else {
+      left = a * a - b * b; right = (a - b) * (a + b);
+      step1 = S("a² − b²", `${fmt(a)}² − ${fmt(b)}² = ${fmt(a * a)} − ${fmt(b * b)} = ${fmt(left)}`);
+      step2 = S("(a − b)(a + b)", `(${fmt(a)} − ${fmt(b)})·(${fmt(a)} + ${fmt(b)}) = ${fmt(a - b)}·${fmt(a + b)} = ${fmt(right)}`);
+      title = "Разность квадратов";
+    }
+    const steps = [step1, step2, N(`${title}: обе части равны — тождество подтверждено численно.`)];
+    return { steps, answers: [A("Значение выражения", left)] };
+  }
+
+  /* ---------- Каталог задач ---------- */
+  const fl = (id, sy, label, unit, extra) => Object.assign({ id, sym: sy, label, unit }, extra || {});
+  const CMP_OPTS = [[">", "> (больше)"], ["<", "< (меньше)"], [">=", "≥ (больше или равно)"], ["<=", "≤ (меньше или равно)"]];
+  const TASKS = [
+    { cat: "Уравнения", id: "lin_eq", title: "Линейное уравнение", hint: "ax + b = c — найдём x.",
+      fields: [fl("a", "a", "коэффициент при x", ""), fl("b", "b", "свободный член слева", ""), fl("c", "c", "правая часть", "")],
+      ex: { a: "2", b: "3", c: "11" }, solve: solveLinEq },
+    { cat: "Уравнения", id: "quad_eq", title: "Квадратное уравнение", hint: "ax² + bx + c = 0, a ≠ 0.",
+      fields: [fl("a", "a", "коэффициент при x²", ""), fl("b", "b", "коэффициент при x", ""), fl("c", "c", "свободный член", "")],
+      ex: { a: "1", b: "-5", c: "6" }, solve: solveQuadEq },
+    { cat: "Уравнения", id: "system", title: "Система двух линейных уравнений", hint: "a₁x + b₁y = c₁,  a₂x + b₂y = c₂.",
+      fields: [fl("a1", "a₁", "коэффициент при x (1)", ""), fl("b1", "b₁", "коэффициент при y (1)", ""), fl("c1", "c₁", "правая часть (1)", ""),
+               fl("a2", "a₂", "коэффициент при x (2)", ""), fl("b2", "b₂", "коэффициент при y (2)", ""), fl("c2", "c₂", "правая часть (2)", "")],
+      ex: { a1: "2", b1: "3", c1: "13", a2: "4", b2: "-1", c2: "5" }, solve: solveSystem },
+
+    { cat: "Дроби", id: "fraction_ops", title: "Действия с дробями", hint: "a/b (+ − × ÷) c/d — выберите действие.",
+      fields: [fl("a", "a", "числитель первой дроби", ""), fl("b", "b", "знаменатель первой дроби", ""),
+               fl("op", "", "действие", "", { select: [["+", "+ (сложение)"], ["-", "− (вычитание)"], ["×", "× (умножение)"], ["÷", "÷ (деление)"]] }),
+               fl("c", "c", "числитель второй дроби", ""), fl("d", "d", "знаменатель второй дроби", "")],
+      ex: { a: "1", b: "2", op: "+", c: "1", d: "3" }, solve: solveFracOps },
+    { cat: "Дроби", id: "fraction_pow_ops", title: "Дроби со степенями", hint: "(a/b)ᵐ (+ − × ÷) (c/d)ⁿ — степень может быть 1 (без степени), 0 или отрицательной.",
+      fields: [fl("a", "a", "числитель первой дроби", ""), fl("b", "b", "знаменатель первой дроби", ""), fl("m", "m", "степень первой дроби", "", { def: 1 }),
+               fl("op", "", "действие", "", { select: [["+", "+ (сложение)"], ["-", "− (вычитание)"], ["×", "× (умножение)"], ["÷", "÷ (деление)"]] }),
+               fl("c", "c", "числитель второй дроби", ""), fl("d", "d", "знаменатель второй дроби", ""), fl("n", "n", "степень второй дроби", "", { def: 1 })],
+      ex: { a: "2", b: "3", m: "2", op: "×", c: "1", d: "2", n: "3" }, solve: solveFracPowOps },
+    { cat: "Дроби", id: "fraction_reduce", title: "Сокращение дроби", hint: "a/b — приведём к несократимому виду.",
+      fields: [fl("a", "a", "числитель", ""), fl("b", "b", "знаменатель", "")],
+      ex: { a: "18", b: "24" }, solve: solveFracReduce },
+    { cat: "Дроби", id: "fraction_compare", title: "Сравнение дробей", hint: "a/b и c/d — какая больше?",
+      fields: [fl("a", "a", "числитель первой дроби", ""), fl("b", "b", "знаменатель первой дроби", ""),
+               fl("c", "c", "числитель второй дроби", ""), fl("d", "d", "знаменатель второй дроби", "")],
+      ex: { a: "3", b: "4", c: "5", d: "6" }, solve: solveFracCompare },
+    { cat: "Дроби", id: "improper_to_mixed", title: "Неправильная дробь → смешанное число", hint: "a/b — выделим целую часть.",
+      fields: [fl("a", "a", "числитель", ""), fl("b", "b", "знаменатель", "")],
+      ex: { a: "17", b: "5" }, solve: solveImproperToMixed },
+    { cat: "Дроби", id: "mixed_to_improper", title: "Смешанное число → неправильная дробь", hint: "целая часть и n/dd.",
+      fields: [fl("whole", "", "целая часть", ""), fl("n", "n", "числитель дробной части", ""), fl("dd", "d", "знаменатель дробной части", "")],
+      ex: { whole: "2", n: "3", dd: "5" }, solve: solveMixedToImproper },
+    { cat: "Дроби", id: "rational_equation", title: "Дробно-рациональное уравнение", hint: "(ax + b) / (cx + d) = k.",
+      fields: [fl("a", "a", "коэффициент при x в числителе", ""), fl("b", "b", "свободный член в числителе", ""),
+               fl("c", "c", "коэффициент при x в знаменателе", ""), fl("d", "d", "свободный член в знаменателе", ""),
+               fl("k", "k", "правая часть", "")],
+      ex: { a: "3", b: "1", c: "1", d: "-2", k: "2" }, solve: solveRationalEq },
+
+    { cat: "Неравенства", id: "lin_ineq", title: "Линейное неравенство", hint: "ax + b ⋚ 0 — выберите знак.",
+      fields: [fl("a", "a", "коэффициент при x", ""), fl("b", "b", "свободный член", ""), fl("cmp", "", "знак неравенства", "", { select: CMP_OPTS })],
+      ex: { a: "2", b: "-6", cmp: ">" }, solve: solveLinIneq },
+    { cat: "Неравенства", id: "quad_ineq", title: "Квадратное неравенство", hint: "ax² + bx + c ⋚ 0, a ≠ 0.",
+      fields: [fl("a", "a", "коэффициент при x²", ""), fl("b", "b", "коэффициент при x", ""), fl("c", "c", "свободный член", ""), fl("cmp", "", "знак неравенства", "", { select: CMP_OPTS })],
+      ex: { a: "1", b: "-1", c: "-6", cmp: ">" }, solve: solveQuadIneq },
+
+    { cat: "Прогрессии", id: "arith_prog", title: "Арифметическая прогрессия", hint: "aₙ = a₁ + (n − 1)d.",
+      fields: [fl("a1", "a₁", "первый член", ""), fl("d", "d", "разность прогрессии", ""), fl("n", "n", "номер члена", "")],
+      ex: { a1: "3", d: "2", n: "10" }, solve: solveArithProg },
+    { cat: "Прогрессии", id: "geom_prog", title: "Геометрическая прогрессия", hint: "bₙ = b₁·qⁿ⁻¹.",
+      fields: [fl("b1", "b₁", "первый член", ""), fl("q", "q", "знаменатель прогрессии", ""), fl("n", "n", "номер члена", "")],
+      ex: { b1: "2", q: "3", n: "5" }, solve: solveGeomProg },
+
+    { cat: "Функции", id: "lin_func", title: "Линейная функция", hint: "y = kx + b — нули функции и поведение графика.",
+      fields: [fl("k", "k", "угловой коэффициент", ""), fl("b", "b", "свободный член", "")],
+      ex: { k: "2", b: "-4" }, solve: solveLinFunc },
+    { cat: "Функции", id: "quad_func", title: "Квадратичная функция", hint: "y = ax² + bx + c, a ≠ 0 — вершина параболы и нули.",
+      fields: [fl("a", "a", "коэффициент при x²", ""), fl("b", "b", "коэффициент при x", ""), fl("c", "c", "свободный член", "")],
+      ex: { a: "-1", b: "4", c: "0" }, solve: solveQuadFunc },
+
+    { cat: "Проценты и пропорции", id: "percent_of", title: "Процент от числа", hint: "Сколько составляет p% от числа a.",
+      fields: [fl("a", "a", "число", ""), fl("pc", "p", "процент", "%")],
+      ex: { a: "250", pc: "12" }, solve: solvePercentOf },
+    { cat: "Проценты и пропорции", id: "number_by_percent", title: "Число по его проценту", hint: "p% числа равны a — найдём само число.",
+      fields: [fl("a", "a", "известная часть", ""), fl("pc", "p", "процент", "%")],
+      ex: { a: "45", pc: "15" }, solve: solveNumberByPercent },
+    { cat: "Проценты и пропорции", id: "percent_change", title: "Изменение числа на процент", hint: "Увеличение или уменьшение числа a на p%.",
+      fields: [fl("a", "a", "исходное число", ""), fl("pc", "p", "процент изменения", "%"), fl("mode", "", "действие", "", { select: [["increase", "Увеличить"], ["decrease", "Уменьшить"]] })],
+      ex: { a: "800", pc: "25", mode: "increase" }, solve: solvePercentChange },
+    { cat: "Проценты и пропорции", id: "proportion", title: "Пропорция", hint: "a : b = c : x — найдём x.",
+      fields: [fl("a", "a", "первый член", ""), fl("b", "b", "второй член", ""), fl("c", "c", "третий член", "")],
+      ex: { a: "4", b: "6", c: "10" }, solve: solveProportion },
+
+    { cat: "Тождества", id: "abbrev_mult", title: "Формулы сокращённого умножения", hint: "Проверим тождество на числовом примере.",
+      fields: [fl("a", "a", "первое число", ""), fl("b", "b", "второе число", ""),
+               fl("mode", "", "формула", "", { select: [["sum_sq", "(a + b)²"], ["diff_sq", "(a − b)²"], ["diff_squares", "a² − b²"]] })],
+      ex: { a: "7", b: "3", mode: "sum_sq" }, solve: solveAbbrevMult },
+  ];
+
+  /* ---------- Состояние ---------- */
+  const $ = (id) => document.getElementById(id);
+  const state = { id: "lin_eq", cat: "Уравнения" };
+  try {
+    const st = localStorage.getItem("algebra.task"); const t = TASKS.find((k) => k.id === st);
+    if (t) { state.id = t.id; state.cat = t.cat; }
+  } catch (e) { /* хранилище недоступно */ }
+  const save = () => { try { localStorage.setItem("algebra.task", state.id); } catch (e) {} };
+  const task = () => TASKS.find((k) => k.id === state.id);
+  let showExampleNote = true;
+
+  /* ---------- Интерфейс ---------- */
+  function renderNav() {
+    const cats = [...new Set(TASKS.map((k) => k.cat))];
+    $("cats").innerHTML = "";
+    cats.forEach((c) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = c; b.setAttribute("aria-pressed", String(c === state.cat));
+      b.onclick = () => { state.cat = c; selectTask(TASKS.find((k) => k.cat === c).id); };
+      $("cats").appendChild(b);
+    });
+    $("chips").innerHTML = "";
+    TASKS.filter((k) => k.cat === state.cat).forEach((k) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = k.title; b.setAttribute("aria-pressed", String(k.id === state.id));
+      b.onclick = () => selectTask(k.id);
+      $("chips").appendChild(b);
+    });
+  }
+
+  function renderForm() {
+    const t = task(), form = $("form");
+    form.innerHTML = "";
+    const hint = document.createElement("p"); hint.className = "hint"; hint.textContent = t.hint; form.appendChild(hint);
+    t.fields.forEach((f) => {
+      const wrap = document.createElement("div"); wrap.className = "field";
+      const lab = document.createElement("label"); lab.htmlFor = "f-" + f.id;
+      lab.innerHTML = (f.sym ? `<b>${esc(f.sym)}</b>` : "") + esc(f.label);
+      const box = document.createElement("div"); box.className = "inp";
+      let inp;
+      if (f.select) {
+        inp = document.createElement("select");
+        f.select.forEach(([v, l]) => inp.add(new Option(l, v)));
+      } else {
+        inp = document.createElement("input"); inp.type = "text"; inp.inputMode = "decimal";
+        inp.placeholder = f.opt ? "неизвестно" : (f.def !== undefined ? String(f.def) : "");
+      }
+      inp.id = "f-" + f.id;
+      inp.addEventListener("input", () => { showExampleNote = false; solve(); });
+      inp.addEventListener("change", () => { showExampleNote = false; solve(); });
+      box.appendChild(inp);
+      if (f.unit) { const u = document.createElement("span"); u.className = "u"; u.textContent = f.unit; box.appendChild(u); }
+      wrap.append(lab, box); form.appendChild(wrap);
+    });
+    const ex = t.ex || {};
+    t.fields.forEach((f) => { if (ex[f.id] !== undefined) $("f-" + f.id).value = ex[f.id]; });
+    form.addEventListener("submit", (e) => e.preventDefault(), { once: true });
+  }
+
+  function collect() {
+    const t = task(), x = {}, given = [], missing = [];
+    for (const f of t.fields) {
+      const el = $("f-" + f.id); const raw = el.value.trim();
+      if (f.select) { x[f.id] = raw; continue; }
+      if (raw === "") {
+        if (f.def !== undefined) { x[f.id] = f.def; continue; }
+        x[f.id] = null; if (!f.opt) missing.push(f.sym || f.label); continue;
+      }
+      const n = Number(raw.replace(",", "."));
+      if (!isFinite(n)) throw new Error(`Поле «${f.sym || f.label}»: введите число.`);
+      x[f.id] = n; given.push(A(f.sym, n, f.unit));
+    }
+    if (missing.length) { const e = new Error("Заполните: " + missing.join(", ") + "."); e.soft = true; throw e; }
+    return { x, given };
+  }
+
+  let lastText = "";
+  function solve() {
+    const paper = $("paper"), t = task();
+    let out, given;
+    try {
+      const c = collect(); given = c.given;
+      out = t.solve(c.x);
+    } catch (e) {
+      paper.innerHTML = `<p class="msg${e.soft ? "" : " err"}">${html(e.message)}</p>`;
+      lastText = ""; return;
+    }
+    const line = (a) => `${a[0]} = ${typeof a[1] === "number" ? fmt(a[1]) : a[1]}${a[2] ? " " + a[2] : ""}`;
+    let h = "";
+    if (showExampleNote) h += `<p class="note">Подставлен пример. Измените числа слева, решение пересчитается.</p>`;
+    if (given.length) {
+      h += `<div><h2>Дано</h2><div class="given">${given.map((a) => `<span>${html(a[0])} = ${html(fmt(a[1]))} <em>${html(a[2])}</em></span>`).join("")}</div></div>`;
+    }
+    h += `<div><h2>Решение</h2>${out.steps.map((s) => s.t ? `<div class="step t">${html(s.t)}</div>` : `<div class="step"><div class="f">${html(s.f)}</div><div class="c">${html(s.c)}</div></div>`).join("")}</div>`;
+    if (out.plot) h += `<div class="plot">${out.plot}</div>`;
+    h += `<div><h2>Ответ</h2><div class="answer">${out.answers.map((a) => `<div>${html(a[0])} = ${html(typeof a[1] === "number" ? fmt(a[1]) : a[1])} <small>${html(a[2])}</small></div>`).join("")}</div></div>`;
+    h += `<div class="actions"><button type="button" id="copy">Копировать решение</button><span id="copied"></span></div>`;
+    paper.innerHTML = h;
+    lastText = [t.title, "", "Дано:", ...given.map(line), "", "Решение:", ...out.steps.map((s) => (s.t ? s.t : s.f + "\n" + s.c)), "", "Ответ:", ...out.answers.map(line)].join("\n");
+    $("copy").onclick = copy;
+  }
+  function copy() {
+    const done = (m) => { $("copied").textContent = m; setTimeout(() => { const c = $("copied"); if (c) c.textContent = ""; }, 2000); };
+    const fallback = () => {
+      const ta = document.createElement("textarea"); ta.value = lastText; document.body.appendChild(ta); ta.select();
+      let ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+      ta.remove(); done(ok ? "Скопировано" : "Не удалось скопировать");
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(lastText).then(() => done("Скопировано"), fallback);
+    else fallback();
+  }
+
+  function selectTask(id) {
+    state.id = id; state.cat = task().cat; showExampleNote = true; save();
+    renderNav(); renderForm(); solve();
+  }
+  $("form").addEventListener("submit", (e) => e.preventDefault());
+  renderNav(); renderForm(); solve();
+})();
+</script>
+
+<style>
+  .ios-hint {
+    position: fixed; left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    z-index: 50; display: none; align-items: flex-start; gap: 12px;
+    max-width: 480px; margin: 0 auto; padding: 12px 14px;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.18); font-size: 14px; line-height: 1.4;
+  }
+  .ios-hint.show { display: flex; }
+  .ios-hint b { font-weight: 600; }
+  .ios-hint button {
+    margin-left: auto; flex: none; min-width: 44px; min-height: 44px; margin-block: -8px -8px;
+    border: 0; background: transparent; color: var(--muted); font-size: 22px; line-height: 1; cursor: pointer;
+  }
+</style>
+<div class="ios-hint" id="iosHint" role="note">
+  <div><b>Установить на iPhone:</b> нажмите «Поделиться»
+    <span aria-hidden="true">&#x2191;&#xFE0E;</span> в Safari и выберите «На экран “Домой”».</div>
+  <button type="button" id="iosHintClose" aria-label="Закрыть подсказку">&times;</button>
+</div>
+<script>
+(function () {
+  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw-algebra.js").catch(function () {});
+    });
+  }
+  try {
+    var ua = navigator.userAgent || "";
+    var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    var standalone = window.navigator.standalone === true ||
+      (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+    var seen = false;
+    try { seen = localStorage.getItem("iosHintSeenAlgebra") === "1"; } catch (e) {}
+    var hint = document.getElementById("iosHint");
+    if (isIOS && !standalone && !seen && hint) {
+      hint.classList.add("show");
+      document.getElementById("iosHintClose").onclick = function () {
+        hint.classList.remove("show");
+        try { localStorage.setItem("iosHintSeenAlgebra", "1"); } catch (e) {}
+      };
+    }
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>
