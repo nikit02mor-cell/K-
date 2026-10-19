@@ -1,0 +1,1144 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Химия от SvinCompany</title>
+<meta name="description" content="Решатель задач по химии: Дано / Решение / Ответ">
+<meta name="theme-color" content="#0e7a5c">
+<link rel="manifest" href="manifest-chemistry.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Химия">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  html, body { margin: 0; }
+  body { -webkit-text-size-adjust: 100%; }
+</style>
+<style>
+  /* Layout: tool-first, same system as the physics, algebra and geometry solvers.
+     Header with brand, category tabs, task chips, then a form column beside a
+     graph-paper "notebook" panel with Дано / Решение / Ответ. */
+  :root {
+    --bg: #f1f6f3;
+    --surface: #ffffff;
+    --ink: #12231c;
+    --muted: #546a5f;
+    --line: #d3e0d8;
+    --accent: #0e7a5c;
+    --accent-ink: #ffffff;
+    --accent-soft: #dff1e9;
+    --grid: #e5eee9;
+    --warn: #b3261e;
+    --sans: "IBM Plex Sans", system-ui, "Segoe UI", Roboto, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1613; --surface: #14211c; --ink: #e4f0ea; --muted: #8fa89b;
+      --line: #243630; --accent: #4fcf9f; --accent-ink: #07160f; --accent-soft: #173026;
+      --grid: #1b2b25; --warn: #ff8a80; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1613; --surface: #14211c; --ink: #e4f0ea; --muted: #8fa89b;
+    --line: #243630; --accent: #4fcf9f; --accent-ink: #07160f; --accent-soft: #173026;
+    --grid: #1b2b25; --warn: #ff8a80; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font: 15px/1.5 var(--sans);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 20px 48px;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+  button, input, select { font: inherit; color: inherit; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; }
+  .brand { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .brand svg { display: block; flex: none; }
+  .brand span { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+  h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+
+  .cats { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--line); min-width: 0; }
+  .cats button { border: 0; background: none; padding: 8px 14px; cursor: pointer; color: var(--muted); white-space: nowrap;
+    border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; }
+  .cats button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: 14px; }
+  .chips button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); font-weight: 500; }
+  .opts { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+  .opts select { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 5px 8px; font-family: var(--sans); font-size: 13px; }
+
+  .grid { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 20px; align-items: start; }
+  @media (max-width: 820px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+  .form { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .hint { margin: 0; color: var(--muted); font-size: 13px; }
+  .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .field label { font-size: 13px; color: var(--muted); }
+  .field label b { font-family: var(--mono); font-weight: 600; color: var(--ink); margin-right: 6px; }
+  .inp { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); min-width: 0; }
+  .inp input, .inp select { flex: 1; min-width: 0; border: 0; background: none; padding: 9px 10px; font-family: var(--mono); font-size: 15px; }
+  .inp select { font-family: var(--sans); }
+  .inp .u { padding: 9px 10px 9px 0; color: var(--muted); font-size: 13px; align-self: center; white-space: nowrap; }
+  .inp:focus-within { border-color: var(--accent); }
+  .note { margin: 0; font-size: 12.5px; color: var(--muted); background: var(--accent-soft); border-radius: 6px; padding: 6px 10px; }
+
+  .paper { border: 1px solid var(--line); border-radius: 10px; padding: 20px; min-width: 0; background-color: var(--surface);
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 24px 24px; display: flex; flex-direction: column; gap: 18px; }
+  .paper h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .given { display: flex; flex-wrap: wrap; gap: 4px 22px; font-family: var(--mono); }
+  .given span em { font-style: normal; color: var(--muted); font-size: 13px; }
+  .step { padding: 8px 0; border-top: 1px dashed var(--line); font-family: var(--mono); font-size: 14px; overflow-x: auto; }
+  .step:first-of-type { border-top: 0; padding-top: 0; }
+  .step .f { color: var(--muted); }
+  .step .c { color: var(--ink); }
+  .step.t { font-family: var(--sans); color: var(--muted); font-size: 14px; }
+  .answer { background: var(--accent-soft); border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; }
+  .answer div { font-family: var(--mono); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .answer div small { font-weight: 400; font-size: 14px; color: var(--muted); }
+  .msg { color: var(--muted); margin: 0; }
+  .msg.err { color: var(--warn); }
+  .plot { overflow-x: auto; }
+  .plot svg { display: block; max-width: 100%; height: auto; }
+  .actions { display: flex; gap: 8px; align-items: center; }
+  .actions button { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 13px; }
+  .actions span { font-size: 13px; color: var(--muted); }
+  footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); }
+  footer b { font-family: var(--mono); font-weight: 600; color: var(--ink); letter-spacing: 0.04em; }
+  sup { font-size: 0.75em; line-height: 0; }
+</style>
+
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand">
+        <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="5" fill="var(--accent)"/><path d="M9 4h4M10 4v5L5.5 17a1.4 1.4 0 0 0 1.2 2h8.6a1.4 1.4 0 0 0 1.2-2L12 9V4" fill="none" stroke="var(--accent-ink)" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/><path d="M7.8 13.5h6.4" stroke="var(--accent-ink)" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span>SvinCompany</span>
+      </div>
+      <h1>Решатель задач по химии</h1>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;"><a href="index.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">← Физика</a><a href="algebra.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Алгебра</a><a href="geometry.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Геометрия</a></div>
+  </header>
+  <nav class="cats" id="cats" aria-label="Раздел"></nav>
+  <div class="chips" id="chips"></div>
+  <div class="opts"><label for="massMode">Атомные массы</label>
+    <select id="massMode"><option value="school">школьные (округлённые, Cl = 35,5)</option><option value="exact">точные (по таблице)</option></select></div>
+  <div class="grid">
+    <form class="form" id="form" autocomplete="off"></form>
+    <section class="paper" id="paper" aria-live="polite"></section>
+  </div>
+  <footer><span>Сделано в <b>SvinCompany</b></span><span id="footnote"></span></footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Форматирование и общие помощники ---------- */
+  const fmt = (n) => {
+    if (typeof n !== "number") return String(n);
+    if (!isFinite(n)) return "∞";
+    if (n === 0) return "0";
+    const a = Math.abs(n);
+    if (a >= 1e6 || a < 1e-3) {
+      const [m, e] = n.toExponential(3).split("e");
+      return Number(m) + "·10^" + Number(e);
+    }
+    const prec = Math.max(4, Math.floor(Math.log10(a)) + 1);
+    return String(Number(n.toPrecision(prec)));
+  };
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const html = (s) => esc(s).replace(/10\^(-?\d+)/g, "10<sup>$1</sup>");
+  const S = (f, c) => ({ f, c });          // шаг: формула + подстановка
+  const N = (t) => ({ t });                // текстовый шаг
+  const A = (sym, val, unit) => [sym, val, unit || ""];
+  const fail = (m) => { throw new Error(m); };
+  const soft = (m) => { const e = new Error(m); e.soft = true; throw e; };
+  const val = (v) => (typeof v === "number" ? fmt(v) : v);
+  const SUBD = "₀₁₂₃₄₅₆₇₈₉";
+  const SUPD = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+
+  /* ---------- Таблица элементов (порядок = порядковый номер Z) ---------- */
+  const EL = [
+    ["H", 1.008], ["He", 4.0026],
+    ["Li", 6.94], ["Be", 9.0122], ["B", 10.81], ["C", 12.011], ["N", 14.007], ["O", 15.999], ["F", 18.998], ["Ne", 20.18],
+    ["Na", 22.99], ["Mg", 24.305], ["Al", 26.982], ["Si", 28.085], ["P", 30.974], ["S", 32.06], ["Cl", 35.45], ["Ar", 39.948],
+    ["K", 39.098], ["Ca", 40.078], ["Sc", 44.956], ["Ti", 47.867], ["V", 50.942], ["Cr", 51.996], ["Mn", 54.938], ["Fe", 55.845],
+    ["Co", 58.933], ["Ni", 58.693], ["Cu", 63.546], ["Zn", 65.38], ["Ga", 69.723], ["Ge", 72.63], ["As", 74.922], ["Se", 78.971],
+    ["Br", 79.904], ["Kr", 83.798],
+    ["Rb", 85.468], ["Sr", 87.62], ["Y", 88.906], ["Zr", 91.224], ["Nb", 92.906], ["Mo", 95.95], ["Tc", 98], ["Ru", 101.07],
+    ["Rh", 102.91], ["Pd", 106.42], ["Ag", 107.87], ["Cd", 112.41], ["In", 114.82], ["Sn", 118.71], ["Sb", 121.76], ["Te", 127.6],
+    ["I", 126.9], ["Xe", 131.29],
+    ["Cs", 132.91], ["Ba", 137.33], ["La", 138.91], ["Ce", 140.12], ["Pr", 140.91], ["Nd", 144.24], ["Pm", 145], ["Sm", 150.36],
+    ["Eu", 151.96], ["Gd", 157.25], ["Tb", 158.93], ["Dy", 162.5], ["Ho", 164.93], ["Er", 167.26], ["Tm", 168.93], ["Yb", 173.05],
+    ["Lu", 174.97], ["Hf", 178.49], ["Ta", 180.95], ["W", 183.84], ["Re", 186.21], ["Os", 190.23], ["Ir", 192.22], ["Pt", 195.08],
+    ["Au", 196.97], ["Hg", 200.59], ["Tl", 204.38], ["Pb", 207.2], ["Bi", 208.98], ["Po", 209], ["At", 210], ["Rn", 222],
+    ["Fr", 223], ["Ra", 226], ["Ac", 227], ["Th", 232.04], ["Pa", 231.04], ["U", 238.03],
+  ];
+  const ZOF = {};
+  EL.forEach((e, i) => { ZOF[e[0]] = i + 1; });
+
+  /* Режим атомных масс: школьные (округлённые до целых, Cl = 35,5) или точные. */
+  let massMode = "school";
+  const Ar = (sym) => {
+    const m = EL[ZOF[sym] - 1][1];
+    if (massMode === "exact") return m;
+    return sym === "Cl" ? 35.5 : Math.round(m);
+  };
+  const NA = 6.022e23;
+  const R = 8.314;
+  const vm = () => (massMode === "school" ? 22.4 : 22.414);
+  const t0 = () => (massMode === "school" ? 273 : 273.15);
+  const AIR = 29;
+
+  /* ---------- Разбор формул ---------- */
+  const SUBS = {}; SUBD.split("").forEach((c, i) => { SUBS[c] = String(i); });
+  const CYR = { "А": "A", "В": "B", "Е": "E", "К": "K", "М": "M", "Н": "H", "О": "O", "Р": "P", "С": "C", "Т": "T", "Х": "X",
+                "а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "х": "x" };
+  function normFormula(raw) {
+    return String(raw).split("").map((ch) => SUBS[ch] || CYR[ch] || ch).join("")
+      .replace(/[\s ]/g, "").replace(/[.*•×∙⋅]/g, "·");
+  }
+  const sub = (s) => String(s).replace(/([A-Za-z)\]])(\d+)/g, (m, a, d) => a + d.replace(/\d/g, (c) => SUBD[c]));
+  const sup = (n) => String(n).replace(/\d/g, (c) => SUPD[c]);
+  const pretty = (f) => sub(normFormula(f));
+
+  function parseGroup(str, raw) {
+    let i = 0;
+    const readNum = () => { const j = i; while (i < str.length && /\d/.test(str[i])) i++; return i > j ? Number(str.slice(j, i)) : 1; };
+    function group(close) {
+      const c = new Map();
+      while (i < str.length) {
+        const ch = str[i];
+        if (ch === "(" || ch === "[") {
+          i++;
+          const inner = group(ch === "(" ? ")" : "]");
+          const k = readNum();
+          inner.forEach((v, e) => c.set(e, (c.get(e) || 0) + v * k));
+        } else if (ch === ")" || ch === "]") {
+          if (close !== ch) fail(`В формуле «${raw}» лишняя закрывающая скобка.`);
+          i++;
+          return c;
+        } else if (/[A-Z]/.test(ch)) {
+          let sym = ch; i++;
+          if (i < str.length && /[a-z]/.test(str[i])) { sym += str[i]; i++; }
+          if (!(sym in ZOF)) fail(`Неизвестный элемент «${sym}» в формуле «${raw}». Элементы пишутся латиницей: заглавная буква, затем строчная (Cl, Fe, Na).`);
+          const k = readNum();
+          c.set(sym, (c.get(sym) || 0) + k);
+        } else {
+          fail(`Не удалось прочитать формулу «${raw}»: лишний символ «${ch}».`);
+        }
+      }
+      if (close) fail(`В формуле «${raw}» не закрыта скобка.`);
+      return c;
+    }
+    return group(null);
+  }
+  function parseFormula(raw) {
+    const s = normFormula(raw);
+    if (!s) fail("Введите формулу вещества.");
+    const total = new Map();
+    s.split("·").forEach((part) => {
+      let mult = 1;
+      const m = /^(\d+)(.*)$/.exec(part);
+      if (m) { mult = Number(m[1]); part = m[2]; }
+      if (!part) fail(`Не удалось прочитать формулу «${raw}».`);
+      parseGroup(part, raw).forEach((v, e) => total.set(e, (total.get(e) || 0) + v * mult));
+    });
+    return total;
+  }
+  const countsKey = (m) => [...m.entries()].sort().map(([e, n]) => e + n).join("");
+  const molarMassOf = (counts) => { let m = 0; counts.forEach((n, e) => { m += n * Ar(e); }); return m; };
+  function massExpr(counts) {
+    const sy = [], nu = [];
+    counts.forEach((n, e) => {
+      sy.push(n === 1 ? `Ar(${e})` : `${n}·Ar(${e})`);
+      nu.push(n === 1 ? fmt(Ar(e)) : `${n}·${fmt(Ar(e))}`);
+    });
+    return { sy: sy.join(" + "), nu: nu.join(" + ") };
+  }
+  function info(raw) {
+    const counts = parseFormula(raw);
+    const M = molarMassOf(counts);
+    const e = massExpr(counts);
+    return { counts, M, name: pretty(raw), sym: e.sy, num: e.nu };
+  }
+  const mStep = (f) => S(`M(${f.name}) = ${f.sym}`, `M = ${f.num} = ${fmt(f.M)} г/моль`);
+  function cleanSym(raw) {
+    const s = normFormula(raw);
+    const k = s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+    if (!(k in ZOF)) fail(`Неизвестный элемент «${raw}». Введите символ, например Fe или Cl.`);
+    return k;
+  }
+
+  /* ---------- Вещество ---------- */
+  function solveMolar(x) {
+    const f = info(x.formula);
+    const steps = [mStep(f)];
+    const answers = [A(`M(${f.name})`, f.M, "г/моль"), A(`Mr(${f.name})`, f.M, "")];
+    f.counts.forEach((n, e) => {
+      const w = (n * Ar(e)) / f.M;
+      steps.push(S(`ω(${e}) = ${n === 1 ? "" : n + "·"}Ar(${e}) / M(${f.name})`,
+        `ω(${e}) = ${fmt(n * Ar(e))} / ${fmt(f.M)} = ${fmt(w)} = ${fmt(w * 100)} %`));
+      answers.push(A(`ω(${e})`, w * 100, "%"));
+    });
+    return { steps, answers };
+  }
+
+  function solveAmount(x) {
+    const f = info(x.formula), v = x.value, mode = x.mode, Vm = vm();
+    if (!(v > 0)) fail("Введите положительное число.");
+    const steps = [mStep(f)];
+    let n, given;
+    if (mode === "m") {
+      n = v / f.M; given = A("m", v, "г");
+      steps.push(S("n = m / M", `n = ${fmt(v)} / ${fmt(f.M)} = ${fmt(n)} моль`));
+    } else if (mode === "V") {
+      n = v / Vm; given = A("V", v, "л");
+      steps.push(S("n = V / Vm", `n = ${fmt(v)} / ${fmt(Vm)} = ${fmt(n)} моль`));
+    } else if (mode === "N") {
+      n = v / NA; given = A("N", v, "частиц");
+      steps.push(S("n = N / Nₐ", `n = ${fmt(v)} / ${fmt(NA)} = ${fmt(n)} моль`));
+    } else {
+      n = v; given = A("n", v, "моль");
+    }
+    const m = n * f.M, V = n * Vm, Nn = n * NA;
+    steps.push(S("m = n · M", `m = ${fmt(n)} · ${fmt(f.M)} = ${fmt(m)} г`));
+    steps.push(S("V = n · Vm  (для газа при н. у.)", `V = ${fmt(n)} · ${fmt(Vm)} = ${fmt(V)} л`));
+    steps.push(S("N = n · Nₐ", `N = ${fmt(n)} · ${fmt(NA)} = ${fmt(Nn)}`));
+    return {
+      given: [A("вещество", f.name), given],
+      steps,
+      answers: [A(`n(${f.name})`, n, "моль"), A(`m(${f.name})`, m, "г"), A(`V(${f.name})`, V, "л (н. у.)"), A("N", Nn, "частиц")],
+    };
+  }
+
+  function solveByW(x) {
+    const items = [];
+    [["e1", "w1"], ["e2", "w2"], ["e3", "w3"], ["e4", "w4"]].forEach(([ke, kw]) => {
+      if (x[ke] === null && x[kw] === null) return;
+      if (x[ke] === null || x[kw] === null) soft("Для каждого элемента укажите и символ, и массовую долю.");
+      const sym = cleanSym(x[ke]), w = x[kw];
+      if (!(w > 0)) fail(`Массовая доля элемента ${sym} должна быть положительной.`);
+      if (items.some((i) => i.sym === sym)) fail(`Элемент ${sym} указан дважды.`);
+      items.push({ sym, w });
+    });
+    if (items.length < 2) soft("Укажите минимум два элемента с массовыми долями.");
+    const total = items.reduce((t, i) => t + i.w, 0);
+    if (Math.abs(total - 100) > 0.6) {
+      soft(total < 100
+        ? `Сумма массовых долей ${fmt(total)} %, а должна быть 100 %. Добавьте оставшийся элемент (на него приходится ${fmt(100 - total)} %).`
+        : `Сумма массовых долей ${fmt(total)} % больше 100 %. Проверьте числа.`);
+    }
+    const steps = [N("Берём 100 г вещества: масса каждого элемента в граммах равна его массовой доле в процентах.")];
+    items.forEach((i) => {
+      i.n = i.w / Ar(i.sym);
+      steps.push(S(`n(${i.sym}) = m / Ar(${i.sym})`, `n(${i.sym}) = ${fmt(i.w)} / ${fmt(Ar(i.sym))} = ${fmt(i.n)} моль`));
+    });
+    const mn = Math.min(...items.map((i) => i.n));
+    const ratio = items.map((i) => i.n / mn);
+    const lab = items.map((i) => `n(${i.sym})`).join(" : ");
+    steps.push(S(`${lab}  (делим на наименьшее, ${fmt(mn)})`, `= ${ratio.map(fmt).join(" : ")}`));
+    let k = 0;
+    for (let c = 1; c <= 8; c++) {
+      if (ratio.every((r) => Math.round(r * c) >= 1 && Math.abs(r * c - Math.round(r * c)) < 0.1)) { k = c; break; }
+    }
+    if (!k) fail("Не удалось подобрать целые индексы. Проверьте массовые доли или возьмите больше значащих цифр.");
+    const idx = ratio.map((r) => Math.round(r * k));
+    if (k > 1) steps.push(S(`Умножаем на ${k}, чтобы получить целые числа`, `= ${idx.join(" : ")}`));
+    const formula = items.map((i, j) => i.sym + (idx[j] > 1 ? idx[j] : "")).join("");
+    const M0 = items.reduce((t, i, j) => t + idx[j] * Ar(i.sym), 0);
+    steps.push(S(`Простейшая формула: ${pretty(formula)}`, `M(${pretty(formula)}) = ${fmt(M0)} г/моль`));
+    const answers = [A("Простейшая формула", pretty(formula))];
+    if (x.M !== null) {
+      if (!(x.M > 0)) fail("Молярная масса должна быть положительной.");
+      const kk = x.M / M0, r = Math.round(kk);
+      steps.push(S("M(вещества) / M(простейшей формулы)", `${fmt(x.M)} / ${fmt(M0)} = ${fmt(kk)}`));
+      if (r >= 1 && Math.abs(kk - r) < 0.15) {
+        const real = items.map((i, j) => i.sym + (idx[j] * r > 1 ? idx[j] * r : "")).join("");
+        steps.push(N(`Все индексы умножаем на ${r}.`));
+        answers.push(A("Молекулярная формула", pretty(real)));
+      } else {
+        steps.push(N("Молярная масса не кратна массе простейшей формулы: проверьте данные."));
+      }
+    }
+    return { steps, answers };
+  }
+
+  /* ---------- Атом ---------- */
+  const ORDER = [[1, "s"], [2, "s"], [2, "p"], [3, "s"], [3, "p"], [4, "s"], [3, "d"], [4, "p"], [5, "s"], [4, "d"], [5, "p"], [6, "s"],
+                 [4, "f"], [5, "d"], [6, "p"], [7, "s"], [5, "f"], [6, "d"], [7, "p"]];
+  const CAP = { s: 2, p: 6, d: 10, f: 14 };
+  const LORD = { s: 0, p: 1, d: 2, f: 3 };
+  const EXC = {
+    24: { "3d": 5, "4s": 1 }, 29: { "3d": 10, "4s": 1 },
+    41: { "4d": 4, "5s": 1 }, 42: { "4d": 5, "5s": 1 }, 44: { "4d": 7, "5s": 1 }, 45: { "4d": 8, "5s": 1 },
+    46: { "4d": 10, "5s": 0 }, 47: { "4d": 10, "5s": 1 },
+    57: { "4f": 0, "5d": 1 }, 58: { "4f": 1, "5d": 1 }, 64: { "4f": 7, "5d": 1 },
+    78: { "5d": 9, "6s": 1 }, 79: { "5d": 10, "6s": 1 },
+  };
+  const NOBLE = [2, 10, 18, 36, 54, 86];
+  const ROMAN = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
+  function config(Z) {
+    const subs = ORDER.map(([n, l]) => ({ n, l, e: 0 }));
+    let left = Z;
+    for (const s of subs) { const k = Math.min(CAP[s.l], left); s.e = k; left -= k; if (!left) break; }
+    const exc = EXC[Z];
+    if (exc) subs.forEach((s) => { const key = s.n + s.l; if (key in exc) s.e = exc[key]; });
+    return subs;
+  }
+  const cfgStr = (subs) => subs.filter((s) => s.e > 0).sort((a, b) => a.n - b.n || LORD[a.l] - LORD[b.l])
+    .map((s) => s.n + s.l + sup(s.e)).join(" ");
+
+  function atomSvg(sym, Z, shells) {
+    const W = 520, H = 250, cx = W / 2, cy = H / 2, f1 = (v) => v.toFixed(1);
+    const len = shells.length;
+    const rOf = (k) => (len === 1 ? 58 : 36 + (k * (108 - 36)) / (len - 1));
+    let g = "";
+    shells.forEach((cnt, k) => {
+      const r = rOf(k);
+      g += `<circle cx="${cx}" cy="${cy}" r="${f1(r)}" fill="none" stroke="var(--line)" stroke-width="1.5"/>`;
+      for (let j = 0; j < cnt; j++) {
+        const a = -Math.PI / 2 + (2 * Math.PI * j) / cnt;
+        g += `<circle cx="${f1(cx + r * Math.cos(a))}" cy="${f1(cy + r * Math.sin(a))}" r="4.5" fill="var(--accent)"/>`;
+      }
+    });
+    g += `<circle cx="${cx}" cy="${cy}" r="24" fill="var(--accent)"/>`;
+    g += `<text x="${cx}" y="${cy + 5}" text-anchor="middle" font-size="14" font-weight="600" fill="var(--accent-ink)">+${Z}</text>`;
+    return `<svg viewBox="0 0 ${W} ${H}" width="${W}" role="img" aria-label="Модель атома ${esc(sym)}: электроны по слоям ${shells.join(", ")}" font-family="var(--mono)">${g}</svg>`;
+  }
+
+  function solveAtom(x) {
+    const sym = cleanSym(x.el), Z = ZOF[sym];
+    if (Z > 88) fail("Электронные формулы показаны для элементов до радия (Z = 88).");
+    const A_ = Math.round(EL[Z - 1][1]);
+    const subs = config(Z);
+    const steps = [
+      S("Порядковый номер элемента", `Z(${sym}) = ${Z}`),
+      N("Заряд ядра равен +Z, число протонов равно Z, а у нейтрального атома столько же электронов."),
+      S("Массовое число A ≈ Ar (округлённая атомная масса)", `A = ${A_}`),
+      S("Число нейтронов  N = A − Z", `N = ${A_} − ${Z} = ${A_ - Z}`),
+    ];
+    const full = cfgStr(subs);
+    steps.push(S("Электронная формула (по порядку заполнения подуровней)", full));
+    const core = NOBLE.filter((z) => z < Z).pop();
+    let shortStr = full;
+    if (core) {
+      const cs = config(core);
+      const rest = subs.map((s, i) => ({ n: s.n, l: s.l, e: s.e - cs[i].e })).filter((s) => s.e > 0);
+      const csym = EL[core - 1][0];
+      shortStr = `[${csym}] ` + cfgStr(rest);
+      steps.push(S("Сокращённая запись (остов от благородного газа)", shortStr));
+    }
+    const shells = [];
+    subs.forEach((s) => { if (s.e > 0) shells[s.n - 1] = (shells[s.n - 1] || 0) + s.e; });
+    for (let i = 0; i < shells.length; i++) shells[i] = shells[i] || 0;
+    steps.push(S("Электронов на слоях (K, L, M, …)", shells.join(", ")));
+    const period = Z <= 2 ? 1 : Z <= 10 ? 2 : Z <= 18 ? 3 : Z <= 36 ? 4 : Z <= 54 ? 5 : Z <= 86 ? 6 : 7;
+    let block = "s";
+    if (Z >= 58 && Z <= 71) block = "f";
+    else { for (let i = ORDER.length - 1; i >= 0; i--) { if (subs[i].e > 0) { block = subs[i].l; break; } } }
+    const eOf = (n, l) => { const s = subs.find((q) => q.n === n && q.l === l); return s ? s.e : 0; };
+    let group = "", valence = [];
+    if (Z === 2) { group = "VIII A"; valence = [subs[0]]; }
+    else if (block === "s" || block === "p") {
+      const v = eOf(period, "s") + eOf(period, "p");
+      group = ROMAN[v] + " A";
+      valence = subs.filter((s) => s.n === period && (s.l === "s" || s.l === "p") && s.e > 0);
+    } else if (block === "d") {
+      const v = eOf(period - 1, "d") + eOf(period, "s");
+      group = v <= 7 ? ROMAN[v] + " B" : v <= 10 ? "VIII B" : v === 11 ? "I B" : "II B";
+      valence = subs.filter((s) => ((s.n === period - 1 && s.l === "d") || (s.n === period && s.l === "s")) && s.e > 0);
+    } else {
+      group = "III B (лантаноиды)";
+      valence = subs.filter((s) => (s.n === 4 && s.l === "f") || (s.n === 5 && s.l === "d") || (s.n === 6 && s.l === "s")).filter((s) => s.e > 0);
+    }
+    const valStr = cfgStr(valence);
+    steps.push(N(`Период ${period}, группа ${group}, ${block}-элемент. Валентные электроны: ${valStr}.`));
+    return {
+      given: [A("элемент", sym)],
+      steps,
+      plot: atomSvg(sym, Z, shells),
+      answers: [
+        A(`Z(${sym})`, Z, ""), A("протонов p⁺", Z, ""), A("нейтронов n⁰", A_ - Z, ""), A("электронов e⁻", Z, ""),
+        A("Электронная формула", full), A("Период, группа", `${period}, ${group}`),
+      ],
+    };
+  }
+
+  /* ---------- Растворы ---------- */
+  function solveMassFrac(x) {
+    const have = ["ms", "mr", "w"].filter((k) => x[k] !== null);
+    if (have.length !== 2) soft("Заполните ровно два поля из трёх, третье оставьте пустым: оно будет найдено.");
+    let { ms, mr, w } = x;
+    if (ms !== null && !(ms > 0)) fail("Масса вещества должна быть положительной.");
+    if (mr !== null && !(mr > 0)) fail("Масса раствора должна быть положительной.");
+    if (w !== null && !(w > 0 && w <= 100)) fail("Массовая доля должна быть больше 0 и не больше 100 %.");
+    const steps = [N("Массовая доля  ω = m(в-ва) / m(р-ра) · 100 %")];
+    if (w === null) {
+      w = (ms / mr) * 100;
+      steps.push(S("ω = m(в-ва) / m(р-ра) · 100 %", `ω = ${fmt(ms)} / ${fmt(mr)} · 100 = ${fmt(w)} %`));
+    } else if (mr === null) {
+      mr = (ms / w) * 100;
+      steps.push(S("m(р-ра) = m(в-ва) / ω · 100 %", `m(р-ра) = ${fmt(ms)} / ${fmt(w)} · 100 = ${fmt(mr)} г`));
+    } else {
+      ms = (mr * w) / 100;
+      steps.push(S("m(в-ва) = m(р-ра) · ω / 100 %", `m(в-ва) = ${fmt(mr)} · ${fmt(w)} / 100 = ${fmt(ms)} г`));
+    }
+    if (ms > mr + 1e-9) fail("Масса вещества не может быть больше массы раствора.");
+    const water = mr - ms;
+    steps.push(S("m(воды) = m(р-ра) − m(в-ва)", `m(воды) = ${fmt(mr)} − ${fmt(ms)} = ${fmt(water)} г`));
+    return { steps, answers: [A("ω", w, "%"), A("m(в-ва)", ms, "г"), A("m(р-ра)", mr, "г"), A("m(воды)", water, "г")] };
+  }
+
+  function solveConc(x) {
+    const hasN = x.n !== null, hasM = x.m !== null;
+    if (hasN && hasM) soft("Укажите либо количество вещества n, либо массу m, не оба сразу.");
+    const amount = hasN || hasM;
+    if ([amount, x.V !== null, x.C !== null].filter(Boolean).length !== 2) {
+      soft("Заполните два параметра из трёх: вещество (n или m), объём раствора V, концентрацию C. Третий будет найден.");
+    }
+    [["n", "n"], ["m", "m"], ["V", "V"], ["C", "C"]].forEach(([k, name]) => { if (x[k] !== null && !(x[k] > 0)) fail(`Значение ${name} должно быть положительным.`); });
+    const steps = [];
+    let n = null, f = null;
+    if (x.formula !== null) f = info(x.formula);
+    if (hasM) {
+      if (!f) soft("Для массы укажите формулу вещества, чтобы найти его молярную массу.");
+      steps.push(mStep(f));
+      n = x.m / f.M;
+      steps.push(S("n = m / M", `n = ${fmt(x.m)} / ${fmt(f.M)} = ${fmt(n)} моль`));
+    } else if (hasN) n = x.n;
+    const answers = [];
+    if (amount && x.V !== null) {
+      const C = n / x.V;
+      steps.push(S("C = n / V", `C = ${fmt(n)} / ${fmt(x.V)} = ${fmt(C)} моль/л`));
+      answers.push(A("C", C, "моль/л"));
+    } else if (amount) {
+      const V = n / x.C;
+      steps.push(S("V = n / C", `V = ${fmt(n)} / ${fmt(x.C)} = ${fmt(V)} л`));
+      answers.push(A("V", V, "л"));
+    } else {
+      n = x.C * x.V;
+      steps.push(S("n = C · V", `n = ${fmt(x.C)} · ${fmt(x.V)} = ${fmt(n)} моль`));
+      answers.push(A("n", n, "моль"));
+      if (f) {
+        steps.push(mStep(f));
+        const m = n * f.M;
+        steps.push(S("m = n · M", `m = ${fmt(n)} · ${fmt(f.M)} = ${fmt(m)} г`));
+        answers.push(A("m", m, "г"));
+      }
+    }
+    return { steps, answers };
+  }
+
+  function solveMix(x) {
+    const { m1, w1, m2, w2 } = x;
+    if (!(m1 > 0 && m2 > 0)) fail("Массы растворов должны быть положительными.");
+    if (w1 < 0 || w1 > 100 || w2 < 0 || w2 > 100) fail("Массовая доля должна быть от 0 до 100 % (для воды введите 0).");
+    const a = (m1 * w1) / 100, b = (m2 * w2) / 100, M = m1 + m2, w = ((a + b) / M) * 100;
+    return {
+      steps: [
+        S("m₁(в-ва) = m₁ · ω₁ / 100", `m₁(в-ва) = ${fmt(m1)} · ${fmt(w1)} / 100 = ${fmt(a)} г`),
+        S("m₂(в-ва) = m₂ · ω₂ / 100", `m₂(в-ва) = ${fmt(m2)} · ${fmt(w2)} / 100 = ${fmt(b)} г`),
+        S("m(р-ра) = m₁ + m₂", `m(р-ра) = ${fmt(m1)} + ${fmt(m2)} = ${fmt(M)} г`),
+        S("ω = (m₁(в-ва) + m₂(в-ва)) / m(р-ра) · 100 %", `ω = (${fmt(a)} + ${fmt(b)}) / ${fmt(M)} · 100 = ${fmt(w)} %`),
+      ],
+      answers: [A("ω(смеси)", w, "%"), A("m(р-ра)", M, "г"), A("m(в-ва)", a + b, "г")],
+    };
+  }
+
+  function solveCross(x) {
+    const { w1, w2, w, m } = x;
+    if (!(m > 0)) fail("Масса нужного раствора должна быть положительной.");
+    if (!(w2 >= 0 && w1 > w2 && w1 <= 100)) fail("Нужно ω₁ > ω₂ ≥ 0 (для воды ω₂ = 0), ω₁ не больше 100 %.");
+    if (!(w > w2 && w < w1)) fail(`Нужная ω должна лежать строго между ${fmt(w2)} % и ${fmt(w1)} %.`);
+    const p1 = w - w2, p2 = w1 - w, sum = p1 + p2;
+    const m1 = (m * p1) / sum, m2 = (m * p2) / sum;
+    return {
+      steps: [
+        N("Правило креста: разности по диагонали показывают, в каком отношении надо взять растворы."),
+        S("части раствора 1 : части раствора 2 = (ω − ω₂) : (ω₁ − ω)", `${fmt(w)} − ${fmt(w2)} = ${fmt(p1)}   и   ${fmt(w1)} − ${fmt(w)} = ${fmt(p2)}`),
+        S("m₁ = m · (ω − ω₂) / (ω₁ − ω₂)", `m₁ = ${fmt(m)} · ${fmt(p1)} / ${fmt(sum)} = ${fmt(m1)} г`),
+        S("m₂ = m − m₁", `m₂ = ${fmt(m)} − ${fmt(m1)} = ${fmt(m2)} г`),
+        S("Проверка: ω = (m₁·ω₁ + m₂·ω₂) / m", `(${fmt(m1)}·${fmt(w1)} + ${fmt(m2)}·${fmt(w2)}) / ${fmt(m)} = ${fmt((m1 * w1 + m2 * w2) / m)} %`),
+      ],
+      answers: [A("m₁ (раствор ω₁)", m1, "г"), A("m₂ (раствор ω₂ или вода)", m2, "г")],
+    };
+  }
+
+  function solvePH(x) {
+    const Kw = 1e-14, mode = x.mode, v = x.v, k = x.k;
+    if (!(k >= 1) || Math.abs(k - Math.round(k)) > 1e-9) fail("Число ионов H⁺ или OH⁻ в формуле: целое число от 1.");
+    const steps = [];
+    let H, given;
+    if (mode === "acid") {
+      if (!(v > 0)) fail("Концентрация должна быть положительной.");
+      H = k * v; given = A("C(кислоты)", v, "моль/л");
+      steps.push(S("[H⁺] = k · C   (сильная кислота диссоциирует полностью)", `[H⁺] = ${k} · ${fmt(v)} = ${fmt(H)} моль/л`));
+    } else if (mode === "base") {
+      if (!(v > 0)) fail("Концентрация должна быть положительной.");
+      const OH = k * v; H = Kw / OH; given = A("C(основания)", v, "моль/л");
+      steps.push(S("[OH⁻] = k · C   (сильное основание диссоциирует полностью)", `[OH⁻] = ${k} · ${fmt(v)} = ${fmt(OH)} моль/л`));
+      steps.push(S("[H⁺] = 10⁻¹⁴ / [OH⁻]", `[H⁺] = 10^-14 / ${fmt(OH)} = ${fmt(H)} моль/л`));
+    } else if (mode === "H") {
+      if (!(v > 0)) fail("Концентрация должна быть положительной.");
+      H = v; given = A("[H⁺]", v, "моль/л");
+    } else if (mode === "OH") {
+      if (!(v > 0)) fail("Концентрация должна быть положительной.");
+      H = Kw / v; given = A("[OH⁻]", v, "моль/л");
+      steps.push(S("[H⁺] = 10⁻¹⁴ / [OH⁻]", `[H⁺] = 10^-14 / ${fmt(v)} = ${fmt(H)} моль/л`));
+    } else {
+      H = Math.pow(10, -v); given = A("pH", v, "");
+      steps.push(S("[H⁺] = 10^(−pH)", `[H⁺] = 10^${fmt(-v)} = ${fmt(H)} моль/л`));
+    }
+    const pH = mode === "pH" ? v : -Math.log10(H);
+    const pOH = 14 - pH, OH = Kw / H;
+    if (mode !== "pH") steps.push(S("pH = −lg[H⁺]", `pH = −lg(${fmt(H)}) = ${fmt(pH)}`));
+    steps.push(S("pH + pOH = 14", `pOH = 14 − ${fmt(pH)} = ${fmt(pOH)}`));
+    if (mode !== "base" && mode !== "OH") steps.push(S("[OH⁻] = 10⁻¹⁴ / [H⁺]", `[OH⁻] = 10^-14 / ${fmt(H)} = ${fmt(OH)} моль/л`));
+    const env = Math.abs(pH - 7) < 0.005 ? "нейтральная" : pH < 7 ? "кислая" : "щелочная";
+    steps.push(N("Среда: pH < 7 — кислая, pH = 7 — нейтральная, pH > 7 — щелочная. Формулы верны для сильных электролитов."));
+    return {
+      given: [given],
+      steps,
+      answers: [A("pH", pH, ""), A("pOH", pOH, ""), A("[H⁺]", H, "моль/л"), A("[OH⁻]", OH, "моль/л"), A("Среда", env)],
+    };
+  }
+
+  /* ---------- Газы ---------- */
+  function solveGasLaw(x) {
+    const keys = ["p", "V", "n", "T"];
+    const blank = keys.filter((k) => x[k] === null);
+    if (blank.length !== 1) soft("Оставьте пустым одно из четырёх полей (p, V, n или T): его мы и найдём.");
+    const unknown = blank[0];
+    ["p", "V", "n"].forEach((k) => { if (x[k] !== null && !(x[k] > 0)) fail(`Значение ${k} должно быть положительным.`); });
+    const steps = [S("pV = nRT   (p в кПа, V в л, R = 8,314 Дж/(моль·К))", "")];
+    let Tk = null;
+    if (x.T !== null) {
+      if (x.Tu === "C") {
+        Tk = x.T + t0();
+        steps.push(S("T = t + " + fmt(t0()), `T = ${fmt(x.T)} + ${fmt(t0())} = ${fmt(Tk)} К`));
+      } else Tk = x.T;
+      if (!(Tk > 0)) fail("Температура должна быть выше абсолютного нуля.");
+    }
+    const answers = [];
+    if (unknown === "p") {
+      const p = (x.n * R * Tk) / x.V;
+      steps.push(S("p = nRT / V", `p = ${fmt(x.n)} · ${R} · ${fmt(Tk)} / ${fmt(x.V)} = ${fmt(p)} кПа`));
+      answers.push(A("p", p, "кПа"));
+    } else if (unknown === "V") {
+      const V = (x.n * R * Tk) / x.p;
+      steps.push(S("V = nRT / p", `V = ${fmt(x.n)} · ${R} · ${fmt(Tk)} / ${fmt(x.p)} = ${fmt(V)} л`));
+      answers.push(A("V", V, "л"));
+    } else if (unknown === "n") {
+      const n = (x.p * x.V) / (R * Tk);
+      steps.push(S("n = pV / (RT)", `n = ${fmt(x.p)} · ${fmt(x.V)} / (${R} · ${fmt(Tk)}) = ${fmt(n)} моль`));
+      answers.push(A("n", n, "моль"));
+    } else {
+      const T = (x.p * x.V) / (x.n * R);
+      steps.push(S("T = pV / (nR)", `T = ${fmt(x.p)} · ${fmt(x.V)} / (${fmt(x.n)} · ${R}) = ${fmt(T)} К`));
+      answers.push(A("T", T, "К"), A("t", T - t0(), "°C"));
+    }
+    return { steps: steps.filter((s, i) => i > 0 || s.f), answers };
+  }
+
+  function solveDensity(x) {
+    const f = info(x.formula), Vm = vm();
+    const steps = [mStep(f)];
+    const rho = f.M / Vm;
+    steps.push(S("ρ(н. у.) = M / Vm", `ρ = ${fmt(f.M)} / ${fmt(Vm)} = ${fmt(rho)} г/л`));
+    const h2 = info("H2");
+    const answers = [A(`M(${f.name})`, f.M, "г/моль"), A("ρ(н. у.)", rho, "г/л")];
+    steps.push(S("D(H₂) = M(газа) / M(H₂)", `D = ${fmt(f.M)} / ${fmt(h2.M)} = ${fmt(f.M / h2.M)}`));
+    answers.push(A("D по водороду", f.M / h2.M, ""));
+    steps.push(S("D(возд.) = M(газа) / 29", `D = ${fmt(f.M)} / ${AIR} = ${fmt(f.M / AIR)}`));
+    answers.push(A("D по воздуху", f.M / AIR, ""));
+    if (x.other !== null) {
+      const g = info(x.other);
+      steps.push(S(`D(${g.name}) = M(газа) / M(${g.name})`, `D = ${fmt(f.M)} / ${fmt(g.M)} = ${fmt(f.M / g.M)}`));
+      answers.push(A(`D по ${g.name}`, f.M / g.M, ""));
+    }
+    return { steps, answers };
+  }
+
+  function solveMByD(x) {
+    const v = x.v, mode = x.mode, Vm = vm();
+    if (!(v > 0)) fail("Введите положительное число.");
+    const refs = { DH2: ["H2", "H₂"], Dair: [null, "воздуху"], DO2: ["O2", "O₂"], DN2: ["N2", "N₂"], DHe: ["He", "He"] };
+    let M, step, given;
+    if (mode === "rho") {
+      M = v * Vm; given = A("ρ(н. у.)", v, "г/л");
+      step = S("M = ρ · Vm", `M = ${fmt(v)} · ${fmt(Vm)} = ${fmt(M)} г/моль`);
+    } else {
+      const r = refs[mode];
+      const Mr = r[0] ? info(r[0]).M : AIR;
+      M = v * Mr; given = A(r[0] ? `D по ${r[1]}` : "D по воздуху", v, "");
+      step = S(r[0] ? `M = D · M(${r[1]})` : "M = D · 29", `M = ${fmt(v)} · ${fmt(Mr)} = ${fmt(M)} г/моль`);
+    }
+    return { given: [given], steps: [step], answers: [A("M(газа)", M, "г/моль")] };
+  }
+
+  /* ---------- Реакции ---------- */
+  function parseEq(raw) {
+    const s = String(raw).replace(/→|⟶|⟹|⇒|->|=>|–>|—>/g, "=").replace(/[↑↓]/g, "");
+    const sides = s.split("=");
+    if (sides.length !== 2 || !sides[0].trim() || !sides[1].trim()) fail("Запишите уравнение в виде «Fe + O2 = Fe2O3» (знак = или →).");
+    const mk = (str) => str.split("+").map((t) => t.trim()).filter(Boolean).map((t) => {
+      const n = normFormula(t).replace(/^\d+/, "");
+      if (!n) fail(`Не удалось прочитать «${t}».`);
+      return { counts: parseFormula(n), name: pretty(n) };
+    });
+    return { left: mk(sides[0]), right: mk(sides[1]) };
+  }
+  const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) { const t = a % b; a = b; b = t; } return a; };
+  const LETTERS = "abcdefghijklmnop";
+
+  function balance(eq) {
+    const sp = [...eq.left, ...eq.right], nl = eq.left.length, nC = sp.length;
+    if (nC > LETTERS.length) fail("Слишком много веществ в уравнении.");
+    const els = [...new Set(sp.flatMap((s) => [...s.counts.keys()]))];
+    els.forEach((e) => {
+      const l = eq.left.some((s) => s.counts.has(e)), r = eq.right.some((s) => s.counts.has(e));
+      if (!l || !r) fail(`Элемент ${e} есть только в одной части уравнения: слева и справа должны быть одни и те же элементы.`);
+    });
+    const M = els.map((e) => sp.map((s, j) => (j < nl ? 1 : -1) * (s.counts.get(e) || 0)));
+    const piv = []; let r = 0;
+    for (let c = 0; c < nC && r < M.length; c++) {
+      let k = -1;
+      for (let i = r; i < M.length; i++) if (M[i][c] !== 0) { k = i; break; }
+      if (k < 0) continue;
+      [M[r], M[k]] = [M[k], M[r]];
+      for (let i = 0; i < M.length; i++) {
+        if (i !== r && M[i][c] !== 0) {
+          const a = M[r][c], b = M[i][c];
+          M[i] = M[i].map((v, j) => v * a - M[r][j] * b);
+          const g = M[i].reduce((t, v) => gcd(t, v), 0);
+          if (g > 1) M[i] = M[i].map((v) => v / g);
+        }
+      }
+      piv.push(c); r++;
+    }
+    const free = []; for (let c = 0; c < nC; c++) if (!piv.includes(c)) free.push(c);
+    if (free.length === 0) fail("Эту схему нельзя уравнять: проверьте формулы веществ.");
+    if (free.length > 1) fail("Схему можно уравнять несколькими способами (в ней несколько независимых реакций). Оставьте одну реакцию.");
+    const f = free[0];
+    const num = new Array(nC).fill(0), den = new Array(nC).fill(1);
+    num[f] = 1;
+    piv.forEach((c, i) => { num[c] = -M[i][f]; den[c] = M[i][c]; });
+    let L = 1; den.forEach((d) => { L = (L * Math.abs(d)) / gcd(L, d); });
+    let co = num.map((nu, j) => Math.round((nu * L) / den[j]));
+    const g = co.reduce((t, v) => gcd(t, v), 0); co = co.map((v) => v / g);
+    if (co.every((v) => v < 0)) co = co.map((v) => -v);
+    if (co.some((v) => v <= 0)) fail("Не удалось подобрать положительные коэффициенты: проверьте формулы.");
+    return { co, els, sp, nl };
+  }
+  const eqString = (eq, co) => {
+    const t = (s, j) => (co[j] > 1 ? co[j] : "") + s.name;
+    return eq.left.map((s, j) => t(s, j)).join(" + ") + " = " + eq.right.map((s, j) => t(s, j + eq.left.length)).join(" + ");
+  };
+  function balanceSteps(eq, b) {
+    const { co, els, sp, nl } = b;
+    const steps = [N("Число атомов каждого элемента слева и справа должно совпадать. Обозначим коэффициенты буквами " +
+      sp.map((s, j) => `${LETTERS[j]} (${s.name})`).join(", ") + ".")];
+    els.forEach((e) => {
+      const side = (from, to) => sp.slice(from, to).map((s, j) => ({ s, k: from + j })).filter((o) => o.s.counts.has(e))
+        .map((o) => { const n = o.s.counts.get(e); return (n > 1 ? n : "") + LETTERS[o.k]; }).join(" + ");
+      steps.push(S(`Баланс ${e}`, `${side(0, nl)} = ${side(nl, sp.length)}`));
+    });
+    steps.push(S("Решаем систему", `${sp.map((s, j) => LETTERS[j]).join(" : ")} = ${co.join(" : ")}`));
+    els.forEach((e) => {
+      const side = (from, to) => { const parts = [], sum = [0]; sp.slice(from, to).forEach((s, j) => { const n = s.counts.get(e) || 0; if (n) { parts.push(`${co[from + j]}·${n}`); sum[0] += co[from + j] * n; } }); return { t: parts.join(" + "), v: sum[0] }; };
+      const l = side(0, nl), r = side(nl, sp.length);
+      steps.push(S(`Проверка ${e}`, `${l.t} = ${l.v}   |   ${r.t} = ${r.v}`));
+    });
+    return steps;
+  }
+  function findSpecies(sp, raw, role) {
+    const f = info(raw), key = countsKey(f.counts);
+    const i = sp.findIndex((s) => countsKey(s.counts) === key);
+    if (i < 0) fail(`Вещества «${f.name}» (${role}) нет в уравнении реакции.`);
+    return { i, f };
+  }
+
+  function solveBalance(x) {
+    const eq = parseEq(x.eq), b = balance(eq);
+    return { given: [A("схема", x.eq.trim())], steps: balanceSteps(eq, b), answers: [A("", eqString(eq, b.co))] };
+  }
+
+  function solveStoich(x) {
+    const eq = parseEq(x.eq), b = balance(eq), sp = b.sp;
+    const kn = findSpecies(sp, x.known, "дано"), tg = findSpecies(sp, x.target, "найти");
+    if (kn.i === tg.i) fail("Известное и искомое вещества должны быть разными.");
+    const pur = x.purity, eta = x.yield_;
+    if (!(x.kv > 0)) fail("Введите положительное количество вещества.");
+    if (!(pur > 0 && pur <= 100)) fail("Доля чистого вещества: число больше 0 и не больше 100 %.");
+    if (!(eta > 0 && eta <= 100)) fail("Выход продукта: число больше 0 и не больше 100 %.");
+    const steps = [S("Уравнение реакции", eqString(eq, b.co))];
+    const kf = kn.f, tf = tg.f, Vm = vm();
+    const unit = { m: "г", n: "моль", V: "л" }[x.kmode];
+    let v = x.kv;
+    if (pur < 100) {
+      const v2 = (v * pur) / 100;
+      steps.push(S("Чистого вещества: v · ω / 100", `${fmt(v)} · ${fmt(pur)} / 100 = ${fmt(v2)} ${unit}`));
+      v = v2;
+    }
+    let nk;
+    if (x.kmode === "m") {
+      steps.push(mStep(kf));
+      nk = v / kf.M;
+      steps.push(S(`n(${kf.name}) = m / M`, `n = ${fmt(v)} / ${fmt(kf.M)} = ${fmt(nk)} моль`));
+    } else if (x.kmode === "V") {
+      nk = v / Vm;
+      steps.push(S(`n(${kf.name}) = V / Vm`, `n = ${fmt(v)} / ${fmt(Vm)} = ${fmt(nk)} моль`));
+    } else nk = v;
+    const vk = b.co[kn.i], vt = b.co[tg.i];
+    let nt = (nk * vt) / vk;
+    steps.push(S(`n(${tf.name}) / n(${kf.name}) = ν(${tf.name}) / ν(${kf.name}) = ${vt} / ${vk}`,
+      `n(${tf.name}) = ${fmt(nk)} · ${vt} / ${vk} = ${fmt(nt)} моль`));
+    let tag = "";
+    if (eta < 100) {
+      const np = (nt * eta) / 100;
+      steps.push(S("Практический выход: n · η / 100", `n = ${fmt(nt)} · ${fmt(eta)} / 100 = ${fmt(np)} моль`));
+      nt = np; tag = " (практ.)";
+    }
+    const answers = [];
+    if (x.tmode === "m") {
+      steps.push(mStep(tf));
+      const m = nt * tf.M;
+      steps.push(S(`m(${tf.name}) = n · M`, `m = ${fmt(nt)} · ${fmt(tf.M)} = ${fmt(m)} г`));
+      answers.push(A(`m(${tf.name})${tag}`, m, "г"));
+    } else if (x.tmode === "V") {
+      const V = nt * Vm;
+      steps.push(S(`V(${tf.name}) = n · Vm  (газ, н. у.)`, `V = ${fmt(nt)} · ${fmt(Vm)} = ${fmt(V)} л`));
+      answers.push(A(`V(${tf.name})${tag}`, V, "л"));
+    }
+    answers.push(A(`n(${tf.name})${tag}`, nt, "моль"));
+    const mark = { m: "масса", n: "количество", V: "объём" }[x.kmode];
+    return {
+      given: [A("реакция", x.eq.trim()), A(`${mark} ${kf.name}`, x.kv, unit), ...(pur < 100 ? [A("доля чистого", pur, "%")] : []), ...(eta < 100 ? [A("выход η", eta, "%")] : [])],
+      steps, answers,
+    };
+  }
+
+  function solveExcess(x) {
+    const eq = parseEq(x.eq), b = balance(eq), sp = b.sp;
+    const a = findSpecies(sp, x.fa, "реагент 1"), c = findSpecies(sp, x.fb, "реагент 2"), pr = findSpecies(sp, x.prod, "продукт");
+    if (new Set([a.i, c.i, pr.i]).size < 3) fail("Реагенты и продукт должны быть разными веществами.");
+    if (!(x.ma > 0 && x.mb > 0)) fail("Массы должны быть положительными.");
+    const steps = [S("Уравнение реакции", eqString(eq, b.co)), mStep(a.f)];
+    if (c.f.name !== a.f.name) steps.push(mStep(c.f));
+    const na = x.ma / a.f.M, nb = x.mb / c.f.M, va = b.co[a.i], vb = b.co[c.i], vp = b.co[pr.i];
+    steps.push(S(`n(${a.f.name}) = m / M`, `n = ${fmt(x.ma)} / ${fmt(a.f.M)} = ${fmt(na)} моль`));
+    steps.push(S(`n(${c.f.name}) = m / M`, `n = ${fmt(x.mb)} / ${fmt(c.f.M)} = ${fmt(nb)} моль`));
+    const ra = na / va, rb = nb / vb;
+    steps.push(S("Сравниваем n / ν: у недостатка число меньше", `${a.f.name}: ${fmt(na)} / ${va} = ${fmt(ra)};   ${c.f.name}: ${fmt(nb)} / ${vb} = ${fmt(rb)}`));
+    const answers = [];
+    let nlim, vlim, lim, ex, nex, vex;
+    if (Math.abs(ra - rb) < 1e-9 * Math.max(ra, rb)) {
+      steps.push(N("Вещества взяты в точных стехиометрических количествах: избытка нет."));
+      lim = a; ex = null; nlim = na; vlim = va;
+    } else if (ra < rb) { lim = a; ex = c; nlim = na; vlim = va; nex = nb; vex = vb; }
+    else { lim = c; ex = a; nlim = nb; vlim = vb; nex = na; vex = va; }
+    if (ex) steps.push(N(`В недостатке ${lim.f.name}, в избытке ${ex.f.name}. Расчёт ведём по веществу в недостатке.`));
+    const np = (nlim * vp) / vlim;
+    steps.push(S(`n(${pr.f.name}) = n(${lim.f.name}) · ν(${pr.f.name}) / ν(${lim.f.name})`, `n = ${fmt(nlim)} · ${vp} / ${vlim} = ${fmt(np)} моль`));
+    steps.push(mStep(pr.f));
+    const mp = np * pr.f.M;
+    steps.push(S(`m(${pr.f.name}) = n · M`, `m = ${fmt(np)} · ${fmt(pr.f.M)} = ${fmt(mp)} г`));
+    answers.push(A(`m(${pr.f.name})`, mp, "г"), A(`n(${pr.f.name})`, np, "моль"), A("В недостатке", lim.f.name));
+    if (ex) {
+      const left = nex - (nlim * vex) / vlim;
+      const ml = left * ex.f.M;
+      steps.push(S(`Остаток ${ex.f.name}: n − n(вступило)`, `${fmt(nex)} − ${fmt(nlim)} · ${vex} / ${vlim} = ${fmt(left)} моль  →  ${fmt(ml)} г`));
+      answers.push(A(`Остаток ${ex.f.name}`, ml, "г"));
+    }
+    return {
+      given: [A("реакция", x.eq.trim()), A(`m(${a.f.name})`, x.ma, "г"), A(`m(${c.f.name})`, x.mb, "г")],
+      steps, answers,
+    };
+  }
+
+  /* ---------- Каталог задач ---------- */
+  const fl = (id, sy, label, unit, extra) => Object.assign({ id, sym: sy, label, unit }, extra || {});
+  const FORM = { text: true, formula: true, txt: true };
+  const TASKS = [
+    { cat: "Вещество", id: "molar", title: "Молярная масса и состав", hint: "Молярная масса и массовые доли элементов по формуле. Можно со скобками и кристаллогидратами: Ca(OH)2, CuSO4·5H2O.",
+      fields: [fl("formula", "", "формула вещества", "", Object.assign({ ph: "H2SO4" }, FORM))],
+      ex: { formula: "H2SO4" }, solve: solveMolar },
+    { cat: "Вещество", id: "amount", title: "Количество вещества", hint: "Переход между массой, количеством вещества, объёмом газа (н. у.) и числом частиц. Число частиц можно записать как 3.01e23.",
+      fields: [fl("formula", "", "формула вещества", "", Object.assign({ ph: "CO2" }, FORM)),
+               fl("mode", "", "что задано", "", { select: [["m", "масса m, г"], ["n", "количество n, моль"], ["V", "объём газа V (н. у.), л"], ["N", "число частиц N"]] }),
+               fl("value", "", "значение", "", { txt: true })],
+      ex: { formula: "CO2", mode: "m", value: "88" }, solve: solveAmount },
+    { cat: "Вещество", id: "byw", title: "Формула по массовым долям", hint: "Находит простейшую формулу, а если известна молярная масса, то и молекулярную. Доли в сумме дают 100 %.",
+      fields: [fl("e1", "", "элемент 1", "", { text: true, txt: true, ph: "C" }), fl("w1", "ω₁", "массовая доля", "%"),
+               fl("e2", "", "элемент 2", "", { text: true, txt: true, ph: "H" }), fl("w2", "ω₂", "массовая доля", "%"),
+               fl("e3", "", "элемент 3", "", { text: true, txt: true, opt: true, ph: "O" }), fl("w3", "ω₃", "массовая доля", "%", { opt: true }),
+               fl("e4", "", "элемент 4", "", { text: true, txt: true, opt: true, ph: "" }), fl("w4", "ω₄", "массовая доля", "%", { opt: true }),
+               fl("M", "M", "молярная масса вещества (если известна)", "г/моль", { opt: true })],
+      ex: { e1: "C", w1: "40", e2: "H", w2: "6.7", e3: "O", w3: "53.3", e4: "", w4: "", M: "180" }, solve: solveByW },
+
+    { cat: "Атом", id: "atom", title: "Строение атома", hint: "Протоны, нейтроны, электроны, электронная формула, период и группа. Введите символ элемента (до Ra).",
+      fields: [fl("el", "", "символ элемента", "", { text: true, txt: true, ph: "S" })],
+      ex: { el: "S" }, solve: solveAtom },
+
+    { cat: "Растворы", id: "massfrac", title: "Массовая доля вещества", hint: "Заполните любые два поля из трёх, третье будет найдено.",
+      fields: [fl("ms", "m", "масса растворённого вещества", "г", { opt: true }), fl("mr", "m", "масса раствора", "г", { opt: true }), fl("w", "ω", "массовая доля", "%", { opt: true })],
+      ex: { ms: "15", mr: "300", w: "" }, solve: solveMassFrac },
+    { cat: "Растворы", id: "conc", title: "Молярная концентрация", hint: "C = n / V. Заполните два параметра из трёх: вещество (n или m), объём раствора V, концентрация C. Для массы нужна формула.",
+      fields: [fl("n", "n", "количество вещества", "моль", { opt: true }), fl("m", "m", "масса вещества", "г", { opt: true }),
+               fl("formula", "", "формула вещества (для массы)", "", Object.assign({ opt: true, ph: "NaOH" }, FORM)),
+               fl("V", "V", "объём раствора", "л", { opt: true }), fl("C", "C", "молярная концентрация", "моль/л", { opt: true })],
+      ex: { n: "", m: "40", formula: "NaOH", V: "2", C: "" }, solve: solveConc },
+    { cat: "Растворы", id: "mix", title: "Смешивание растворов", hint: "Массовая доля раствора после смешивания двух растворов. Для чистой воды введите ω = 0.",
+      fields: [fl("m1", "m₁", "масса первого раствора", "г"), fl("w1", "ω₁", "массовая доля первого", "%"),
+               fl("m2", "m₂", "масса второго раствора", "г"), fl("w2", "ω₂", "массовая доля второго", "%")],
+      ex: { m1: "200", w1: "10", m2: "300", w2: "30" }, solve: solveMix },
+    { cat: "Растворы", id: "cross", title: "Правило креста", hint: "Сколько взять двух растворов (или раствора и воды), чтобы получить раствор нужной концентрации.",
+      fields: [fl("w1", "ω₁", "массовая доля крепкого раствора", "%"), fl("w2", "ω₂", "массовая доля слабого (вода — 0)", "%"),
+               fl("w", "ω", "нужная массовая доля", "%"), fl("m", "m", "масса нужного раствора", "г")],
+      ex: { w1: "60", w2: "10", w: "25", m: "500" }, solve: solveCross },
+    { cat: "Растворы", id: "ph", title: "pH раствора", hint: "pH, pOH, [H⁺] и [OH⁻] для сильных кислот и оснований. k — число ионов H⁺ (OH⁻) в формуле: у HCl 1, у H₂SO₄ 2, у Ba(OH)₂ 2.",
+      fields: [fl("mode", "", "что задано", "", { select: [["acid", "сильная кислота, C"], ["base", "сильное основание, C"], ["H", "[H⁺], моль/л"], ["OH", "[OH⁻], моль/л"], ["pH", "pH"]] }),
+               fl("v", "", "значение", ""), fl("k", "k", "число H⁺ или OH⁻ в формуле", "", { def: 1 })],
+      ex: { mode: "acid", v: "0.001", k: "1" }, solve: solvePH },
+
+    { cat: "Газы", id: "gaslaw", title: "Уравнение Менделеева — Клапейрона", hint: "pV = nRT. Оставьте пустым одно поле из четырёх, оно будет найдено. Давление в кПа (101,325 кПа = 1 атм).",
+      fields: [fl("p", "p", "давление", "кПа", { opt: true }), fl("V", "V", "объём", "л", { opt: true }), fl("n", "n", "количество вещества", "моль", { opt: true }),
+               fl("T", "T", "температура", "", { opt: true, txt: true }), fl("Tu", "", "температура задана в", "", { select: [["K", "кельвинах, К"], ["C", "градусах Цельсия, °C"]] })],
+      ex: { p: "200", V: "", n: "2", T: "300", Tu: "K" }, solve: solveGasLaw },
+    { cat: "Газы", id: "density", title: "Плотность и относительная плотность", hint: "Молярная масса, плотность при н. у., относительные плотности по водороду, воздуху и другому газу.",
+      fields: [fl("formula", "", "формула газа", "", Object.assign({ ph: "CO2" }, FORM)),
+               fl("other", "", "сравнить с газом (необязательно)", "", Object.assign({ opt: true, ph: "O2" }, FORM))],
+      ex: { formula: "CO2", other: "" }, solve: solveDensity },
+    { cat: "Газы", id: "mbyd", title: "Молярная масса газа по плотности", hint: "Находит M, если известна плотность при н. у. или относительная плотность.",
+      fields: [fl("mode", "", "что задано", "", { select: [["DH2", "D по водороду"], ["Dair", "D по воздуху"], ["DO2", "D по кислороду"], ["DN2", "D по азоту"], ["DHe", "D по гелию"], ["rho", "плотность при н. у., г/л"]] }),
+               fl("v", "", "значение", "")],
+      ex: { mode: "DH2", v: "14" }, solve: solveMByD },
+
+    { cat: "Реакции", id: "balance", title: "Уравнять реакцию", hint: "Запишите схему: Fe + O2 = Fe2O3 (знак = или →). Индексы цифрами, без пробелов внутри формул.",
+      fields: [fl("eq", "", "схема реакции", "", { text: true, txt: true, ph: "Al + HCl = AlCl3 + H2" })],
+      ex: { eq: "Al + HCl = AlCl3 + H2" }, solve: solveBalance },
+    { cat: "Реакции", id: "stoich", title: "Расчёт по уравнению реакции", hint: "Масса, количество или объём одного вещества → другого. Можно учесть примеси и выход продукта (по умолчанию 100 %).",
+      fields: [fl("eq", "", "схема реакции", "", { text: true, txt: true, ph: "CaCO3 = CaO + CO2" }),
+               fl("known", "", "известное вещество", "", Object.assign({ ph: "CaCO3" }, FORM)),
+               fl("kmode", "", "что известно", "", { select: [["m", "масса, г"], ["n", "количество, моль"], ["V", "объём газа (н. у.), л"]] }),
+               fl("kv", "", "значение", ""),
+               fl("target", "", "искомое вещество", "", Object.assign({ ph: "CO2" }, FORM)),
+               fl("tmode", "", "что найти", "", { select: [["m", "массу, г"], ["n", "количество, моль"], ["V", "объём газа (н. у.), л"]] }),
+               fl("purity", "ω", "доля чистого вещества в данном", "%", { def: 100 }),
+               fl("yield_", "η", "выход продукта", "%", { def: 100 })],
+      ex: { eq: "CaCO3 = CaO + CO2", known: "CaCO3", kmode: "m", kv: "200", target: "CO2", tmode: "V", purity: "80", yield_: "100" }, solve: solveStoich },
+    { cat: "Реакции", id: "excess", title: "Избыток и недостаток", hint: "Даны массы двух реагентов: находим, какой в недостатке, массу продукта и остаток избытка.",
+      fields: [fl("eq", "", "схема реакции", "", { text: true, txt: true, ph: "Zn + H2SO4 = ZnSO4 + H2" }),
+               fl("fa", "", "реагент 1", "", Object.assign({ ph: "Zn" }, FORM)), fl("ma", "m₁", "масса реагента 1", "г"),
+               fl("fb", "", "реагент 2", "", Object.assign({ ph: "H2SO4" }, FORM)), fl("mb", "m₂", "масса реагента 2", "г"),
+               fl("prod", "", "продукт, массу которого ищем", "", Object.assign({ ph: "H2" }, FORM))],
+      ex: { eq: "Zn + H2SO4 = ZnSO4 + H2", fa: "Zn", ma: "13", fb: "H2SO4", mb: "9.8", prod: "H2" }, solve: solveExcess },
+  ];
+
+  /* ---------- Состояние ---------- */
+  const $ = (id) => document.getElementById(id);
+  const state = { id: "molar", cat: "Вещество" };
+  try {
+    const st = localStorage.getItem("chemistry.task"); const t = TASKS.find((k) => k.id === st);
+    if (t) { state.id = t.id; state.cat = t.cat; }
+    const mm = localStorage.getItem("chemistry.mass");
+    if (mm === "school" || mm === "exact") massMode = mm;
+  } catch (e) { /* хранилище недоступно */ }
+  const save = () => { try { localStorage.setItem("chemistry.task", state.id); } catch (e) {} };
+  const task = () => TASKS.find((k) => k.id === state.id);
+  let showExampleNote = true;
+
+  /* ---------- Интерфейс ---------- */
+  function renderNav() {
+    const cats = [...new Set(TASKS.map((k) => k.cat))];
+    $("cats").innerHTML = "";
+    cats.forEach((c) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = c; b.setAttribute("aria-pressed", String(c === state.cat));
+      b.onclick = () => { state.cat = c; selectTask(TASKS.find((k) => k.cat === c).id); };
+      $("cats").appendChild(b);
+    });
+    $("chips").innerHTML = "";
+    TASKS.filter((k) => k.cat === state.cat).forEach((k) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = k.title; b.setAttribute("aria-pressed", String(k.id === state.id));
+      b.onclick = () => selectTask(k.id);
+      $("chips").appendChild(b);
+    });
+  }
+
+  function renderForm() {
+    const t = task(), form = $("form");
+    form.innerHTML = "";
+    const hint = document.createElement("p"); hint.className = "hint"; hint.textContent = t.hint; form.appendChild(hint);
+    t.fields.forEach((f) => {
+      const wrap = document.createElement("div"); wrap.className = "field";
+      const lab = document.createElement("label"); lab.htmlFor = "f-" + f.id;
+      lab.innerHTML = (f.sym ? `<b>${esc(f.sym)}</b>` : "") + esc(f.label);
+      const box = document.createElement("div"); box.className = "inp";
+      let inp;
+      if (f.select) {
+        inp = document.createElement("select");
+        f.select.forEach(([v, l]) => inp.add(new Option(l, v)));
+      } else {
+        inp = document.createElement("input"); inp.type = "text";
+        inp.inputMode = f.txt ? "text" : "decimal";
+        if (f.text) { inp.autocapitalize = "off"; inp.setAttribute("autocorrect", "off"); inp.spellcheck = false; }
+        inp.placeholder = f.ph !== undefined ? f.ph : (f.opt ? "неизвестно" : (f.def !== undefined ? String(f.def) : ""));
+        if (f.ph === undefined && f.def !== undefined) inp.placeholder = String(f.def);
+      }
+      inp.id = "f-" + f.id;
+      inp.addEventListener("input", () => { showExampleNote = false; solve(); });
+      inp.addEventListener("change", () => { showExampleNote = false; solve(); });
+      box.appendChild(inp);
+      if (f.unit) { const u = document.createElement("span"); u.className = "u"; u.textContent = f.unit; box.appendChild(u); }
+      wrap.append(lab, box); form.appendChild(wrap);
+    });
+    const ex = t.ex || {};
+    t.fields.forEach((f) => { if (ex[f.id] !== undefined) $("f-" + f.id).value = ex[f.id]; });
+  }
+
+  function collect() {
+    const t = task(), x = {}, given = [], missing = [];
+    for (const f of t.fields) {
+      const el = $("f-" + f.id); const raw = el.value.trim();
+      if (f.select) { x[f.id] = raw; continue; }
+      if (f.text) {
+        if (raw === "") { x[f.id] = null; if (!f.opt) missing.push(f.sym || f.label); continue; }
+        x[f.id] = raw;
+        given.push(A(f.sym || f.label, f.formula ? pretty(raw) : raw, ""));
+        continue;
+      }
+      if (raw === "") {
+        if (f.def !== undefined) { x[f.id] = f.def; continue; }
+        x[f.id] = null; if (!f.opt) missing.push(f.sym || f.label); continue;
+      }
+      const n = Number(raw.replace(",", "."));
+      if (!isFinite(n)) throw new Error(`Поле «${f.sym || f.label}»: введите число.`);
+      x[f.id] = n; given.push(A(f.sym || f.label, n, f.unit));
+    }
+    if (missing.length) { const e = new Error("Заполните: " + missing.join(", ") + "."); e.soft = true; throw e; }
+    return { x, given };
+  }
+
+  let lastText = "";
+  function solve() {
+    const paper = $("paper"), t = task();
+    let out, given;
+    try {
+      const c = collect(); given = c.given;
+      out = t.solve(c.x);
+      if (out.given) given = out.given;
+    } catch (e) {
+      paper.innerHTML = `<p class="msg${e.soft ? "" : " err"}">${html(e.message)}</p>`;
+      lastText = ""; return;
+    }
+    const line = (a) => `${a[0] ? a[0] + " = " : ""}${val(a[1])}${a[2] ? " " + a[2] : ""}`;
+    let h = "";
+    if (showExampleNote) h += `<p class="note">Подставлен пример. Измените данные слева, решение пересчитается.</p>`;
+    if (given.length) {
+      h += `<div><h2>Дано</h2><div class="given">${given.map((a) => `<span>${html(a[0])} = ${html(val(a[1]))} <em>${html(a[2])}</em></span>`).join("")}</div></div>`;
+    }
+    h += `<div><h2>Решение</h2>${out.steps.map((s) => s.t ? `<div class="step t">${html(s.t)}</div>` : `<div class="step"><div class="f">${html(s.f)}</div>${s.c ? `<div class="c">${html(s.c)}</div>` : ""}</div>`).join("")}</div>`;
+    if (out.plot) h += `<div class="plot">${out.plot}</div>`;
+    h += `<div><h2>Ответ</h2><div class="answer">${out.answers.map((a) => `<div>${a[0] ? html(a[0]) + " = " : ""}${html(val(a[1]))} <small>${html(a[2])}</small></div>`).join("")}</div></div>`;
+    h += `<div class="actions"><button type="button" id="copy">Копировать решение</button><span id="copied"></span></div>`;
+    paper.innerHTML = h;
+    lastText = [t.title, "", "Дано:", ...given.map(line), "", "Решение:", ...out.steps.map((s) => (s.t ? s.t : s.c ? s.f + "\n" + s.c : s.f)), "", "Ответ:", ...out.answers.map(line)].join("\n");
+    $("copy").onclick = copy;
+  }
+  function copy() {
+    const done = (m) => { $("copied").textContent = m; setTimeout(() => { const c = $("copied"); if (c) c.textContent = ""; }, 2000); };
+    const fallback = () => {
+      const ta = document.createElement("textarea"); ta.value = lastText; document.body.appendChild(ta); ta.select();
+      let ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+      ta.remove(); done(ok ? "Скопировано" : "Не удалось скопировать");
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(lastText).then(() => done("Скопировано"), fallback);
+    else fallback();
+  }
+
+  function updateFootnote() {
+    $("footnote").textContent = massMode === "school"
+      ? "Школьные значения: Ar округлены до целых (Cl = 35,5), Vm = 22,4 л/моль, Nₐ = 6,02·10²³ 1/моль"
+      : "Точные значения: Ar из таблицы Менделеева, Vm = 22,414 л/моль, Nₐ = 6,022·10²³ 1/моль";
+  }
+  function selectTask(id) {
+    state.id = id; state.cat = task().cat; showExampleNote = true; save();
+    renderNav(); renderForm(); solve();
+  }
+  $("form").addEventListener("submit", (e) => e.preventDefault());
+  $("massMode").value = massMode;
+  $("massMode").addEventListener("change", () => {
+    massMode = $("massMode").value;
+    try { localStorage.setItem("chemistry.mass", massMode); } catch (e) {}
+    updateFootnote(); solve();
+  });
+  updateFootnote();
+  renderNav(); renderForm(); solve();
+})();
+</script>
+
+<style>
+  .ios-hint {
+    position: fixed; left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    z-index: 50; display: none; align-items: flex-start; gap: 12px;
+    max-width: 480px; margin: 0 auto; padding: 12px 14px;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.18); font-size: 14px; line-height: 1.4;
+  }
+  .ios-hint.show { display: flex; }
+  .ios-hint b { font-weight: 600; }
+  .ios-hint button {
+    margin-left: auto; flex: none; min-width: 44px; min-height: 44px; margin-block: -8px -8px;
+    border: 0; background: transparent; color: var(--muted); font-size: 22px; line-height: 1; cursor: pointer;
+  }
+</style>
+<div class="ios-hint" id="iosHint" role="note">
+  <div><b>Установить на iPhone:</b> нажмите «Поделиться»
+    <span aria-hidden="true">&#x2191;&#xFE0E;</span> в Safari и выберите «На экран “Домой”».</div>
+  <button type="button" id="iosHintClose" aria-label="Закрыть подсказку">&times;</button>
+</div>
+<script>
+(function () {
+  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw-chemistry.js").catch(function () {});
+    });
+  }
+  try {
+    var ua = navigator.userAgent || "";
+    var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    var standalone = window.navigator.standalone === true ||
+      (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+    var seen = false;
+    try { seen = localStorage.getItem("iosHintSeenChemistry") === "1"; } catch (e) {}
+    var hint = document.getElementById("iosHint");
+    if (isIOS && !standalone && !seen && hint) {
+      hint.classList.add("show");
+      document.getElementById("iosHintClose").onclick = function () {
+        hint.classList.remove("show");
+        try { localStorage.setItem("iosHintSeenChemistry", "1"); } catch (e) {}
+      };
+    }
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>
