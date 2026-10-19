@@ -1,7 +1,7 @@
 {
-  "name": "Физика от SvinCompany",
-  "short_name": "Физика",
-  "description": "Решатель задач по физике: Дано / Решение / Ответ",
+  "name": "Решатель SvinCompany",
+  "short_name": "Решатель",
+  "description": "Решатель задач по физике, алгебре, геометрии и химии: Дано / Решение / Ответ",
   "lang": "ru",
   "start_url": "./index.html",
   "scope": "./",

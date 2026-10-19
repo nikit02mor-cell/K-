@@ -1,6 +1,7 @@
-// Service worker: делает страницу доступной офлайн и подтягивает обновления.
+// Service worker главного меню: делает стартовую страницу доступной офлайн.
+// Страницы предметов (physics, algebra, geometry, chemistry) обслуживают свои service worker'ы.
 // При выпуске новой версии достаточно поменять номер в CACHE.
-const CACHE = "physics-svincompany-v2";
+const CACHE = "menu-svincompany-v1";
 const CORE = [
   "./",
   "./index.html",
@@ -20,7 +21,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE && k.startsWith("menu-")).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -29,11 +30,11 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
-  // Рекламу и прочие чужие запросы не кэшируем: пропускаем всё, кроме шрифтов Google.
-  if (url.origin !== location.origin && !/(^|\.)(fonts\.googleapis\.com|fonts\.gstatic\.com)$/.test(url.hostname)) return;
+  if (url.origin !== location.origin) return;
 
-  // Страница: сначала сеть (чтобы сразу видеть обновления), при отсутствии сети — кэш.
-  if (req.mode === "navigate" || (url.origin === location.origin && url.pathname.endsWith("/index.html"))) {
+  // Меню: сначала сеть (чтобы сразу видеть обновления), при отсутствии сети — кэш.
+  const isMenu = url.pathname.endsWith("/") || url.pathname.endsWith("/index.html");
+  if (isMenu) {
     event.respondWith(
       fetch(req)
         .then((res) => {
@@ -46,19 +47,21 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Остальное (иконки, шрифты Google): из кэша, а в фоне обновляем.
-  event.respondWith(
-    caches.match(req).then((cached) => {
-      const network = fetch(req)
-        .then((res) => {
-          if (res && (res.ok || res.type === "opaque")) {
-            const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put(req, copy));
-          }
-          return res;
-        })
-        .catch(() => cached);
-      return cached || network;
-    })
-  );
+  // Иконки и манифест: из кэша, в фоне обновляем. Остальные страницы не трогаем.
+  if (/\/(icons\/|manifest\.webmanifest$)/.test(url.pathname)) {
+    event.respondWith(
+      caches.match(req).then((cached) => {
+        const network = fetch(req)
+          .then((res) => {
+            if (res && res.ok) {
+              const copy = res.clone();
+              caches.open(CACHE).then((c) => c.put(req, copy));
+            }
+            return res;
+          })
+          .catch(() => cached);
+        return cached || network;
+      })
+    );
+  }
 });
