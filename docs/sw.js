@@ -1,6 +1,6 @@
 // Service worker: делает страницу доступной офлайн и подтягивает обновления.
 // При выпуске новой версии достаточно поменять номер в CACHE.
-const CACHE = "physics-svincompany-v1";
+const CACHE = "physics-svincompany-v2";
 const CORE = [
   "./",
   "./index.html",
@@ -29,6 +29,8 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
+  // Рекламу и прочие чужие запросы не кэшируем: пропускаем всё, кроме шрифтов Google.
+  if (url.origin !== location.origin && !/(^|\.)(fonts\.googleapis\.com|fonts\.gstatic\.com)$/.test(url.hostname)) return;
 
   // Страница: сначала сеть (чтобы сразу видеть обновления), при отсутствии сети — кэш.
   if (req.mode === "navigate" || (url.origin === location.origin && url.pathname.endsWith("/index.html"))) {

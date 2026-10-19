@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Физика SvinCompany</string>
+    <!-- AdMob. Сейчас стоят ТЕСТОВЫЕ идентификаторы Google: баннер показывается, но денег не приносит.
+         Замените на свои из https://admob.google.com (см. README) перед публикацией. -->
+    <string name="admob_app_id" translatable="false">ca-app-pub-3940256099942544~3347511713</string>
+    <string name="admob_banner_id" translatable="false">ca-app-pub-3940256099942544/9214589741</string>
 </resources>
