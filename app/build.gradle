@@ -4,19 +4,36 @@ plugins {
 
 android {
     namespace 'com.physicssolver.app'
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.physicssolver.app"
         minSdk 24
-        targetSdk 34
+        targetSdk 36
         versionCode 1
         versionName "1.0"
+    }
+
+    // Ключ загрузки (upload key) приходит из переменных окружения (секреты GitHub).
+    // Если их нет, release-сборка остаётся неподписанной, а debug работает как раньше.
+    signingConfigs {
+        release {
+            def keystorePath = System.getenv("UPLOAD_KEYSTORE_PATH")
+            if (keystorePath) {
+                storeFile file(keystorePath)
+                storePassword System.getenv("UPLOAD_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("UPLOAD_KEY_ALIAS")
+                keyPassword System.getenv("UPLOAD_KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
+            if (System.getenv("UPLOAD_KEYSTORE_PATH")) {
+                signingConfig signingConfigs.release
+            }
         }
     }
     compileOptions {
