@@ -319,6 +319,38 @@
     return svgWrap(W, H, "Диаграмма рассеяния и прямая регрессии", g);
   }
 
+
+  /* Граф-дерево вероятностей. Узел: { label, edge (подпись ветви), hi (выделить), note (подпись справа у листа), kids: [] }. */
+  function treeSvg(root, label) {
+    const leaves = [];
+    (function walk(n, d) { n.d = d; if (!n.kids || !n.kids.length) leaves.push(n); else n.kids.forEach((k) => walk(k, d + 1)); })(root, 0);
+    let maxD = 0; leaves.forEach((l) => { maxD = Math.max(maxD, l.d); });
+    const rowH = 44, T = 20, L = 34, colW = maxD > 2 ? 130 : 160, noteW = 210;
+    const W = L + maxD * colW + noteW + 20, H = T * 2 + Math.max(1, leaves.length - 1) * rowH + 10;
+    leaves.forEach((l, i) => { l.y = T + i * rowH + 5; });
+    (function setY(n) { if (n.kids && n.kids.length) { n.kids.forEach(setY); n.y = (n.kids[0].y + n.kids[n.kids.length - 1].y) / 2; } })(root);
+    const X = (d) => L + d * colW;
+    let g = "", nodes = "";
+    (function draw(n) {
+      (n.kids || []).forEach((k) => {
+        const hot = k.hi;
+        const x1 = X(n.d), y1 = n.y, x2 = X(k.d), y2 = k.y, mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+        g += `<line x1="${x1}" y1="${y1.toFixed(1)}" x2="${x2}" y2="${y2.toFixed(1)}" style="stroke:${hot ? "var(--accent)" : "var(--line)"}" stroke-width="${hot ? 2.5 : 1.5}"/>`;
+        if (k.edge) {
+          const tw = k.edge.length * 6.4 + 8;
+          g += `<rect x="${(mx - tw / 2).toFixed(1)}" y="${(my - 9).toFixed(1)}" width="${tw.toFixed(1)}" height="16" rx="3" style="fill:var(--surface)" stroke="none"/>`;
+          g += `<text x="${mx.toFixed(1)}" y="${(my + 3).toFixed(1)}" text-anchor="middle" style="fill:var(--ink)">${esc(k.edge)}</text>`;
+        }
+        draw(k);
+      });
+      const hot = n.hi, x = X(n.d);
+      nodes += `<circle cx="${x}" cy="${n.y.toFixed(1)}" r="${n.d === 0 ? 7 : 6}" style="fill:${hot ? "var(--accent)" : "var(--surface)"};stroke:var(--accent)" stroke-width="2"/>`;
+      if (n.label) nodes += `<text x="${x}" y="${(n.y - 12).toFixed(1)}" text-anchor="middle" style="fill:var(--ink)">${esc(n.label)}</text>`;
+      if (n.note) nodes += `<text x="${x + 12}" y="${(n.y + 4).toFixed(1)}" text-anchor="start" style="fill:${hot ? "var(--ink)" : "var(--muted)"};font-weight:${hot ? 600 : 400}">${esc(n.note)}</text>`;
+    })(root);
+    return svgWrap(W, H, label || "Граф вероятностей", g + nodes);
+  }
+
   /* =====================================================================
      ВЕРОЯТНОСТЬ
      ===================================================================== */
@@ -396,7 +428,28 @@
       step = S("P = P(A)·(1 − P(B)) + P(B)·(1 − P(A))", `${fmt(pa)}·${fmt(1 - pb)} + ${fmt(pb)}·${fmt(1 - pa)} = ${fmt(pa * (1 - pb))} + ${fmt(pb * (1 - pa))} = ${fmt(P)}`);
       note = "Произойдёт ровно одно из двух событий (события независимы).";
     }
-    return { steps: [N(note), step], answers: [A("P", P), A("P в процентах", P * 100, "%")] };
+    const steps = [N(note), step];
+    let tree;
+    if (mode === "inc") {
+      const rest = 1 - pa - pb;
+      tree = { label: "", kids: [
+        { label: "A", edge: "P(A) = " + fmt(pa), hi: true, note: "A: " + fmt(pa), kids: [] },
+        { label: "B", edge: "P(B) = " + fmt(pb), hi: true, note: "B: " + fmt(pb), kids: [] },
+        { label: "ни A, ни B", edge: fmt(rest), note: "ни A, ни B: " + fmt(Math.max(0, rest)), kids: [] },
+      ] };
+    } else {
+      const hit = { and: (a, b) => a && b, or: (a, b) => a || b, one: (a, b) => a !== b };
+      const ok = hit[mode] || hit.and;
+      const lf = (a, b, pr) => ({ label: b ? "B" : "не B", edge: fmt(b ? pb : 1 - pb), hi: ok(a, b), note: `${a ? "A" : "не A"}${b ? " и B" : " и не B"}: ${fmt(pr)}`, kids: [] });
+      tree = { label: "", kids: [
+        { label: "A", edge: fmt(pa), kids: [lf(true, true, pa * pb), lf(true, false, pa * (1 - pb))] },
+        { label: "не A", edge: fmt(1 - pa), kids: [lf(false, true, (1 - pa) * pb), lf(false, false, (1 - pa) * (1 - pb))] },
+      ] };
+      tree.kids.forEach((k) => { k.hi = k.kids.some((c) => c.hi); });
+    }
+    const plot = treeSvg(tree, "Дерево вероятностей двух событий");
+    steps.push(N("На графе подсвечены ветви, подходящие под условие. Вероятность пути — произведение чисел на его рёбрах, а ответ — сумма вероятностей подсвеченных путей."));
+    return { steps, plot, answers: [A("P", P), A("P в процентах", P * 100, "%")] };
   }
 
   /* 4. Хотя бы одно событие за n попыток */
@@ -411,7 +464,18 @@
       S("P(ни разу) = qⁿ", `${fmt(q)}^${n} = ${fmt(none)}`),
       S("P(хотя бы раз) = 1 − qⁿ", `1 − ${fmt(none)} = ${fmt(P)}`),
     ];
-    return { steps, answers: [A("P(хотя бы раз)", P), A("P в процентах", P * 100, "%"), A("P(ни разу)", none)] };
+    const shown = Math.min(n, 4);
+    let node = { label: "", kids: [] }; const root = node;
+    for (let i = 1; i <= shown; i++) {
+      const succ = { label: "успех", edge: "p = " + fmt(pe), hi: true, note: `успех в попытке ${i}`, kids: [] };
+      const fl2 = { label: i === n ? "ни разу" : `попытка ${i + 1}`, edge: "q = " + fmt(q), kids: [] };
+      if (i === n) { fl2.note = `ни разу: ${fmt(none)}`; }
+      node.kids = [succ, fl2]; node = fl2;
+    }
+    if (n > shown) { node.label = "…"; node.note = `ещё ${n - shown} попыт.; ни разу: ${fmt(none)}`; }
+    const plot = treeSvg(root, "Граф попыток");
+    steps.push(N("Граф: в каждой попытке событие происходит (p) или нет (q). Подсвечены ветви «успех»; единственный путь без успехов — все ветви q подряд."));
+    return { steps, plot, answers: [A("P(хотя бы раз)", P), A("P в процентах", P * 100, "%"), A("P(ни разу)", none)] };
   }
 
   /* 5. Условная вероятность и формула Байеса */
@@ -427,7 +491,15 @@
       S("P(H|B) = P(H)·P(B|H) / P(B)", `P(H|B) = ${fmt(ph * pbh)} / ${fmt(PB)} = ${fmt(post)}`),
     ];
     if (ph > 0) steps.push(N(`Узнав, что событие B произошло, вероятность гипотезы H изменилась с ${fmt(ph)} до ${fmt(post)} (в ${fmt(post / ph)} раза).`));
-    return { steps, answers: [A("P(B)", PB), A("P(H|B)", post), A("P(H|B) в процентах", post * 100, "%")] };
+    const lf = (t, e, pr, hot) => ({ label: t, edge: fmt(e), hi: hot, note: `${fmt(pr)}`, kids: [] });
+    const tree = { label: "", kids: [
+      { label: "H", edge: fmt(ph), hi: true, kids: [lf("B", pbh, ph * pbh, true), lf("не B", 1 - pbh, ph * (1 - pbh), false)] },
+      { label: "не H", edge: fmt(qh), kids: [lf("B", pbn, qh * pbn, true), lf("не B", 1 - pbn, qh * (1 - pbn), false)] },
+    ] };
+    tree.kids[1].hi = true;
+    const plot = treeSvg(tree, "Дерево вероятностей для формулы Байеса");
+    steps.push(N(`Граф: в конце каждого пути — вероятность пути (произведение рёбер). Подсвечены пути, где B произошло: ${fmt(ph * pbh)} (через H) и ${fmt(qh * pbn)} (через не H); P(H|B) — доля первого из их суммы.`));
+    return { steps, plot, answers: [A("P(B)", PB), A("P(H|B)", post), A("P(H|B) в процентах", post * 100, "%")] };
   }
 
   /* =====================================================================
