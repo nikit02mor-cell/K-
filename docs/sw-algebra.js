@@ -1,6 +1,6 @@
 // Service worker: делает страницу доступной офлайн и подтягивает обновления.
 // При выпуске новой версии достаточно поменять номер в CACHE.
-const CACHE = "algebra-svincompany-v2";
+const CACHE = "algebra-svincompany-v3";
 const CORE = [
   "./algebra.html",
   "./manifest-algebra.webmanifest",

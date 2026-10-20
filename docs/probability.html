@@ -1,0 +1,970 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Вероятность и статистика от SvinCompany</title>
+<meta name="description" content="Решатель задач по теории вероятностей, комбинаторике и статистике: Дано / Решение / Ответ">
+<meta name="theme-color" content="#1d5fbf">
+<link rel="manifest" href="manifest-probability.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Вероятность">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  html, body { margin: 0; }
+  body { -webkit-text-size-adjust: 100%; }
+</style>
+<style>
+  /* Та же система, что у остальных решателей: шапка, вкладки разделов, чипы задач,
+     слева форма, справа «тетрадный» лист с Дано / Решение / Ответ. */
+  :root {
+    --bg: #f2f5f9;
+    --surface: #ffffff;
+    --ink: #132033;
+    --muted: #566678;
+    --line: #d6dee8;
+    --accent: #1d5fbf;
+    --accent-ink: #ffffff;
+    --accent-soft: #e3edfa;
+    --grid: #e7edf4;
+    --warn: #b3261e;
+    --sans: "IBM Plex Sans", system-ui, "Segoe UI", Roboto, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e141b; --surface: #16202a; --ink: #e5ecf4; --muted: #92a3b5;
+      --line: #263341; --accent: #6aa6ff; --accent-ink: #0b1522; --accent-soft: #1a2a3f;
+      --grid: #1c2733; --warn: #ff8a80; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e141b; --surface: #16202a; --ink: #e5ecf4; --muted: #92a3b5;
+    --line: #263341; --accent: #6aa6ff; --accent-ink: #0b1522; --accent-soft: #1a2a3f;
+    --grid: #1c2733; --warn: #ff8a80; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font: 15px/1.5 var(--sans);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 20px 48px;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+  button, input, select { font: inherit; color: inherit; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; }
+  .brand { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .brand svg { display: block; flex: none; }
+  .brand span { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+  h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+
+  .cats { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--line); min-width: 0; }
+  .cats button { border: 0; background: none; padding: 8px 14px; cursor: pointer; color: var(--muted); white-space: nowrap;
+    border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; }
+  .cats button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: 14px; }
+  .chips button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); font-weight: 500; }
+
+  .grid { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 20px; align-items: start; }
+  @media (max-width: 820px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+  .form { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .hint { margin: 0; color: var(--muted); font-size: 13px; }
+  .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .field label { font-size: 13px; color: var(--muted); }
+  .field label b { font-family: var(--mono); font-weight: 600; color: var(--ink); margin-right: 6px; }
+  .inp { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); min-width: 0; }
+  .inp input, .inp select { flex: 1; min-width: 0; border: 0; background: none; padding: 9px 10px; font-family: var(--mono); font-size: 15px; }
+  .inp select { font-family: var(--sans); }
+  .inp .u { padding: 9px 10px 9px 0; color: var(--muted); font-size: 13px; align-self: center; white-space: nowrap; }
+  .inp:focus-within { border-color: var(--accent); }
+  .note { margin: 0; font-size: 12.5px; color: var(--muted); background: var(--accent-soft); border-radius: 6px; padding: 6px 10px; }
+
+  .paper { border: 1px solid var(--line); border-radius: 10px; padding: 20px; min-width: 0; background-color: var(--surface);
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 24px 24px; display: flex; flex-direction: column; gap: 18px; }
+  .paper h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .given { display: flex; flex-wrap: wrap; gap: 4px 22px; font-family: var(--mono); }
+  .given span { overflow-wrap: anywhere; }
+  .given span em { font-style: normal; color: var(--muted); font-size: 13px; }
+  .step { padding: 8px 0; border-top: 1px dashed var(--line); font-family: var(--mono); font-size: 14px; overflow-x: auto; }
+  .step:first-of-type { border-top: 0; padding-top: 0; }
+  .step .f { color: var(--muted); }
+  .step .c { color: var(--ink); }
+  .step.t { font-family: var(--sans); color: var(--muted); font-size: 14px; }
+  .answer { background: var(--accent-soft); border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; }
+  .answer div { font-family: var(--mono); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .answer div small { font-weight: 400; font-size: 14px; color: var(--muted); }
+  .msg { color: var(--muted); margin: 0; }
+  .msg.err { color: var(--warn); }
+  .plot { overflow-x: auto; }
+  .plot svg { display: block; max-width: 100%; height: auto; }
+  .actions { display: flex; gap: 8px; align-items: center; }
+  .actions button { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 13px; }
+  .actions span { font-size: 13px; color: var(--muted); }
+  footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); }
+  footer b { font-family: var(--mono); font-weight: 600; color: var(--ink); letter-spacing: 0.04em; }
+  sup { font-size: 0.75em; line-height: 0; }
+</style>
+
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand">
+        <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="5" fill="var(--accent)"/><rect x="4.5" y="11" width="3.4" height="6.5" rx=".8" fill="var(--accent-ink)"/><rect x="9.3" y="5" width="3.4" height="12.5" rx=".8" fill="var(--accent-ink)"/><rect x="14.1" y="8.5" width="3.4" height="9" rx=".8" fill="var(--accent-ink)"/></svg>
+        <span>SvinCompany</span>
+      </div>
+      <h1>Решатель задач · вероятность и статистика</h1>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;"><a href="index.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">← Меню</a><a href="physics.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Физика</a><a href="algebra.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Алгебра</a><a href="geometry.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Геометрия</a><a href="chemistry.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Химия</a></div>
+  </header>
+  <nav class="cats" id="cats" aria-label="Раздел"></nav>
+  <div class="chips" id="chips"></div>
+  <div class="grid">
+    <form class="form" id="form" autocomplete="off"></form>
+    <section class="paper" id="paper" aria-live="polite"></section>
+  </div>
+  <div id="adSlot"></div>
+  <footer><span>Сделано в <b>SvinCompany</b></span><span>Результаты округлены для удобства чтения</span></footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Форматирование и общие помощники ---------- */
+  const fmt = (n) => {
+    if (typeof n !== "number") return String(n);
+    if (!isFinite(n)) return "∞";
+    if (n === 0) return "0";
+    const a = Math.abs(n);
+    if (a >= 1e6 || a < 1e-3) {
+      const [m, e] = n.toExponential(3).split("e");
+      return Number(m) + "·10^" + Number(e);
+    }
+    const prec = Math.max(4, Math.floor(Math.log10(a)) + 1);
+    return String(Number(n.toPrecision(prec)));
+  };
+  const par = (n) => (n < 0 ? "(" + fmt(n) + ")" : fmt(n));
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const html = (s) => esc(s).replace(/10\^(-?\d+)/g, "10<sup>$1</sup>");
+  const S = (f, c) => ({ f, c });          // шаг: формула + подстановка
+  const N = (t) => ({ t });                // текстовый шаг
+  const A = (sym, val, unit) => [sym, val, unit || ""];
+  const fail = (m) => { throw new Error(m); };
+  const isInt = Number.isInteger;
+
+  /* Целые числа (в том числе очень большие): с пробелами между тысячами, а если длинные — в виде степени. */
+  const ints = (b) => {
+    const s = b.toString();
+    return s.length > 15 ? "≈ " + fmt(Number(b)) : s.replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  };
+  const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a || 1; };
+  const fracStr = (n, d) => { const g = gcd(n, d); return d / g === 1 ? String(n / g) : `${n / g}/${d / g}`; };
+
+  /* Проверка вероятности. */
+  const prob = (v, name) => {
+    if (!(v >= 0 && v <= 1)) fail(`${name}: вероятность — число от 0 до 1 (например, 0,25 или 1/4).`);
+  };
+
+  /* Разбор числа: поддерживает десятичную запятую и обыкновенную дробь вида 1/4. */
+  function toNum(s) {
+    s = String(s).trim().replace(",", ".");
+    if (s === "") return NaN;
+    const m = s.match(/^(-?\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)$/);
+    if (m) { const d = Number(m[2]); return d === 0 ? NaN : Number(m[1]) / d; }
+    return Number(s);
+  }
+
+  /* Разбор списка чисел. Разделители — пробелы и «;», запятая внутри числа считается десятичной.
+     Запись вида «1,2,3» (без пробелов) тоже понимается как три числа. */
+  function parseList(raw) {
+    const s = String(raw).trim();
+    if (!s) return { vals: [] };
+    let toks;
+    if (/[;\s]/.test(s)) toks = s.split(/[;\s]+/);
+    else if ((s.match(/,/g) || []).length >= 2) toks = s.split(",");
+    else toks = [s];
+    toks = toks.map((t) => t.replace(/^,+|,+$/g, "")).filter(Boolean);
+    const vals = [];
+    for (const t of toks) {
+      const v = toNum(t);
+      if (!isFinite(v)) return { vals: [], bad: t };
+      vals.push(v);
+    }
+    return { vals };
+  }
+  const listStr = (a, max) => {
+    max = max || 16;
+    return a.length > max ? a.slice(0, max).map(fmt).join("; ") + `; … (всего ${a.length})` : a.map(fmt).join("; ");
+  };
+  const joinT = (arr, sep, max) => {
+    max = max || 10;
+    return arr.length > max ? arr.slice(0, max).join(sep) + sep + "…" : arr.join(sep);
+  };
+
+  const rus = (n, one, few, many) => {
+    const a = Math.abs(n) % 100, b = a % 10;
+    return a > 10 && a < 20 ? many : b === 1 ? one : b >= 2 && b <= 4 ? few : many;
+  };
+
+  const sum = (a) => a.reduce((s, v) => s + v, 0);
+  const mean = (a) => sum(a) / a.length;
+  const sortAsc = (a) => a.slice().sort((p, q) => p - q);
+  const median = (s) => { const n = s.length, h = n >> 1; return n % 2 ? s[h] : (s[h - 1] + s[h]) / 2; };
+  const quartiles = (s) => {
+    const n = s.length, h = n >> 1;
+    const lower = s.slice(0, h), upper = s.slice(n - h);
+    return { q1: median(lower), q2: median(s), q3: median(upper), lower, upper };
+  };
+  function freqMap(a) {
+    const m = new Map();
+    a.forEach((v) => m.set(v, (m.get(v) || 0) + 1));
+    return [...m.entries()].sort((p, q) => p[0] - q[0]);
+  }
+  const needData = (a, min, max, what) => {
+    if (a.length < min) fail(`${what}: нужно хотя бы ${min} ${min === 1 ? "число" : min < 5 ? "числа" : "чисел"}.`);
+    if (a.length > max) fail(`${what}: слишком много чисел (допустимо не больше ${max}).`);
+  };
+
+  /* ---------- Комбинаторика (точные значения через BigInt) ---------- */
+  const fact = (n) => { let r = 1n; for (let i = 2n; i <= BigInt(n); i++) r *= i; return r; };
+  const nAk = (n, k) => { let r = 1n; for (let i = 0; i < k; i++) r *= BigInt(n - i); return r; };
+  const nCk = (n, k) => {
+    k = Math.min(k, n - k);
+    let r = 1n;
+    for (let i = 1; i <= k; i++) r = (r * BigInt(n - k + i)) / BigInt(i);
+    return r;
+  };
+
+  /* ---------- Рисунки (SVG) ---------- */
+  function svgWrap(W, H, label, g) {
+    return `<svg viewBox="0 0 ${W} ${H}" width="${W}" role="img" aria-label="${esc(label)}" style="font:11px var(--mono);fill:var(--muted)">${g}</svg>`;
+  }
+
+  /* Столбчатая диаграмма. o: hi — индексы выделенных столбцов, fmtV — формат подписи, xTitle, label. */
+  function barSvg(labels, values, o) {
+    o = o || {};
+    const W = 520, H = 220, L = 42, R = 12, T = 22, B = 40, n = values.length;
+    const max = Math.max.apply(null, values.concat([1e-12]));
+    const pw = W - L - R, ph = H - T - B, slot = pw / n, bw = Math.min(46, slot * 0.72);
+    const yOf = (v) => T + ph - (v / max) * ph;
+    const vf = o.fmtV || fmt;
+    let g = `<line x1="${L}" y1="${T + ph}" x2="${W - R}" y2="${T + ph}" style="stroke:var(--line)"/>`;
+    g += `<line x1="${L}" y1="${T}" x2="${W - R}" y2="${T}" style="stroke:var(--grid)"/>`;
+    g += `<text x="${L - 6}" y="${T + ph + 4}" text-anchor="end">0</text>`;
+    g += `<text x="${L - 6}" y="${T + 4}" text-anchor="end">${esc(vf(max))}</text>`;
+    const every = Math.ceil(n / 14);
+    values.forEach((v, i) => {
+      const cx = L + slot * (i + 0.5), y = yOf(v), hit = o.hi && o.hi.indexOf(i) >= 0;
+      g += `<rect x="${(cx - bw / 2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0, T + ph - y).toFixed(1)}" rx="2" style="fill:${hit ? "var(--accent)" : "var(--accent-soft)"};stroke:var(--accent)"/>`;
+      if (n <= 16 && v > 0) g += `<text x="${cx.toFixed(1)}" y="${(y - 5).toFixed(1)}" text-anchor="middle">${esc(vf(v))}</text>`;
+      if (i % every === 0) g += `<text x="${cx.toFixed(1)}" y="${T + ph + 15}" text-anchor="middle">${esc(labels[i])}</text>`;
+    });
+    if (o.xTitle) g += `<text x="${(L + pw / 2).toFixed(1)}" y="${H - 6}" text-anchor="middle">${esc(o.xTitle)}</text>`;
+    return svgWrap(W, H, o.label || "Диаграмма", g);
+  }
+  const probLabel = (v) => (v >= 0.001 ? fmt(v) : "<0.001");
+
+  /* Ящик с усами. */
+  function boxSvg(s, q1, med, q3, lo, hi, outl) {
+    const W = 520, H = 120, L = 26, R = 26, y0 = 48, bh = 34;
+    const mn = s[0], mx = s[s.length - 1], span = mx - mn || 1;
+    const X = (v) => (L + ((v - mn) / span) * (W - L - R)).toFixed(1);
+    const inl = s.filter((v) => v >= lo && v <= hi);
+    const wl = inl[0], wh = inl[inl.length - 1], mid = y0 + bh / 2;
+    let g = `<line x1="${X(wl)}" y1="${mid}" x2="${X(q1)}" y2="${mid}" style="stroke:var(--accent)" stroke-width="2"/>`;
+    g += `<line x1="${X(q3)}" y1="${mid}" x2="${X(wh)}" y2="${mid}" style="stroke:var(--accent)" stroke-width="2"/>`;
+    g += `<line x1="${X(wl)}" y1="${mid - 8}" x2="${X(wl)}" y2="${mid + 8}" style="stroke:var(--accent)" stroke-width="2"/>`;
+    g += `<line x1="${X(wh)}" y1="${mid - 8}" x2="${X(wh)}" y2="${mid + 8}" style="stroke:var(--accent)" stroke-width="2"/>`;
+    g += `<rect x="${X(q1)}" y="${y0}" width="${Math.max(1, X(q3) - X(q1)).toFixed(1)}" height="${bh}" rx="3" style="fill:var(--accent-soft);stroke:var(--accent)" stroke-width="2"/>`;
+    g += `<line x1="${X(med)}" y1="${y0}" x2="${X(med)}" y2="${y0 + bh}" style="stroke:var(--accent)" stroke-width="3"/>`;
+    outl.forEach((v) => { g += `<circle cx="${X(v)}" cy="${mid}" r="4" style="fill:none;stroke:var(--warn)" stroke-width="2"/>`; });
+    g += `<text x="${X(q1)}" y="${y0 - 8}" text-anchor="middle">Q₁</text>`;
+    g += `<text x="${X(med)}" y="${y0 - 22}" text-anchor="middle">Me</text>`;
+    g += `<text x="${X(q3)}" y="${y0 - 8}" text-anchor="middle">Q₃</text>`;
+    g += `<line x1="${L}" y1="${y0 + bh + 22}" x2="${W - R}" y2="${y0 + bh + 22}" style="stroke:var(--line)"/>`;
+    g += `<text x="${L}" y="${y0 + bh + 38}" text-anchor="start">${esc(fmt(mn))}</text>`;
+    g += `<text x="${W - R}" y="${y0 + bh + 38}" text-anchor="end">${esc(fmt(mx))}</text>`;
+    return svgWrap(W, H + 14, "Ящик с усами", g);
+  }
+
+  /* Диаграмма рассеяния с прямой y = a + bx. */
+  function scatterSvg(xs, ys, a, b) {
+    const W = 520, H = 290, L = 46, R = 14, T = 14, B = 36;
+    const x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+    const ly0 = a + b * x0, ly1 = a + b * x1;
+    const y0 = Math.min(Math.min.apply(null, ys), ly0, ly1), y1 = Math.max(Math.max.apply(null, ys), ly0, ly1);
+    const sx = x1 - x0 || 1, sy = y1 - y0 || 1;
+    const X = (v) => (L + ((v - x0) / sx) * (W - L - R)).toFixed(1);
+    const Y = (v) => (T + (1 - (v - y0) / sy) * (H - T - B)).toFixed(1);
+    let g = `<line x1="${L}" y1="${H - B}" x2="${W - R}" y2="${H - B}" style="stroke:var(--line)"/><line x1="${L}" y1="${T}" x2="${L}" y2="${H - B}" style="stroke:var(--line)"/>`;
+    g += `<line x1="${X(x0)}" y1="${Y(ly0)}" x2="${X(x1)}" y2="${Y(ly1)}" style="stroke:var(--accent)" stroke-width="2"/>`;
+    xs.forEach((v, i) => { g += `<circle cx="${X(v)}" cy="${Y(ys[i])}" r="4" style="fill:var(--surface);stroke:var(--accent)" stroke-width="2"/>`; });
+    g += `<text x="${L}" y="${H - B + 16}" text-anchor="middle">${esc(fmt(x0))}</text><text x="${W - R}" y="${H - B + 16}" text-anchor="end">${esc(fmt(x1))}</text>`;
+    g += `<text x="${L - 6}" y="${H - B + 4}" text-anchor="end">${esc(fmt(y0))}</text><text x="${L - 6}" y="${T + 8}" text-anchor="end">${esc(fmt(y1))}</text>`;
+    g += `<text x="${((L + W - R) / 2).toFixed(1)}" y="${H - 6}" text-anchor="middle">x</text>`;
+    return svgWrap(W, H, "Диаграмма рассеяния и прямая регрессии", g);
+  }
+
+  /* =====================================================================
+     ВЕРОЯТНОСТЬ
+     ===================================================================== */
+
+  /* 1. Классическая вероятность */
+  function solveClassic(x) {
+    const { m, n } = x;
+    if (!isInt(m) || !isInt(n)) fail("m и n — количества исходов, они должны быть целыми числами.");
+    if (n <= 0) fail("Всего исходов должно быть больше нуля.");
+    if (m < 0 || m > n) fail("Благоприятных исходов не может быть меньше нуля или больше, чем всего исходов.");
+    const P = m / n, fr = fracStr(m, n);
+    const steps = [S("P(A) = m / n", `P(A) = ${m} / ${n} = ${fmt(P)}`)];
+    if (fr !== `${m}/${n}` && fr !== String(m)) steps.push(N(`Дробь сокращается: ${m}/${n} = ${fr}.`));
+    steps.push(S("P(не A) = 1 − P(A)", `P(не A) = 1 − ${fmt(P)} = ${fmt(1 - P)}`));
+    if (P === 0) steps.push(N("P(A) = 0 — событие невозможно."));
+    if (P === 1) steps.push(N("P(A) = 1 — событие достоверно."));
+    return { steps, answers: [A("P(A)", P), A("P(A) в процентах", P * 100, "%"), A("Дробью", fr), A("P(не A)", 1 - P)] };
+  }
+
+  /* 2. Игральные кости */
+  function solveDice(x) {
+    const k = Number(x.dice), s = x.s;
+    if (!isInt(s)) fail("Сумма очков — целое число.");
+    const total = 6 ** k;
+    let cnt = [1];
+    for (let d = 0; d < k; d++) {
+      const nx = new Array(cnt.length + 6).fill(0);
+      cnt.forEach((c, i) => { for (let f = 1; f <= 6; f++) nx[i + f] += c; });
+      cnt = nx;
+    }
+    const m = cnt[s] || 0;
+    const steps = [S("n = 6^k — всего исходов", `n = 6^${k} = ${total}`)];
+    if (s < k || s > 6 * k) {
+      steps.push(N(`Сумма ${s} невозможна: на ${k === 1 ? "кубике" : k + " кубиках"} она бывает от ${k} до ${6 * k}.`));
+    } else {
+      if (k >= 2 && m <= 15) {
+        const out = [];
+        const rec = (left, rem, cur) => {
+          if (left === 0) { if (rem === 0) out.push("(" + cur.join("; ") + ")"); return; }
+          for (let f = 1; f <= 6 && f <= rem; f++) rec(left - 1, rem - f, cur.concat(f));
+        };
+        rec(k, s, []);
+        steps.push(N(`Благоприятные исходы (сумма ${s}): ${out.join(", ")}.`));
+      }
+      steps.push(S("m — благоприятных исходов", `m = ${m}`));
+    }
+    const P = m / total;
+    steps.push(S("P = m / n", `P = ${m} / ${total} = ${fmt(P)}`));
+    const labels = [], vals = [];
+    for (let t = k; t <= 6 * k; t++) { labels.push(String(t)); vals.push(cnt[t]); }
+    const plot = barSvg(labels, vals, { hi: s >= k && s <= 6 * k ? [s - k] : [], xTitle: "сумма очков (число исходов для каждой суммы)", label: "Число исходов для каждой суммы очков" });
+    return { steps, plot, answers: [A("P", P), A("P в процентах", P * 100, "%"), A("Дробью", fracStr(m, total)), A("m", m), A("n", total)] };
+  }
+
+  /* 3. Два независимых события */
+  function solveEvents(x) {
+    const { pa, pb, mode } = x;
+    prob(pa, "P(A)"); prob(pb, "P(B)");
+    let P, step, note;
+    if (mode === "and") {
+      P = pa * pb;
+      step = S("P(A·B) = P(A)·P(B)", `${fmt(pa)}·${fmt(pb)} = ${fmt(P)}`);
+      note = "Оба события произойдут (события независимы).";
+    } else if (mode === "or") {
+      P = pa + pb - pa * pb;
+      step = S("P(A+B) = P(A) + P(B) − P(A)·P(B)", `${fmt(pa)} + ${fmt(pb)} − ${fmt(pa)}·${fmt(pb)} = ${fmt(P)}`);
+      note = "Произойдёт хотя бы одно из двух событий (события независимы). Проверка: 1 − (1 − P(A))·(1 − P(B)) = " + fmt(1 - (1 - pa) * (1 - pb)) + ".";
+    } else if (mode === "inc") {
+      if (pa + pb > 1 + 1e-12) fail("Для несовместных событий сумма вероятностей не может быть больше 1.");
+      P = pa + pb;
+      step = S("P(A+B) = P(A) + P(B)", `${fmt(pa)} + ${fmt(pb)} = ${fmt(P)}`);
+      note = "Произойдёт A или B; события несовместны (вместе не бывают).";
+    } else {
+      P = pa * (1 - pb) + pb * (1 - pa);
+      step = S("P = P(A)·(1 − P(B)) + P(B)·(1 − P(A))", `${fmt(pa)}·${fmt(1 - pb)} + ${fmt(pb)}·${fmt(1 - pa)} = ${fmt(pa * (1 - pb))} + ${fmt(pb * (1 - pa))} = ${fmt(P)}`);
+      note = "Произойдёт ровно одно из двух событий (события независимы).";
+    }
+    return { steps: [N(note), step], answers: [A("P", P), A("P в процентах", P * 100, "%")] };
+  }
+
+  /* 4. Хотя бы одно событие за n попыток */
+  function solveAtLeast(x) {
+    const { p: pe, n } = x;
+    prob(pe, "p");
+    if (!isInt(n) || n < 1 || n > 1000) fail("n — число попыток, целое от 1 до 1000.");
+    const q = 1 - pe, none = Math.pow(q, n), P = 1 - none;
+    const steps = [
+      N(`Противоположное событие — «за ${n} попыток не произошло ни разу».`),
+      S("q = 1 − p", `q = 1 − ${fmt(pe)} = ${fmt(q)}`),
+      S("P(ни разу) = qⁿ", `${fmt(q)}^${n} = ${fmt(none)}`),
+      S("P(хотя бы раз) = 1 − qⁿ", `1 − ${fmt(none)} = ${fmt(P)}`),
+    ];
+    return { steps, answers: [A("P(хотя бы раз)", P), A("P в процентах", P * 100, "%"), A("P(ни разу)", none)] };
+  }
+
+  /* 5. Условная вероятность и формула Байеса */
+  function solveBayes(x) {
+    const { ph, pbh, pbn } = x;
+    prob(ph, "P(H)"); prob(pbh, "P(B|H)"); prob(pbn, "P(B|не H)");
+    const qh = 1 - ph, PB = ph * pbh + qh * pbn;
+    if (PB === 0) fail("Вероятность события B равна нулю, поэтому условная вероятность не определена.");
+    const post = (ph * pbh) / PB;
+    const steps = [
+      S("P(не H) = 1 − P(H)", `P(не H) = 1 − ${fmt(ph)} = ${fmt(qh)}`),
+      S("P(B) = P(H)·P(B|H) + P(не H)·P(B|не H)", `P(B) = ${fmt(ph)}·${fmt(pbh)} + ${fmt(qh)}·${fmt(pbn)} = ${fmt(ph * pbh)} + ${fmt(qh * pbn)} = ${fmt(PB)}`),
+      S("P(H|B) = P(H)·P(B|H) / P(B)", `P(H|B) = ${fmt(ph * pbh)} / ${fmt(PB)} = ${fmt(post)}`),
+    ];
+    if (ph > 0) steps.push(N(`Узнав, что событие B произошло, вероятность гипотезы H изменилась с ${fmt(ph)} до ${fmt(post)} (в ${fmt(post / ph)} раза).`));
+    return { steps, answers: [A("P(B)", PB), A("P(H|B)", post), A("P(H|B) в процентах", post * 100, "%")] };
+  }
+
+  /* =====================================================================
+     КОМБИНАТОРИКА
+     ===================================================================== */
+
+  /* 6. Перестановки */
+  function solvePerm(x) {
+    const n = x.n;
+    if (!isInt(n) || n < 0 || n > 100) fail("n — целое число от 0 до 100.");
+    const v = fact(n);
+    const expand = n >= 2 && n <= 10 ? `${n}! = ${Array.from({ length: n }, (_, i) => i + 1).join("·")} = ${ints(v)}` : `${n}! = ${ints(v)}`;
+    const steps = [S("P(n) = n! = 1·2·3·…·n", expand)];
+    if (n === 0) steps.push(N("По определению 0! = 1."));
+    steps.push(N(`Столько способов выстроить ${n} различных предметов в ряд: первый выбираем из ${n}, следующий из оставшихся, и так далее.`));
+    return { steps, answers: [A("P(n)", ints(v))] };
+  }
+
+  /* 7. Перестановки букв слова */
+  function solveWord(x) {
+    const chars = Array.from(String(x.word).toUpperCase().replace(/\s+/g, ""));
+    if (chars.length < 1 || chars.length > 30) fail("Слово должно содержать от 1 до 30 букв.");
+    const cnt = new Map();
+    chars.forEach((c) => cnt.set(c, (cnt.get(c) || 0) + 1));
+    const n = chars.length, reps = [...cnt.entries()].filter((e) => e[1] > 1);
+    let den = 1n;
+    cnt.forEach((c) => { den *= fact(c); });
+    const total = fact(n) / den;
+    const steps = [N(`В слове ${n} ${n === 1 ? "буква" : n < 5 ? "буквы" : "букв"}. Количество каждой: ${[...cnt.entries()].map((e) => `${e[0]} — ${e[1]}`).join(", ")}.`)];
+    if (reps.length) {
+      steps.push(S("P = n! / (n₁!·n₂!·…)", `${n}! / (${reps.map((e) => e[1] + "!").join("·")}) = ${ints(fact(n))} / ${ints(den)} = ${ints(total)}`));
+      steps.push(N("Повторяющиеся буквы нельзя отличить друг от друга, поэтому делим на число перестановок одинаковых букв."));
+    } else {
+      steps.push(S("P = n!", `${n}! = ${ints(total)}`));
+      steps.push(N("Все буквы разные, поэтому подходят все перестановки."));
+    }
+    return { steps, answers: [A("Различных расстановок", ints(total))] };
+  }
+
+  /* 8. Размещения, сочетания и их варианты с повторениями */
+  function solveArrComb(x) {
+    const { n, k, mode } = x;
+    if (!isInt(n) || n < 0 || n > 100) fail("n — целое число от 0 до 100.");
+    if (!isInt(k) || k < 0 || k > 100) fail("k — целое число от 0 до 100.");
+    const steps = [];
+    let res, title;
+    if (mode === "arr" || mode === "comb") {
+      if (k > n) fail(`Нельзя выбрать k = ${k} элементов из n = ${n} без повторений: k не должно быть больше n.`);
+    }
+    if (mode === "arr") {
+      res = nAk(n, k); title = "Размещения A(n; k)";
+      steps.push(S("A(n; k) = n! / (n − k)!", `A(${n}; ${k}) = ${n}! / ${n - k}!`));
+      if (k >= 1) {
+        const terms = Array.from({ length: k }, (_, i) => n - i);
+        steps.push(S(`Произведение k = ${k} множителей, начиная с n`, `${k <= 8 ? terms.join("·") : terms.slice(0, 3).join("·") + "·…·" + terms[k - 1]} = ${ints(res)}`));
+      } else steps.push(N("При k = 0 есть единственный (пустой) выбор."));
+      steps.push(N("Порядок элементов важен: (a; b) и (b; a) считаются разными."));
+    } else if (mode === "comb") {
+      res = nCk(n, k); title = "Сочетания C(n; k)";
+      steps.push(S("C(n; k) = n! / (k!·(n − k)!)", `C(${n}; ${k}) = ${n}! / (${k}!·${n - k}!)`));
+      steps.push(S("C(n; k) = A(n; k) / k!", `${ints(nAk(n, k))} / ${ints(fact(k))} = ${ints(res)}`));
+      if (k > n - k) steps.push(N(`Удобно считать через симметрию: C(${n}; ${k}) = C(${n}; ${n - k}).`));
+      steps.push(N("Порядок не важен: важен лишь состав выбранных элементов."));
+    } else if (mode === "rep") {
+      if (n < 1) fail("Для размещений с повторениями нужно n ≥ 1.");
+      res = BigInt(n) ** BigInt(k); title = "Размещения с повторениями";
+      steps.push(S("Ā(n; k) = nᵏ", `${n}^${k} = ${ints(res)}`));
+      steps.push(N("Каждый из k мест можно заполнить n способами независимо от остальных."));
+    } else {
+      if (n < 1) fail("Для сочетаний с повторениями нужно n ≥ 1.");
+      res = nCk(n + k - 1, k); title = "Сочетания с повторениями";
+      steps.push(S("C̄(n; k) = C(n + k − 1; k)", `C(${n + k - 1}; ${k}) = ${ints(res)}`));
+      steps.push(N("Выбираем k элементов из n видов, виды могут повторяться, порядок не важен."));
+    }
+    return { steps, answers: [A(title, ints(res))] };
+  }
+
+  /* =====================================================================
+     РАСПРЕДЕЛЕНИЯ
+     ===================================================================== */
+
+  /* 9. Схема Бернулли */
+  function solveBernoulli(x) {
+    const { n, k, p: pe } = x;
+    if (!isInt(n) || n < 1 || n > 100) fail("n — число испытаний, целое от 1 до 100.");
+    if (!isInt(k) || k < 0 || k > n) fail("k — число успехов, целое от 0 до n.");
+    prob(pe, "p");
+    const q = 1 - pe;
+    const probs = [];
+    for (let i = 0; i <= n; i++) probs.push(Number(nCk(n, i)) * Math.pow(pe, i) * Math.pow(q, n - i));
+    const Pk = probs[k];
+    const le = Math.min(1, sum(probs.slice(0, k + 1))), ge = Math.min(1, sum(probs.slice(k)));
+    const M = n * pe, D = n * pe * q;
+    const top = Math.max.apply(null, probs);
+    const modes = probs.map((v, i) => (v >= top * (1 - 1e-12) ? i : -1)).filter((i) => i >= 0);
+    const steps = [
+      N(`Схема Бернулли: ${n} независимых испытаний, в каждом успех с вероятностью p = ${fmt(pe)}, неудача q = 1 − p = ${fmt(q)}.`),
+      S("P(k) = C(n; k)·pᵏ·qⁿ⁻ᵏ", `P(${k}) = C(${n}; ${k})·${fmt(pe)}^${k}·${fmt(q)}^${n - k} = ${ints(nCk(n, k))}·${fmt(Math.pow(pe, k))}·${fmt(Math.pow(q, n - k))} = ${fmt(Pk)}`),
+      S("P(X ≤ k) = P(0) + P(1) + … + P(k)", `P(X ≤ ${k}) = ${fmt(le)}`),
+      S("P(X ≥ k) = P(k) + … + P(n)", `P(X ≥ ${k}) = ${fmt(ge)}`),
+      S("M = n·p,  D = n·p·q", `M = ${n}·${fmt(pe)} = ${fmt(M)},  D = ${n}·${fmt(pe)}·${fmt(q)} = ${fmt(D)}`),
+    ];
+    const plot = barSvg(probs.map((_, i) => String(i)), probs, { hi: [k], fmtV: probLabel, xTitle: "число успехов k, высота столбца — вероятность P(k)", label: "Распределение числа успехов" });
+    return { steps, plot, answers: [A(`P(X = ${k})`, Pk), A(`P(X = ${k}) в процентах`, Pk * 100, "%"), A(`P(X ≤ ${k})`, le), A(`P(X ≥ ${k})`, ge), A("M(X)", M), A("D(X)", D), A("Самое вероятное k", modes.join(" и "))] };
+  }
+
+  /* 10. Дискретная случайная величина */
+  function solveRV(x) {
+    const xs = x.xs, ps = x.ps;
+    if (xs.length !== ps.length) fail(`Значений ${xs.length}, а вероятностей ${ps.length}: их должно быть поровну.`);
+    needData(xs, 1, 30, "Значения");
+    ps.forEach((v) => prob(v, "pᵢ"));
+    const total = sum(ps);
+    if (Math.abs(total - 1) > 1e-6) fail(`Сумма вероятностей должна быть равна 1, а сейчас она равна ${fmt(total)}.`);
+    const M = sum(xs.map((v, i) => v * ps[i]));
+    const M2 = sum(xs.map((v, i) => v * v * ps[i]));
+    const D = Math.max(0, M2 - M * M), sd = Math.sqrt(D);
+    const steps = [
+      S("Σpᵢ = 1", `${joinT(ps.map(fmt), " + ")} = ${fmt(total)}: условие выполнено`),
+      S("M(X) = Σ xᵢ·pᵢ", `${joinT(xs.map((v, i) => `${par(v)}·${fmt(ps[i])}`), " + ")} = ${fmt(M)}`),
+      S("M(X²) = Σ xᵢ²·pᵢ", `${joinT(xs.map((v, i) => `${par(v)}²·${fmt(ps[i])}`), " + ")} = ${fmt(M2)}`),
+      S("D(X) = M(X²) − (M(X))²", `${fmt(M2)} − ${par(M)}² = ${fmt(D)}`),
+      S("σ = √D", `√${fmt(D)} = ${fmt(sd)}`),
+    ];
+    const plot = xs.length <= 20 ? barSvg(xs.map(fmt), ps, { fmtV: probLabel, xTitle: "значение xᵢ, высота столбца — вероятность pᵢ", label: "Распределение случайной величины" }) : "";
+    return { steps, plot, answers: [A("M(X)", M), A("D(X)", D), A("σ", sd)] };
+  }
+
+  /* =====================================================================
+     СТАТИСТИКА
+     ===================================================================== */
+
+  /* 11. Среднее, медиана, мода, размах */
+  function solveDescr(x) {
+    const d = x.data;
+    needData(d, 1, 500, "Ряд данных");
+    const n = d.length, s = sortAsc(d), total = sum(d), avg = total / n, me = median(s);
+    const fm = freqMap(d), top = Math.max.apply(null, fm.map((e) => e[1]));
+    const modes = fm.filter((e) => e[1] === top).map((e) => e[0]);
+    const noMode = top === 1 && n > 1;
+    const steps = [
+      N(`Всего значений: n = ${n}.`),
+      S("x̄ = (x₁ + x₂ + … + xₙ) / n", `(${joinT(d.map(fmt), " + ", 12)}) / ${n} = ${fmt(total)} / ${n} = ${fmt(avg)}`),
+      S("Упорядоченный ряд", listStr(s, 30)),
+      n % 2
+        ? S("Медиана: n нечётно — значение посередине", `Me = x(${(n + 1) / 2}) = ${fmt(me)}`)
+        : S("Медиана: n чётно — среднее двух средних", `Me = (${fmt(s[n / 2 - 1])} + ${fmt(s[n / 2])}) / 2 = ${fmt(me)}`),
+      noMode ? N("Мода: все значения встречаются по одному разу, моды нет.") : S("Мода — самое частое значение", `Mo = ${modes.map(fmt).join(", ")} (встречается ${top} ${rus(top, "раз", "раза", "раз")})`),
+      S("Размах R = max − min", `R = ${fmt(s[n - 1])} − ${par(s[0])} = ${fmt(s[n - 1] - s[0])}`),
+    ];
+    return { steps, answers: [A("Среднее x̄", avg), A("Медиана Me", me), A("Мода Mo", noMode ? "нет" : modes.map(fmt).join(", ")), A("Размах R", s[n - 1] - s[0]), A("Минимум", s[0]), A("Максимум", s[n - 1])] };
+  }
+
+  /* 12. Дисперсия и стандартное отклонение */
+  function solveVariance(x) {
+    const d = x.data, sample = x.kind === "sample";
+    needData(d, sample ? 2 : 1, 500, "Ряд данных");
+    const n = d.length, avg = mean(d), dev = d.map((v) => v - avg), sq = dev.map((v) => v * v), ss = sum(sq);
+    const den = sample ? n - 1 : n, D = ss / den, sd = Math.sqrt(D);
+    const steps = [
+      S("x̄ = Σxᵢ / n", `x̄ = ${fmt(sum(d))} / ${n} = ${fmt(avg)}`),
+      S("Отклонения xᵢ − x̄", joinT(dev.map(fmt), "; ", 12)),
+      S("Σ(xᵢ − x̄)²", `${joinT(dev.map((v) => par(v) + "²"), " + ", 8)} = ${fmt(ss)}`),
+      sample
+        ? S("s² = Σ(xᵢ − x̄)² / (n − 1)", `s² = ${fmt(ss)} / ${den} = ${fmt(D)}`)
+        : S("D = Σ(xᵢ − x̄)² / n", `D = ${fmt(ss)} / ${den} = ${fmt(D)}`),
+      S(sample ? "s = √s²" : "σ = √D", `√${fmt(D)} = ${fmt(sd)}`),
+    ];
+    const ans = [A("Среднее x̄", avg), A(sample ? "Выборочная дисперсия s²" : "Дисперсия D", D), A(sample ? "Стандартное отклонение s" : "Стандартное отклонение σ", sd)];
+    if (avg !== 0) {
+      const cv = (sd / Math.abs(avg)) * 100;
+      steps.push(S("Коэффициент вариации V = σ / |x̄|·100%", `V = ${fmt(sd)} / ${fmt(Math.abs(avg))}·100% = ${fmt(cv)}%`));
+      ans.push(A("Коэффициент вариации V", cv, "%"));
+    }
+    return { steps, answers: ans };
+  }
+
+  /* 13. Таблица частот */
+  function solveFreq(x) {
+    const d = x.data;
+    needData(d, 1, 500, "Ряд данных");
+    const n = d.length, fm = freqMap(d);
+    const steps = [N(`Всего значений: n = ${n}, различных: ${fm.length}. Частота m — сколько раз значение встретилось, w = m / n — относительная частота.`)];
+    let cum = 0;
+    fm.slice(0, 30).forEach(([v, c]) => {
+      cum += c;
+      steps.push(S(`Значение ${fmt(v)}`, `m = ${c},  w = ${c}/${n} = ${fmt(c / n)} (${fmt((c / n) * 100)}%),  накопленная m = ${cum}`));
+    });
+    if (fm.length > 30) steps.push(N(`Показаны первые 30 значений из ${fm.length}.`));
+    let plot = "";
+    if (fm.length <= 25) plot = barSvg(fm.map((e) => fmt(e[0])), fm.map((e) => e[1]), { xTitle: "значение (высота столбца — частота m)", label: "Диаграмма частот" });
+    else steps.push(N("Значений слишком много для столбчатой диаграммы: используйте «Гистограмму (интервалы)»."));
+    const top = Math.max.apply(null, fm.map((e) => e[1]));
+    const modes = fm.filter((e) => e[1] === top).map((e) => fmt(e[0]));
+    const most = fm.length > 1 && modes.length === fm.length
+      ? `все значения встречаются одинаково часто (m = ${top})`
+      : modes.slice(0, 6).join(", ") + (modes.length > 6 ? ", …" : "") + ` (m = ${top})`;
+    return { steps, plot, answers: [A("Всего значений n", n), A("Различных значений", fm.length), A("Самое частое", most)] };
+  }
+
+  /* 14. Гистограмма по интервалам */
+  function solveHist(x) {
+    const d = x.data, h = x.h;
+    needData(d, 2, 500, "Ряд данных");
+    if (!(h > 0)) fail("Ширина интервала h должна быть больше нуля.");
+    const s = sortAsc(d), mn = s[0], mx = s[s.length - 1], n = d.length;
+    const start = Math.floor(mn / h + 1e-9) * h;
+    const k = Math.floor((mx - start) / h + 1e-9) + 1;
+    if (k > 40) fail(`Получается ${k} интервалов — это слишком много. Увеличьте ширину h.`);
+    const cnt = new Array(k).fill(0);
+    d.forEach((v) => { cnt[Math.min(k - 1, Math.floor((v - start) / h + 1e-9))]++; });
+    const edge = (i) => Number((start + i * h).toFixed(10));
+    const steps = [
+      S("Размах R = max − min", `R = ${fmt(mx)} − ${par(mn)} = ${fmt(mx - mn)}`),
+      S("Левая граница — ближайшее кратное h снизу", `${fmt(edge(0))};  число интервалов k = ${k}`),
+      N("Интервалы полуоткрытые: [a; b) — левая граница входит, правая нет."),
+    ];
+    cnt.forEach((c, i) => steps.push(S(`[${fmt(edge(i))}; ${fmt(edge(i + 1))})`, `m = ${c},  w = ${c}/${n} = ${fmt(c / n)} (${fmt((c / n) * 100)}%)`)));
+    const top = Math.max.apply(null, cnt), ti = cnt.indexOf(top);
+    const plot = barSvg(cnt.map((_, i) => fmt(edge(i))), cnt, { hi: [ti], xTitle: "левая граница интервала (высота столбца — частота m)", label: "Гистограмма" });
+    return { steps, plot, answers: [A("Число интервалов k", k), A("Самый частый интервал", `[${fmt(edge(ti))}; ${fmt(edge(ti + 1))})`), A("Частота в нём m", top)] };
+  }
+
+  /* 15. Квартили и выбросы */
+  function solveQuart(x) {
+    const d = x.data;
+    needData(d, 4, 500, "Ряд данных");
+    const s = sortAsc(d), n = s.length, { q1, q2, q3, lower, upper } = quartiles(s);
+    const iqr = q3 - q1, lo = q1 - 1.5 * iqr, hi = q3 + 1.5 * iqr;
+    const outl = s.filter((v) => v < lo || v > hi);
+    const steps = [
+      S("Упорядоченный ряд", listStr(s, 30)),
+      S("Медиана Q₂ = Me", `Q₂ = ${fmt(q2)}${n % 2 ? " (при нечётном n сама медиана в половины не входит)" : ""}`),
+      S("Нижняя половина → Q₁ (её медиана)", `${listStr(lower, 12)}  →  Q₁ = ${fmt(q1)}`),
+      S("Верхняя половина → Q₃ (её медиана)", `${listStr(upper, 12)}  →  Q₃ = ${fmt(q3)}`),
+      S("IQR = Q₃ − Q₁", `IQR = ${fmt(q3)} − ${par(q1)} = ${fmt(iqr)}`),
+      S("Границы выбросов: Q₁ − 1,5·IQR и Q₃ + 1,5·IQR", `${fmt(lo)}  и  ${fmt(hi)}`),
+      N(outl.length ? `Выбросы (за границами): ${outl.map(fmt).join(", ")}.` : "Значений за границами нет, выбросов нет."),
+      N("Квартили найдены методом медиан половин; в Excel и других программах значения могут немного отличаться."),
+    ];
+    return { steps, plot: boxSvg(s, q1, q2, q3, lo, hi, outl), answers: [A("Q₁", q1), A("Медиана Me", q2), A("Q₃", q3), A("IQR", iqr), A("Выбросы", outl.length ? outl.map(fmt).join(", ") : "нет")] };
+  }
+
+  /* 16. Среднее взвешенное */
+  function solveWeighted(x) {
+    const xs = x.xs, ws = x.ws;
+    if (xs.length !== ws.length) fail(`Значений ${xs.length}, а весов ${ws.length}: их должно быть поровну.`);
+    needData(xs, 1, 200, "Значения");
+    if (ws.some((v) => v < 0)) fail("Веса не могут быть отрицательными.");
+    const W = sum(ws);
+    if (W === 0) fail("Сумма весов равна нулю — среднее не определено.");
+    const num = sum(xs.map((v, i) => v * ws[i])), avg = num / W;
+    const steps = [
+      S("Σ xᵢ·wᵢ", `${joinT(xs.map((v, i) => `${par(v)}·${fmt(ws[i])}`), " + ")} = ${fmt(num)}`),
+      S("Σ wᵢ", `${joinT(ws.map(fmt), " + ")} = ${fmt(W)}`),
+      S("x̄ = Σ xᵢ·wᵢ / Σ wᵢ", `x̄ = ${fmt(num)} / ${fmt(W)} = ${fmt(avg)}`),
+      N(`Для сравнения, простое среднее без весов: ${fmt(mean(xs))}.`),
+    ];
+    return { steps, answers: [A("Среднее взвешенное x̄", avg), A("Σ xᵢ·wᵢ", num), A("Σ wᵢ", W)] };
+  }
+
+  /* 17. Корреляция и прямая регрессии */
+  function solveRegress(x) {
+    const xs = x.xs, ys = x.ys;
+    if (xs.length !== ys.length) fail(`Значений x — ${xs.length}, а значений y — ${ys.length}: их должно быть поровну.`);
+    needData(xs, 2, 200, "Значения x и y");
+    const n = xs.length, mx = mean(xs), my = mean(ys);
+    const Sxx = sum(xs.map((v) => (v - mx) ** 2)), Syy = sum(ys.map((v) => (v - my) ** 2));
+    const Sxy = sum(xs.map((v, i) => (v - mx) * (ys[i] - my)));
+    if (Sxx === 0) fail("Все значения x одинаковы — прямую построить нельзя.");
+    const b = Sxy / Sxx, a = my - b * mx;
+    const r = Syy === 0 ? null : Sxy / Math.sqrt(Sxx * Syy);
+    const eq = `y = ${fmt(a)} ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}·x`;
+    const steps = [
+      S("x̄ = Σx / n,  ȳ = Σy / n", `x̄ = ${fmt(sum(xs))}/${n} = ${fmt(mx)},  ȳ = ${fmt(sum(ys))}/${n} = ${fmt(my)}`),
+      S("Sxx = Σ(x − x̄)²,  Syy = Σ(y − ȳ)²", `Sxx = ${fmt(Sxx)},  Syy = ${fmt(Syy)}`),
+      S("Sxy = Σ(x − x̄)(y − ȳ)", `Sxy = ${fmt(Sxy)}`),
+      S("b = Sxy / Sxx", `b = ${fmt(Sxy)} / ${fmt(Sxx)} = ${fmt(b)}`),
+      S("a = ȳ − b·x̄", `a = ${fmt(my)} − ${par(b)}·${fmt(mx)} = ${fmt(a)}`),
+    ];
+    const ans = [A("Прямая регрессии", eq), A("Наклон b", b), A("Свободный член a", a)];
+    if (r === null) {
+      steps.push(N("Все значения y одинаковы: прямая горизонтальна, коэффициент корреляции не определён."));
+      ans.push(A("r", "не определён"));
+    } else {
+      const ar = Math.abs(r);
+      const strength = ar >= 0.7 ? "сильная" : ar >= 0.3 ? "умеренная" : "слабая";
+      steps.push(S("r = Sxy / √(Sxx·Syy)", `r = ${fmt(Sxy)} / √(${fmt(Sxx)}·${fmt(Syy)}) = ${fmt(r)}`));
+      steps.push(N(`|r| = ${fmt(ar)}: связь ${strength}, ${r < 0 ? "обратная (y убывает при росте x)" : "прямая (y растёт при росте x)"}. Коэффициент детерминации r² = ${fmt(r * r)}.`));
+      ans.push(A("Коэффициент корреляции r", r), A("r²", r * r));
+    }
+    if (x.x0 !== null && x.x0 !== undefined) {
+      const yp = a + b * x.x0;
+      steps.push(S("Прогноз y = a + b·x₀", `y(${fmt(x.x0)}) = ${fmt(a)} ${b < 0 ? "−" : "+"} ${fmt(Math.abs(b))}·${par(x.x0)} = ${fmt(yp)}`));
+      if (x.x0 < Math.min.apply(null, xs) || x.x0 > Math.max.apply(null, xs)) steps.push(N("x₀ лежит за пределами данных: такой прогноз (экстраполяция) менее надёжен."));
+      ans.push(A(`Прогноз y(${fmt(x.x0)})`, yp));
+    }
+    return { steps, plot: scatterSvg(xs, ys, a, b), answers: ans };
+  }
+
+  /* ---------- Каталог задач ---------- */
+  const fl = (id, sy, label, unit, extra) => Object.assign({ id, sym: sy, label, unit }, extra || {});
+  const PF = { frac: true };   // вероятность: можно вводить 0,25 или 1/4
+  const TASKS = [
+    { cat: "Вероятность", id: "classic", title: "Классическая вероятность", hint: "P(A) = m / n: благоприятные исходы к общему числу равновозможных исходов.",
+      fields: [fl("m", "m", "благоприятных исходов", ""), fl("n", "n", "всего исходов", "")],
+      ex: { m: "5", n: "20" }, solve: solveClassic },
+    { cat: "Вероятность", id: "dice", title: "Игральные кости", hint: "Вероятность выпадения заданной суммы очков.",
+      fields: [fl("dice", "", "сколько кубиков", "", { select: [["1", "1 кубик"], ["2", "2 кубика"], ["3", "3 кубика"]] }), fl("s", "s", "сумма очков", "")],
+      ex: { dice: "2", s: "7" }, solve: solveDice },
+    { cat: "Вероятность", id: "events", title: "Два события", hint: "Вероятности вводите от 0 до 1: 0,25 или 1/4.",
+      fields: [fl("pa", "P(A)", "вероятность события A", "", PF), fl("pb", "P(B)", "вероятность события B", "", PF),
+               fl("mode", "", "что найти", "", { select: [["and", "A и B вместе (независимые)"], ["or", "хотя бы одно из A, B (независимые)"], ["one", "ровно одно из A, B (независимые)"], ["inc", "A или B (несовместные)"]] })],
+      ex: { pa: "0.6", pb: "0.5", mode: "or" }, solve: solveEvents },
+    { cat: "Вероятность", id: "atleast", title: "Хотя бы одно событие", hint: "Вероятность, что за n независимых попыток событие произойдёт хотя бы раз.",
+      fields: [fl("p", "p", "вероятность события в одной попытке", "", PF), fl("n", "n", "число попыток", "")],
+      ex: { p: "0.2", n: "5" }, solve: solveAtLeast },
+    { cat: "Вероятность", id: "bayes", title: "Условная вероятность (Байес)", hint: "Гипотеза H и событие B: найдём вероятность H, если B произошло.",
+      fields: [fl("ph", "P(H)", "вероятность гипотезы H", "", PF), fl("pbh", "P(B|H)", "вероятность B, если верна H", "", PF), fl("pbn", "P(B|не H)", "вероятность B, если H неверна", "", PF)],
+      ex: { ph: "0.01", pbh: "0.95", pbn: "0.05" }, solve: solveBayes },
+
+    { cat: "Комбинаторика", id: "perm", title: "Перестановки", hint: "Сколькими способами можно выстроить n разных предметов в ряд.",
+      fields: [fl("n", "n", "число предметов", "")],
+      ex: { n: "5" }, solve: solvePerm },
+    { cat: "Комбинаторика", id: "word", title: "Перестановки букв слова", hint: "Сколько разных слов получится из букв заданного слова (с учётом повторов).",
+      fields: [fl("word", "", "слово", "", { text: true, ph: "например, МАТЕМАТИКА" })],
+      ex: { word: "МАТЕМАТИКА" }, solve: solveWord },
+    { cat: "Комбинаторика", id: "arrcomb", title: "Размещения и сочетания", hint: "Выбор k элементов из n: с учётом порядка или без, с повторениями или без.",
+      fields: [fl("n", "n", "всего элементов", ""), fl("k", "k", "сколько выбираем", ""),
+               fl("mode", "", "тип выбора", "", { select: [["comb", "Сочетания C(n; k): порядок не важен"], ["arr", "Размещения A(n; k): порядок важен"], ["rep", "Размещения с повторениями"], ["crep", "Сочетания с повторениями"]] })],
+      ex: { n: "10", k: "3", mode: "comb" }, solve: solveArrComb },
+
+    { cat: "Распределения", id: "bern", title: "Схема Бернулли", hint: "n независимых испытаний, в каждом успех с вероятностью p.",
+      fields: [fl("n", "n", "число испытаний", ""), fl("k", "k", "число успехов", ""), fl("p", "p", "вероятность успеха в одном испытании", "", PF)],
+      ex: { n: "10", k: "4", p: "0.5" }, solve: solveBernoulli },
+    { cat: "Распределения", id: "rv", title: "Случайная величина (M и D)", hint: "Значения и их вероятности: найдём математическое ожидание и дисперсию.",
+      fields: [fl("xs", "x", "значения через пробел", "", { list: true, ph: "0 1 2 3" }), fl("ps", "p", "вероятности через пробел (можно 1/4)", "", { list: true, ph: "0.1 0.4 0.3 0.2" })],
+      ex: { xs: "0 1 2 3", ps: "0.1 0.4 0.3 0.2" }, solve: solveRV },
+
+    { cat: "Статистика", id: "descr", title: "Среднее, медиана, мода", hint: "Числа вводите через пробел. Десятичная запятая допустима.",
+      fields: [fl("data", "x", "ряд данных", "", { list: true, ph: "4 8 6 5 3 8 9 8 7 10" })],
+      ex: { data: "4 8 6 5 3 8 9 8 7 10" }, solve: solveDescr },
+    { cat: "Статистика", id: "variance", title: "Дисперсия и σ", hint: "Разброс данных вокруг среднего.",
+      fields: [fl("data", "x", "ряд данных", "", { list: true, ph: "2 4 4 4 5 5 7 9" }),
+               fl("kind", "", "тип", "", { select: [["pop", "Генеральная (делим на n)"], ["sample", "Выборочная (делим на n − 1)"]] })],
+      ex: { data: "2 4 4 4 5 5 7 9", kind: "pop" }, solve: solveVariance },
+    { cat: "Статистика", id: "freq", title: "Таблица частот", hint: "Сколько раз встречается каждое значение, с диаграммой.",
+      fields: [fl("data", "x", "ряд данных", "", { list: true, ph: "3 4 4 5 5 5 5 3 2 4 4 5" })],
+      ex: { data: "3 4 4 5 5 5 5 3 2 4 4 5" }, solve: solveFreq },
+    { cat: "Статистика", id: "hist", title: "Гистограмма (интервалы)", hint: "Группировка данных по интервалам одинаковой ширины.",
+      fields: [fl("data", "x", "ряд данных", "", { list: true, ph: "12 15 17 21 22 24 25 27 31" }), fl("h", "h", "ширина интервала", "")],
+      ex: { data: "12 15 17 21 22 24 25 27 31 33 35 38 41 44 47", h: "10" }, solve: solveHist },
+    { cat: "Статистика", id: "quart", title: "Квартили и выбросы", hint: "Q₁, медиана, Q₃, межквартильный размах и «ящик с усами».",
+      fields: [fl("data", "x", "ряд данных (минимум 4 числа)", "", { list: true, ph: "1 3 3 6 7 8 9 15 40" })],
+      ex: { data: "1 3 3 6 7 8 9 15 40" }, solve: solveQuart },
+    { cat: "Статистика", id: "weighted", title: "Среднее взвешенное", hint: "Когда значения имеют разную важность (вес), например оценки за работы.",
+      fields: [fl("xs", "x", "значения через пробел", "", { list: true, ph: "5 4 3" }), fl("ws", "w", "веса через пробел", "", { list: true, ph: "6 3 1" })],
+      ex: { xs: "5 4 3", ws: "6 3 1" }, solve: solveWeighted },
+    { cat: "Статистика", id: "regress", title: "Корреляция и прямая", hint: "Парные данные: коэффициент корреляции и уравнение прямой y = a + b·x.",
+      fields: [fl("xs", "x", "значения x через пробел", "", { list: true, ph: "1 2 3 4 5 6" }), fl("ys", "y", "значения y через пробел", "", { list: true, ph: "2.1 3.9 6.2 7.8 10.1 12.2" }),
+               fl("x0", "x₀", "для прогноза y (необязательно)", "", { opt: true })],
+      ex: { xs: "1 2 3 4 5 6", ys: "2.1 3.9 6.2 7.8 10.1 12.2", x0: "7" }, solve: solveRegress },
+  ];
+
+  /* ---------- Состояние ---------- */
+  const $ = (id) => document.getElementById(id);
+  const state = { id: "classic", cat: "Вероятность" };
+  try {
+    const st = localStorage.getItem("probability.task"); const t = TASKS.find((k) => k.id === st);
+    if (t) { state.id = t.id; state.cat = t.cat; }
+  } catch (e) { /* хранилище недоступно */ }
+  const save = () => { try { localStorage.setItem("probability.task", state.id); } catch (e) {} };
+  const task = () => TASKS.find((k) => k.id === state.id);
+  let showExampleNote = true;
+
+  /* ---------- Интерфейс ---------- */
+  function renderNav() {
+    const cats = [...new Set(TASKS.map((k) => k.cat))];
+    $("cats").innerHTML = "";
+    cats.forEach((c) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = c; b.setAttribute("aria-pressed", String(c === state.cat));
+      b.onclick = () => { state.cat = c; selectTask(TASKS.find((k) => k.cat === c).id); };
+      $("cats").appendChild(b);
+    });
+    $("chips").innerHTML = "";
+    TASKS.filter((k) => k.cat === state.cat).forEach((k) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = k.title; b.setAttribute("aria-pressed", String(k.id === state.id));
+      b.onclick = () => selectTask(k.id);
+      $("chips").appendChild(b);
+    });
+  }
+
+  function renderForm() {
+    const t = task(), form = $("form");
+    form.innerHTML = "";
+    const hint = document.createElement("p"); hint.className = "hint"; hint.textContent = t.hint; form.appendChild(hint);
+    t.fields.forEach((f) => {
+      const wrap = document.createElement("div"); wrap.className = "field";
+      const lab = document.createElement("label"); lab.htmlFor = "f-" + f.id;
+      lab.innerHTML = (f.sym ? `<b>${esc(f.sym)}</b>` : "") + esc(f.label);
+      const box = document.createElement("div"); box.className = "inp";
+      let inp;
+      if (f.select) {
+        inp = document.createElement("select");
+        f.select.forEach(([v, l]) => inp.add(new Option(l, v)));
+      } else {
+        inp = document.createElement("input"); inp.type = "text";
+        inp.inputMode = f.list || f.text || f.frac ? "text" : "decimal";
+        inp.placeholder = f.ph || (f.opt ? "необязательно" : (f.def !== undefined ? String(f.def) : ""));
+      }
+      inp.id = "f-" + f.id;
+      inp.addEventListener("input", () => { showExampleNote = false; solve(); });
+      inp.addEventListener("change", () => { showExampleNote = false; solve(); });
+      box.appendChild(inp);
+      if (f.unit) { const u = document.createElement("span"); u.className = "u"; u.textContent = f.unit; box.appendChild(u); }
+      wrap.append(lab, box); form.appendChild(wrap);
+    });
+    const ex = t.ex || {};
+    t.fields.forEach((f) => { if (ex[f.id] !== undefined) $("f-" + f.id).value = ex[f.id]; });
+  }
+
+  function collect() {
+    const t = task(), x = {}, given = [], missing = [];
+    for (const f of t.fields) {
+      const el = $("f-" + f.id); const raw = el.value.trim();
+      if (f.select) { x[f.id] = raw; continue; }
+      if (raw === "") {
+        if (f.def !== undefined) { x[f.id] = f.def; continue; }
+        x[f.id] = null; if (!f.opt) missing.push(f.sym || f.label); continue;
+      }
+      if (f.text) { x[f.id] = raw; given.push(A(f.sym || f.label, raw, f.unit)); continue; }
+      if (f.list) {
+        const r = parseList(raw);
+        if (r.bad !== undefined) throw new Error(`Поле «${f.sym || f.label}»: не удалось прочитать «${r.bad}». Введите числа через пробел.`);
+        x[f.id] = r.vals; given.push(A(f.sym, listStr(r.vals), f.unit)); continue;
+      }
+      const n = toNum(raw);
+      if (!isFinite(n)) throw new Error(`Поле «${f.sym || f.label}»: введите число.`);
+      x[f.id] = n; given.push(A(f.sym, n, f.unit));
+    }
+    if (missing.length) { const e = new Error("Заполните: " + missing.join(", ") + "."); e.soft = true; throw e; }
+    return { x, given };
+  }
+
+  let lastText = "";
+  function solve() {
+    const paper = $("paper"), t = task();
+    let out, given;
+    try {
+      const c = collect(); given = c.given;
+      out = t.solve(c.x);
+    } catch (e) {
+      paper.innerHTML = `<p class="msg${e.soft ? "" : " err"}">${html(e.message)}</p>`;
+      lastText = ""; return;
+    }
+    const line = (a) => `${a[0]} = ${typeof a[1] === "number" ? fmt(a[1]) : a[1]}${a[2] ? " " + a[2] : ""}`;
+    let h = "";
+    if (showExampleNote) h += `<p class="note">Подставлен пример. Измените числа слева, решение пересчитается.</p>`;
+    if (given.length) {
+      h += `<div><h2>Дано</h2><div class="given">${given.map((a) => `<span>${html(a[0])} = ${html(fmt(a[1]))} <em>${html(a[2])}</em></span>`).join("")}</div></div>`;
+    }
+    h += `<div><h2>Решение</h2>${out.steps.map((s) => s.t ? `<div class="step t">${html(s.t)}</div>` : `<div class="step"><div class="f">${html(s.f)}</div><div class="c">${html(s.c)}</div></div>`).join("")}</div>`;
+    if (out.plot) h += `<div class="plot">${out.plot}</div>`;
+    h += `<div><h2>Ответ</h2><div class="answer">${out.answers.map((a) => `<div>${html(a[0])} = ${html(typeof a[1] === "number" ? fmt(a[1]) : a[1])} <small>${html(a[2])}</small></div>`).join("")}</div></div>`;
+    h += `<div class="actions"><button type="button" id="copy">Копировать решение</button><span id="copied"></span></div>`;
+    paper.innerHTML = h;
+    lastText = [t.title, "", "Дано:", ...given.map(line), "", "Решение:", ...out.steps.map((s) => (s.t ? s.t : s.f + "\n" + s.c)), "", "Ответ:", ...out.answers.map(line)].join("\n");
+    $("copy").onclick = copy;
+  }
+  function copy() {
+    const done = (m) => { $("copied").textContent = m; setTimeout(() => { const c = $("copied"); if (c) c.textContent = ""; }, 2000); };
+    const fallback = () => {
+      const ta = document.createElement("textarea"); ta.value = lastText; document.body.appendChild(ta); ta.select();
+      let ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+      ta.remove(); done(ok ? "Скопировано" : "Не удалось скопировать");
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(lastText).then(() => done("Скопировано"), fallback);
+    else fallback();
+  }
+
+  function selectTask(id) {
+    state.id = id; state.cat = task().cat; showExampleNote = true; save();
+    renderNav(); renderForm(); solve();
+  }
+  $("form").addEventListener("submit", (e) => e.preventDefault());
+  renderNav(); renderForm(); solve();
+})();
+</script>
+
+<style>
+  .ios-hint {
+    position: fixed; left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    z-index: 50; display: none; align-items: flex-start; gap: 12px;
+    max-width: 480px; margin: 0 auto; padding: 12px 14px;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.18); font-size: 14px; line-height: 1.4;
+  }
+  .ios-hint.show { display: flex; }
+  .ios-hint b { font-weight: 600; }
+  .ios-hint button {
+    margin-left: auto; flex: none; min-width: 44px; min-height: 44px; margin-block: -8px -8px;
+    border: 0; background: transparent; color: var(--muted); font-size: 22px; line-height: 1; cursor: pointer;
+  }
+</style>
+<div class="ios-hint" id="iosHint" role="note">
+  <div><b>Установить на iPhone:</b> нажмите «Поделиться»
+    <span aria-hidden="true">&#x2191;&#xFE0E;</span> в Safari и выберите «На экран “Домой”».</div>
+  <button type="button" id="iosHintClose" aria-label="Закрыть подсказку">&times;</button>
+</div>
+<script>
+(function () {
+  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw-probability.js").catch(function () {});
+    });
+  }
+  try {
+    var ua = navigator.userAgent || "";
+    var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    var standalone = window.navigator.standalone === true ||
+      (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+    var seen = false;
+    try { seen = localStorage.getItem("iosHintSeenProbability") === "1"; } catch (e) {}
+    var hint = document.getElementById("iosHint");
+    if (isIOS && !standalone && !seen && hint) {
+      hint.classList.add("show");
+      document.getElementById("iosHintClose").onclick = function () {
+        hint.classList.remove("show");
+        try { localStorage.setItem("iosHintSeenProbability", "1"); } catch (e) {}
+      };
+    }
+  } catch (e) {}
+})();
+</script>
+<script src="ads.js"></script>
+</body>
+</html>

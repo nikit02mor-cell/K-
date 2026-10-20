@@ -1,7 +1,7 @@
 // Service worker главного меню: делает стартовую страницу доступной офлайн.
 // Страницы предметов (physics, algebra, geometry, chemistry) обслуживают свои service worker'ы.
 // При выпуске новой версии достаточно поменять номер в CACHE.
-const CACHE = "menu-svincompany-v1";
+const CACHE = "menu-svincompany-v2";
 const CORE = [
   "./",
   "./index.html",
