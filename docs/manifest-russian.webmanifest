@@ -1,0 +1,17 @@
+{
+  "name": "Русский язык от SvinCompany",
+  "short_name": "Русский",
+  "description": "Разбор по русскому языку: склонение существительных, спряжение глаголов, фонетический разбор слова",
+  "lang": "ru",
+  "start_url": "./russian.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f2f5f9",
+  "theme_color": "#1d5fbf",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

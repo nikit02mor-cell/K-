@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Русский язык от SvinCompany</title>
+<meta name="description" content="Разбор по русскому языку: склонение существительных, спряжение глаголов, фонетический разбор слова">
+<meta name="theme-color" content="#1d5fbf">
+<link rel="manifest" href="manifest-russian.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Русский">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  html, body { margin: 0; }
+  body { -webkit-text-size-adjust: 100%; }
+</style>
+<style>
+  :root {
+    --bg: #f2f5f9;
+    --surface: #ffffff;
+    --ink: #132033;
+    --muted: #566678;
+    --line: #d6dee8;
+    --accent: #1d5fbf;
+    --accent-ink: #ffffff;
+    --accent-soft: #e3edfa;
+    --grid: #e7edf4;
+    --warn: #b3261e;
+    --sans: "IBM Plex Sans", system-ui, "Segoe UI", Roboto, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e141b; --surface: #16202a; --ink: #e5ecf4; --muted: #92a3b5;
+      --line: #263341; --accent: #6aa6ff; --accent-ink: #0b1522; --accent-soft: #1a2a3f;
+      --grid: #1c2733; --warn: #ff8a80; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e141b; --surface: #16202a; --ink: #e5ecf4; --muted: #92a3b5;
+    --line: #263341; --accent: #6aa6ff; --accent-ink: #0b1522; --accent-soft: #1a2a3f;
+    --grid: #1c2733; --warn: #ff8a80; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font: 15px/1.5 var(--sans);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 20px 48px;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+  button, input, select { font: inherit; color: inherit; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; }
+  .brand { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .brand svg { display: block; flex: none; }
+  .brand span { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+  h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+
+  .cats { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--line); min-width: 0; }
+  .cats button { border: 0; background: none; padding: 8px 14px; cursor: pointer; color: var(--muted); white-space: nowrap;
+    border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; }
+  .cats button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: 14px; }
+  .chips button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); font-weight: 500; }
+
+  .grid { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 20px; align-items: start; }
+  @media (max-width: 820px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+  .form { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .hint { margin: 0; color: var(--muted); font-size: 13px; }
+  .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .field label { font-size: 13px; color: var(--muted); }
+  .field label b { font-family: var(--mono); font-weight: 600; color: var(--ink); margin-right: 6px; }
+  .inp { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); min-width: 0; }
+  .inp input, .inp select { flex: 1; min-width: 0; border: 0; background: none; padding: 9px 10px; font-family: var(--mono); font-size: 15px; }
+  .inp select { font-family: var(--sans); }
+  .inp .u { padding: 9px 10px 9px 0; color: var(--muted); font-size: 13px; align-self: center; white-space: nowrap; }
+  .inp:focus-within { border-color: var(--accent); }
+  .note { margin: 0; font-size: 12.5px; color: var(--muted); background: var(--accent-soft); border-radius: 6px; padding: 6px 10px; }
+
+  .paper { border: 1px solid var(--line); border-radius: 10px; padding: 20px; min-width: 0; background-color: var(--surface);
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 24px 24px; display: flex; flex-direction: column; gap: 18px; }
+  .paper h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .given { display: flex; flex-wrap: wrap; gap: 4px 22px; font-family: var(--mono); }
+  .given span em { font-style: normal; color: var(--muted); font-size: 13px; }
+  .step { padding: 8px 0; border-top: 1px dashed var(--line); font-family: var(--mono); font-size: 14px; overflow-x: auto; }
+  .step:first-of-type { border-top: 0; padding-top: 0; }
+  .step .f { color: var(--muted); }
+  .step .c { color: var(--ink); }
+  .step.t { font-family: var(--sans); color: var(--muted); font-size: 14px; }
+  .answer { background: var(--accent-soft); border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; }
+  .answer div { font-family: var(--mono); font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .answer div small { font-weight: 400; font-size: 13px; color: var(--muted); display: block; font-family: var(--sans); }
+  .answer .grp { margin-top: 6px; padding-top: 8px; border-top: 1px dashed var(--line); font-family: var(--sans); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .answer .grp:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+  .msg { color: var(--muted); margin: 0; }
+  .msg.err { color: var(--warn); }
+  .table2 { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-family: var(--mono); font-size: 14px; }
+  .table2 .k { color: var(--muted); }
+  .actions { display: flex; gap: 8px; align-items: center; }
+  .actions button { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 13px; }
+  .actions span { font-size: 13px; color: var(--muted); }
+  footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); }
+  footer b { font-family: var(--mono); font-weight: 600; color: var(--ink); letter-spacing: 0.04em; }
+  sup { font-size: 0.75em; line-height: 0; }
+</style>
+
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand">
+        <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="5" fill="var(--accent)"/><path d="M6 5h6a3 3 0 0 1 0 6H6V5Z" fill="none" stroke="var(--accent-ink)" stroke-width="1.8" stroke-linejoin="round"/><path d="M6 11h6.5a3 3 0 0 1 0 6H6v-6Z" fill="none" stroke="var(--accent-ink)" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <span>SvinCompany</span>
+      </div>
+      <h1>Русский язык · разбор слова</h1>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;"><a href="index.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">← Меню</a><a href="physics.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Физика</a><a href="algebra.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Алгебра</a><a href="geometry.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Геометрия</a><a href="chemistry.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Химия</a><a href="probability.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Вероятность</a></div>
+  </header>
+  <nav class="cats" id="cats" aria-label="Раздел"></nav>
+  <div class="chips" id="chips"></div>
+  <div class="grid">
+    <form class="form" id="form" autocomplete="off"></form>
+    <section class="paper" id="paper" aria-live="polite"></section>
+  </div>
+  <div id="adSlot"></div>
+  <footer><span>Сделано в <b>SvinCompany</b></span><span>Базовые правила школьной программы, без учёта индивидуальных исключений</span></footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Общие помощники ---------- */
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const html = (s) => esc(s);
+  const S = (f, c) => ({ f, c });   // шаг: правило + применение
+  const N = (t) => ({ t });         // текстовый шаг
+  const A = (sym, val, unit) => [sym, val, unit || ""];
+  const fail = (m) => { throw new Error(m); };
+  const low = (s) => String(s).trim().toLowerCase();
+
+  const VOWELS = "аеёиоуыэюя";
+  const isVowel = (ch) => VOWELS.indexOf(ch) !== -1;
+  const HISS = "жшчщ";
+  const VELAR = "гкх";
+  const isHiss = (ch) => HISS.indexOf(ch) !== -1;
+  const isVelar = (ch) => VELAR.indexOf(ch) !== -1;
+
+  /* =========================================================
+     1. СКЛОНЕНИЕ СУЩЕСТВИТЕЛЬНЫХ
+     ========================================================= */
+
+  // 10 разносклоняемых существительных на -мя.
+  const RAZNO = ["бремя","время","вымя","знамя","имя","пламя","племя","семя","стремя","темя"];
+  // Существительные с особым (историческим) склонением.
+  const IRREGULAR_NOUNS = {
+    "мать": {
+      sg: ["мать", "матери", "матери", "мать", "матерью", "матери"],
+      pl: ["матери", "матерей", "матерям", "матерей", "матерями", "матерях"],
+      plInanim: ["матери", "матерей", "матерям", "матери", "матерями", "матерях"],
+    },
+    "дочь": {
+      sg: ["дочь", "дочери", "дочери", "дочь", "дочерью", "дочери"],
+      pl: ["дочери", "дочерей", "дочерям", "дочерей", "дочерьми", "дочерях"],
+      plInanim: ["дочери", "дочерей", "дочерям", "дочери", "дочерьми", "дочерях"],
+    },
+  };
+  const CASE_NAMES = ["И", "Р", "Д", "В", "Т", "П"];
+  const CASE_Q = ["кто? что?", "кого? чего?", "кому? чему?", "кого? что?", "кем? чем?", "о ком? о чём?"];
+
+  function declineRazno(word, animate) {
+    const base = word.slice(0, -2) + "мен"; // время -> времен
+    const sg = [word, base + "и", base + "и", word, base + "ем", base + "и"];
+    const genPl = base.slice(0, -2) + "ён";
+    const nomPl = base + "а";
+    const pl = [nomPl, genPl, base + "ам", nomPl, base + "ами", base + "ах"];
+    return {
+      sg, pl,
+      notes: [N(`«${word}» — разносклоняемое существительное (как и ещё 9 слов на -мя: бремя, вымя, знамя, имя, пламя, племя, семя, стремя, темя). У него особая основа на «-мен-», которая появляется во всех падежах, кроме именительного и винительного единственного числа.`)],
+    };
+  }
+
+  function classifyNoun(wordRaw, gender, animate) {
+    const word = low(wordRaw);
+    if (!word || !/^[а-яё]+$/.test(word)) fail("Введите существительное в именительном падеже единственного числа русскими буквами.");
+    if (RAZNO.indexOf(word) !== -1) {
+      const r = declineRazno(word, animate);
+      return { decl: "разносклоняемое", stem: word.slice(0, -2), notes: r.notes, sg: r.sg, pl: r.pl };
+    }
+    if (IRREGULAR_NOUNS[word]) {
+      const t = IRREGULAR_NOUNS[word];
+      const pl = animate === "inanim" ? t.plInanim : t.pl;
+      return {
+        decl: "особое (историческое) склонение", stem: word,
+        notes: [N(`«${word}» склоняется по особому историческому образцу со вставкой «-ер-» (как «мать» и «дочь») — это нужно запомнить, а не выводить по общей схеме.`)],
+        sg: t.sg, pl,
+      };
+    }
+    const last1 = word.slice(-1);
+    const stemLess1 = word.slice(0, -1);
+    const notes = [];
+
+    if (last1 === "а" || last1 === "я") {
+      if (gender === "м") notes.push(N(`Хотя род слова — мужской, оно оканчивается на «-${last1}» и склоняется как существительное 1-го склонения (так же, как «папа», «дядя»).`));
+      return declension1(word, stemLess1, last1 === "я", notes, animate);
+    }
+    if (gender === "ср" && (last1 === "о" || last1 === "е")) {
+      return declension2n(word, stemLess1, last1 === "е", notes, animate);
+    }
+    if (gender === "ж" && last1 === "ь") {
+      return declension3(word, stemLess1, notes, animate);
+    }
+    if (gender === "м" && (last1 === "й" || last1 === "ь")) {
+      return declension2m(word, stemLess1, true, notes, animate);
+    }
+    if (gender === "м" && !isVowel(last1) && last1 !== "ь") {
+      return declension2m(word, word, false, notes, animate);
+    }
+    fail("Не удалось определить тип склонения. Проверьте: слово должно быть в именительном падеже ед. числа, а род — соответствовать окончанию (например, средний род — это слова на -о/-е, женский род на -ь — 3-е склонение, слова на -а/-я склоняются по 1-му склонению независимо от рода).");
+  }
+
+  function declension1(word, stem, soft, notes, animate) {
+    const last = stem.slice(-1);
+    const iaStem = word.endsWith("ия");
+    const yToI = isVelar(last) || isHiss(last);     // ы -> и после г к х ж ш ч щ
+    const oToE = isHiss(last);                      // о -> е после ж ш ч щ (ц не включаем — на ц слова редки)
+    notes.unshift(N(`Окончание «-${soft ? "я" : "а"}» в именительном падеже — это 1-е склонение (как «мама», «земля»). Основа слова: «${stem}».`));
+    if (yToI) notes.push(N(`Основа оканчивается на г/к/х/ж/ш/ч/щ — по правилу орфографии после них пишется «и», а не «ы».`));
+    const gSg = iaStem ? stem + "и" : stem + (soft || yToI ? "и" : "ы");
+    const dSg = iaStem ? stem + "и" : stem + "е";
+    const vSg = stem + (soft ? "ю" : "у");
+    const tSg = stem + (soft || oToE ? "ей" : "ой");
+    const pSg = iaStem ? stem + "и" : stem + "е";
+    const sg = [word, gSg, dSg, vSg, tSg, pSg];
+
+    const iNomPl = iaStem ? stem + "и" : stem + (soft || yToI ? "и" : "ы");
+    let gPl;
+    if (iaStem) gPl = stem + "й";
+    else if (soft) gPl = stem + "ь";
+    else gPl = stem + " (≈, без беглой гласной)"; // приблизительно: без беглой гласной
+    const dPl = stem + (soft || iaStem ? "ям" : "ам");
+    const tPl = stem + (soft || iaStem ? "ями" : "ами");
+    const pPl = stem + (soft || iaStem ? "ях" : "ах");
+    const vPl = animate === "anim" ? gPl : iNomPl;
+    const pl = [iNomPl, gPl, dPl, vPl, tPl, pPl];
+
+    notes.push(N("Показан базовый (неударный) вариант окончаний. Если ударение падает на окончание творительного падежа, «е» меняется на «ё» (твёрдый вариант остаётся «-ой»). В родительном падеже множественного числа у некоторых слов появляется беглая гласная (например, «сосна» → «сосен») — общая схема её не выводит."));
+    return { decl: "1-е склонение" + (soft ? " (мягкий вариант)" : ""), stem, notes, sg, pl };
+  }
+
+  function declension2m(word, stem, soft, notes, animate) {
+    const last = stem.slice(-1);
+    const hiss = isHiss(last);
+    const velar = isVelar(last);
+    const softLike = soft || hiss || velar; // для написания и/ы
+    const isIy = word.endsWith("ий");
+    notes.unshift(N(`Слово мужского рода, окончание в именительном падеже — ${soft ? "«-й»/«-ь» (мягкий вариант)" : "нулевое (твёрдая основа)"}. Основа: «${stem}».`));
+    const gSg = stem + (soft ? "я" : "а");
+    const dSg = stem + (soft ? "ю" : "у");
+    const vSg = animate === "anim" ? gSg : word;
+    const tSg = stem + (soft ? "ем" : (hiss ? "ем" : "ом"));
+    const pSg = stem + (isIy ? "и" : "е");
+    const sg = [word, gSg, dSg, vSg, tSg, pSg];
+
+    const iNomPl = stem + (softLike ? "и" : "ы");
+    let gPl;
+    if (soft && word.slice(-1) === "й") gPl = stem + "ев";
+    else if (soft) gPl = stem + "ей";
+    else if (hiss) gPl = stem + "ей";
+    else gPl = stem + "ов";
+    const dPl = stem + (soft ? "ям" : "ам");
+    const tPl = stem + (soft ? "ями" : "ами");
+    const pPl = stem + (soft ? "ях" : "ах");
+    const vPl = animate === "anim" ? gPl : iNomPl;
+    const pl = [iNomPl, gPl, dPl, vPl, tPl, pPl];
+
+    notes.push(N("Базовый (неударный) вариант: под ударением «е» в творительном падеже и окончаниях на -ев переходит в «ё» (ножо́м, бойцо́в и т.п. — проверяйте по словарю). У части слов мужского рода именительный падеж множественного числа — исключение на ударное -а/-я (дома́, города́, учителя́) вместо «-ы/-и» — это нужно запомнить отдельно."));
+    return { decl: "2-е склонение, мужской род" + (soft ? " (мягкий вариант)" : ""), stem, notes, sg, pl };
+  }
+
+  function declension2n(word, stem, soft, notes, animate) {
+    const iaLike = word.endsWith("ие");
+    notes.unshift(N(`Слово среднего рода, окончание «-${soft ? "е" : "о"}» — 2-е склонение. Основа: «${stem}».`));
+    const gSg = stem + (soft ? "я" : "а");
+    const dSg = stem + (soft ? "ю" : "у");
+    const vSg = word;
+    const tSg = stem + (soft ? "ем" : (isHiss(stem.slice(-1)) ? "ем" : "ом"));
+    const pSg = stem + (iaLike ? "и" : "е");
+    const sg = [word, gSg, dSg, vSg, tSg, pSg];
+
+    const iNomPl = stem + (soft || iaLike ? "я" : "а");
+    let gPl;
+    if (iaLike) gPl = stem + "й";
+    else if (soft) gPl = stem + "ей";
+    else gPl = stem + " (≈, без беглой гласной)"; // приблизительно: без беглой гласной
+    const dPl = stem + (soft || iaLike ? "ям" : "ам");
+    const tPl = stem + (soft || iaLike ? "ями" : "ами");
+    const pPl = stem + (soft || iaLike ? "ях" : "ах");
+    const vPl = iNomPl; // средний род почти всегда неодушевлённый
+    const pl = [iNomPl, gPl, dPl, vPl, tPl, pPl];
+
+    notes.push(N("Базовый (неударный) вариант окончаний. В родительном падеже множественного числа у твёрдых слов на -о часто появляется беглая гласная (окно → окон, письмо → писем) — общая схема её не выводит, сверяйтесь со словарём."));
+    return { decl: "2-е склонение, средний род" + (soft ? " (мягкий вариант)" : ""), stem, notes, sg, pl };
+  }
+
+  function declension3(word, stem, notes, animate) {
+    notes.unshift(N(`Слово женского рода на «-ь» — 3-е склонение. Основа: «${stem}».`));
+    notes.push(N(`В дательном, творительном и предложном падежах множественного числа у слов 3-го склонения встречаются два варианта окончаний в зависимости от конкретного слова (например, «ночь» → по ноча́м, но «новость» → по новостя́м) — показаны оба, выберите привычный по слуху или словарю.`));
+    const sg = [word, stem + "и", stem + "и", word, stem + "ью", stem + "и"];
+    const iNomPl = stem + "и";
+    const gPl = stem + "ей";
+    const vPl = animate === "anim" ? gPl : iNomPl;
+    const pl = [iNomPl, gPl, `${stem}ам / ${stem}ям`, vPl, `${stem}ами / ${stem}ями`, `${stem}ах / ${stem}ях`];
+    return { decl: "3-е склонение", stem, notes, sg, pl };
+  }
+
+  function solveNounDeclension(x) {
+    const r = classifyNoun(x.word, x.gender, x.animate);
+    const steps = r.notes;
+    const answers = [];
+    answers.push(["__grp__", "Единственное число"]);
+    for (let i = 0; i < 6; i++) answers.push(A(CASE_NAMES[i] + ".п.", r.sg[i], CASE_Q[i]));
+    answers.push(["__grp__", "Множественное число"]);
+    for (let i = 0; i < 6; i++) answers.push(A(CASE_NAMES[i] + ".п.", r.pl[i], CASE_Q[i]));
+    steps.push(N(`Определён тип: ${r.decl}.`));
+    return { steps, answers, isDeclTable: true };
+  }
+
+  /* =========================================================
+     2. СПРЯЖЕНИЕ ГЛАГОЛА
+     ========================================================= */
+
+  const EXC_II = ["гнать", "держать", "дышать", "слышать", "видеть", "обидеть", "зависеть", "ненавидеть", "терпеть", "вертеть", "смотреть"];
+  const EXC_I = ["брить", "стелить", "зиждиться"];
+  const MUT = { "д": "ж", "т": "ч", "с": "ш", "з": "ж", "б": "бл", "п": "пл", "в": "вл", "ф": "фл", "м": "мл" };
+
+  function applyMutation(stem) {
+    if (stem.slice(-2) === "ст") return stem.slice(0, -2) + "щ";
+    const last = stem.slice(-1);
+    if (MUT[last]) return stem.slice(0, -1) + MUT[last];
+    return stem;
+  }
+
+  function conjugateII(word, stem, notes) {
+    const mut = applyMutation(stem);
+    if (mut !== stem) notes.push(N(`В 1-м лице единственного числа происходит чередование согласных в основе: «${stem}» → «${mut}».`));
+    const firstEnd = isHiss(mut.slice(-1)) ? "у" : "ю";
+    const thirdPlEnd = isHiss(stem.slice(-1)) ? "ат" : "ят";
+    return {
+      forms: [
+        ["я", mut + firstEnd],
+        ["ты", stem + "ишь"],
+        ["он/она/оно", stem + "ит"],
+        ["мы", stem + "им"],
+        ["вы", stem + "ите"],
+        ["они", stem + thirdPlEnd],
+      ],
+    };
+  }
+
+  function conjugateI(word, stem, hard, notes) {
+    return {
+      forms: [
+        ["я", stem + (hard ? "у" : "ю")],
+        ["ты", stem + "ешь"],
+        ["он/она/оно", stem + "ет"],
+        ["мы", stem + "ем"],
+        ["вы", stem + "ете"],
+        ["они", stem + (hard ? "ут" : "ют")],
+      ],
+    };
+  }
+
+  function solveVerbConj(x) {
+    const word = low(x.word);
+    const override = low(x.firstPerson || "");
+    const spr = x.spr;
+    if (!word || !/^[а-яё]+$/.test(word) || word.slice(-2) !== "ть") fail("Введите глагол в неопределённой форме (на «-ть»), например «читать» или «говорить».");
+    const notes = [];
+    let isExcII = false, stemExc;
+    for (const v of EXC_II) if (word.endsWith(v)) { isExcII = true; stemExc = v === "гнать" ? word.slice(0, -5) + "гон" : word.slice(0, -3); break; }
+    const isExcI = EXC_I.some((v) => word.endsWith(v));
+
+    if (spr === "auto") {
+      if (!isExcI && (isExcII || word.endsWith("ить"))) {
+        const stem = isExcII ? stemExc : word.slice(0, -3);
+        notes.push(N(isExcII
+          ? `«${word}» — одно из 11 слов-исключений, которые, несмотря на окончание не на «-ить», относятся ко II спряжению (гнать, держать, дышать, слышать, видеть, обидеть, зависеть, ненавидеть, терпеть, вертеть, смотреть).`
+          : `Глагол оканчивается на «-ить» — это II спряжение. Основа: «${stem}».`));
+        const r = conjugateII(word, stem, notes);
+        return { steps: notes, answers: r.forms.map(([p, f]) => A(p, f)), isConj: true };
+      }
+      fail("Автоматически здесь определяются только глаголы на «-ить» и 11 слов-исключений (гнать, держать, дышать, слышать, видеть, обидеть, зависеть, ненавидеть, терпеть, вертеть, смотреть). У остальных глаголов спряжение по написанию неопределённо (например, «кричать» — II, а «читать» — I, хотя оба на -ать) — выберите спряжение вручную в поле ниже.");
+    }
+
+    if (spr === "II") {
+      let stem;
+      if (isExcI) fail(`«${word}» оканчивается на -ить, но относится к I спряжению (слово-исключение: брить, стелить, зиждиться) — выберите I спряжение.`);
+      if (word.endsWith("ить") || word.endsWith("ать") || word.endsWith("ять") || word.endsWith("еть")) stem = isExcII ? stemExc : word.slice(0, -3);
+      else fail("Не удалось выделить основу для II спряжения — ожидается окончание -ить (или, у слов-исключений, -ать/-ять/-еть).");
+      notes.push(N(`Указано II спряжение вручную. Основа: «${stem}».`));
+      const r = conjugateII(word, stem, notes);
+      return { steps: notes, answers: r.forms.map(([p, f]) => A(p, f)), isConj: true };
+    }
+
+    // spr === "I"
+    if (isExcII) notes.push(N(`Обратите внимание: «${word}» обычно относят к 11 словам-исключениям II спряжения — проверьте, точно ли нужно здесь I спряжение.`));
+    let stem, hard = false;
+    if (override) {
+      if (override.slice(-1) !== "у" && override.slice(-1) !== "ю") fail("Форма «я» должна оканчиваться на «-у» или «-ю» (например, «пишу», «гоню»).");
+      stem = override.slice(0, -1);
+      hard = override.slice(-1) === "у";
+      notes.push(N(`Использована указанная форма 1-го лица «${override}» — от неё образована основа «${stem}» для всех остальных форм (в глаголах I спряжения чередование, если оно есть, действует во всех формах настоящего/будущего времени одинаково, не только в 1-м лице).`));
+    } else if (word.endsWith("ать") || word.endsWith("ять")) {
+      stem = word.slice(0, -2); // убираем "-ть", основа уже содержит гласную а/я
+      notes.push(N(`Глагол I спряжения на «-${word.slice(-3)}» без чередования согласных. Основа (настоящего/будущего времени): «${stem}».`));
+      notes.push(N("Если в этом глаголе на самом деле есть чередование согласных (например, «писать» → «пишу», а не «писаю»), укажите известную форму «я» в поле ниже — остальные формы будут построены от неё."));
+    } else {
+      fail("Для I спряжения без указанной формы «я» поддерживаются только глаголы на -ать/-ять. Для других окончаний (-еть, -уть, -овать и т.п.) укажите форму «я» в соответствующем поле.");
+    }
+    const r = conjugateI(word, stem, hard, notes);
+    return { steps: notes, answers: r.forms.map(([p, f]) => A(p, f)), isConj: true };
+  }
+
+  /* =========================================================
+     3. ФОНЕТИЧЕСКИЙ РАЗБОР
+     ========================================================= */
+
+  const VOICED_PAIR = { "б": "п", "в": "ф", "г": "к", "д": "т", "ж": "ш", "з": "с" };
+  const VOICELESS_PAIR = { "п": "б", "ф": "в", "к": "г", "т": "д", "ш": "ж", "с": "з" };
+  const SONORANT = "лмнрй";
+  const NO_VOICED_PAIR = "хцчщ"; // всегда глухие, пары нет
+  const ALWAYS_SOFT = "йчщ";
+  const ALWAYS_HARD = "жшц";
+  const SOFTEN_VOWELS = "иеёюя";
+  const IOTA_BASE = { "е": "э", "ё": "о", "ю": "у", "я": "а" };
+
+  function isConsonantLetter(ch) {
+    return /[бвгджзклмнпрстфхцчшщй]/.test(ch);
+  }
+  function isPairedVoiced(ch) { return !!VOICED_PAIR[ch]; }
+  function isPairedVoiceless(ch) { return !!VOICELESS_PAIR[ch]; }
+
+  function solvePhonetics(x) {
+    const wordRaw = low(x.word);
+    if (!wordRaw || !/^[а-яё]+$/.test(wordRaw)) fail("Введите слово русскими буквами.");
+    const stressNum = x.stress; // номер гласной по счёту слева направо (1-indexed), может быть не указан
+    const letters = wordRaw.split("");
+
+    // Базовая звонкость/глухость каждой согласной буквы (до ассимиляции).
+    const baseVoice = letters.map((ch) => {
+      if (!isConsonantLetter(ch)) return null;
+      if (SONORANT.indexOf(ch) !== -1) return "voiced-sonor";
+      if (isPairedVoiced(ch)) return "voiced";
+      return "voiceless"; // глухие без пары и глухие с парой
+    });
+    const voice = baseVoice.slice();
+
+    // Оглушение на конце слова.
+    for (let i = letters.length - 1; i >= 0; i--) {
+      if (voice[i] === null) continue;
+      if (voice[i] === "voiced") voice[i] = "voiceless*";
+      break;
+    }
+    // Ассимиляция по глухости/звонкости в кластерах согласных (справа налево).
+    for (let i = letters.length - 2; i >= 0; i--) {
+      if (!isConsonantLetter(letters[i]) || voice[i] === "voiced-sonor") continue;
+      let j = i + 1;
+      if (!isConsonantLetter(letters[j])) continue;
+      if (voice[j] === "voiced-sonor" || letters[j] === "в") continue; // сонорные и "в" не уподобляют предыдущий
+      const vd = voice[j] === "voiced";
+      if (vd && isPairedVoiced(letters[i]) === false && VOICELESS_PAIR[letters[i]]) {
+        voice[i] = "voiced*"; // озвончение
+      } else if (!vd && isPairedVoiced(letters[i])) {
+        voice[i] = "voiceless*"; // оглушение
+      }
+    }
+
+    const rows = [];
+    let soundsCount = 0;
+    let vowelIdx = 0;
+    for (let i = 0; i < letters.length; i++) {
+      const ch = letters[i];
+      if (ch === "ь") { rows.push([ch, "— (не обозначает звука, смягчает предыдущий согласный)"]); continue; }
+      if (ch === "ъ") { rows.push([ch, "— (не обозначает звука, разделительный знак)"]); continue; }
+      if (isVowel(ch)) {
+        vowelIdx++;
+        const stressed = stressNum ? vowelIdx === stressNum : null;
+        const prev = letters[i - 1];
+        const afterVowelOrStart = i === 0 || isVowel(prev) || prev === "ъ" || prev === "ь";
+        if (IOTA_BASE[ch]) {
+          if (afterVowelOrStart) {
+            soundsCount += 2;
+            rows.push([ch, `[й'${IOTA_BASE[ch]}]${stressed === true ? " — ударный" : stressed === false ? " — безударный" : ""} (в начале слова/после гласной или ъ,ь буква даёт два звука)`]);
+          } else {
+            soundsCount += 1;
+            rows.push([ch, `[${IOTA_BASE[ch]}]${stressed === true ? " — ударный" : stressed === false ? " — безударный" : ""} (после согласного буква даёт один гласный звук и показывает, что согласный перед ней мягкий)`]);
+          }
+        } else if (ch === "и" && (prev === "ж" || prev === "ш" || prev === "ц")) {
+          soundsCount += 1;
+          rows.push([ch, `[ы]${stressed === true ? " — ударный" : stressed === false ? " — безударный" : ""} (после ж, ш, ц буква «и» звучит как [ы])`]);
+        } else {
+          soundsCount += 1;
+          rows.push([ch, `[${ch}]${stressed === true ? " — ударный" : stressed === false ? " — безударный" : ""}`]);
+        }
+        continue;
+      }
+      if (isConsonantLetter(ch)) {
+        soundsCount += 1;
+        const next = letters[i + 1];
+        let soft;
+        if (ALWAYS_SOFT.indexOf(ch) !== -1) soft = true;
+        else if (ALWAYS_HARD.indexOf(ch) !== -1) soft = false;
+        else soft = (next === "ь") || (next && SOFTEN_VOWELS.indexOf(next) !== -1);
+        let voiceLbl;
+        const v = voice[i];
+        if (v === "voiced-sonor") voiceLbl = "звонкий (сонорный, пары нет)";
+        else if (v === "voiced") voiceLbl = "звонкий";
+        else if (v === "voiced*") voiceLbl = "звонкий (озвончение перед следующим звонким)";
+        else if (v === "voiceless*") voiceLbl = "глухой (оглушение)";
+        else if (NO_VOICED_PAIR.indexOf(ch) !== -1) voiceLbl = "глухой (пары нет)";
+        else voiceLbl = "глухой";
+        let soundCh = ch;
+        if (v === "voiceless*") soundCh = VOICED_PAIR[ch] || ch;
+        else if (v === "voiced*") soundCh = VOICELESS_PAIR[ch] || ch;
+        const mark = soft ? "’" : "";
+        rows.push([ch, `[${soundCh}${mark}] ${voiceLbl}, ${soft ? "мягкий" : "твёрдый"}`]);
+      }
+    }
+
+    const steps = [
+      N(`В слове «${wordRaw}» букв: ${letters.length}, звуков: ${soundsCount}.`),
+      N("Разбор по буквам (слева направо):"),
+    ];
+    rows.forEach((r) => steps.push(S(r[0], r[1])));
+    steps.push(N("Показана основная ассимиляция по глухости/звонкости и смягчению; редукция безударных гласных и отдельные исключения в этой схеме не учитываются."));
+    const answers = [A("Букв", letters.length), A("Звуков", soundsCount)];
+    return { steps, answers };
+  }
+
+  /* ---------- Каталог задач ---------- */
+  const fl = (id, sy, label, unit, extra) => Object.assign({ id, sym: sy, label, unit }, extra || {});
+  const TASKS = [
+    { cat: "Существительные", id: "noun_decl", title: "Склонение существительного", hint: "Слово в именительном падеже ед. числа — получим все падежи в ед. и мн. числе.",
+      fields: [
+        fl("word", "", "слово (им. падеж, ед. число)", ""),
+        fl("gender", "", "род", "", { select: [["м", "мужской"], ["ж", "женский"], ["ср", "средний"]] }),
+        fl("animate", "", "одушевлённость", "", { select: [["inanim", "неодушевлённое"], ["anim", "одушевлённое"]] }),
+      ],
+      ex: { word: "книга", gender: "ж", animate: "inanim" }, solve: solveNounDeclension },
+    { cat: "Глаголы", id: "verb_conj", title: "Спряжение глагола", hint: "Неопределённая форма (на -ть) — получим формы настоящего/будущего времени по лицам.",
+      fields: [
+        fl("word", "", "глагол (неопределённая форма)", ""),
+        fl("spr", "", "спряжение", "", { select: [["auto", "определить автоматически"], ["I", "I (вручную)"], ["II", "II (вручную)"]] }),
+        fl("firstPerson", "", "форма «я», если есть чередование (для I спр.)", "", { opt: true }),
+      ],
+      ex: { word: "говорить", spr: "auto", firstPerson: "" }, solve: solveVerbConj },
+    { cat: "Фонетика", id: "phonetics", title: "Фонетический разбор слова", hint: "Разбор слова по буквам и звукам: сколько букв, сколько звуков, характеристика каждого звука.",
+      fields: [
+        fl("word", "", "слово", ""),
+        fl("stress", "", "номер ударной гласной (считая слева направо)", "", { opt: true }),
+      ],
+      ex: { word: "ёлка", stress: "1" }, solve: solvePhonetics },
+  ];
+
+  /* ---------- Состояние ---------- */
+  const $ = (id) => document.getElementById(id);
+  const state = { id: "noun_decl", cat: "Существительные" };
+  try {
+    const st = localStorage.getItem("russian.task"); const t = TASKS.find((k) => k.id === st);
+    if (t) { state.id = t.id; state.cat = t.cat; }
+  } catch (e) { /* хранилище недоступно */ }
+  const save = () => { try { localStorage.setItem("russian.task", state.id); } catch (e) {} };
+  const task = () => TASKS.find((k) => k.id === state.id);
+  let showExampleNote = true;
+
+  /* ---------- Интерфейс ---------- */
+  function renderNav() {
+    const cats = [...new Set(TASKS.map((k) => k.cat))];
+    $("cats").innerHTML = "";
+    cats.forEach((c) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = c; b.setAttribute("aria-pressed", String(c === state.cat));
+      b.onclick = () => { state.cat = c; selectTask(TASKS.find((k) => k.cat === c).id); };
+      $("cats").appendChild(b);
+    });
+    $("chips").innerHTML = "";
+    TASKS.filter((k) => k.cat === state.cat).forEach((k) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = k.title; b.setAttribute("aria-pressed", String(k.id === state.id));
+      b.onclick = () => selectTask(k.id);
+      $("chips").appendChild(b);
+    });
+  }
+
+  function renderForm() {
+    const t = task(), form = $("form");
+    form.innerHTML = "";
+    const hint = document.createElement("p"); hint.className = "hint"; hint.textContent = t.hint; form.appendChild(hint);
+    t.fields.forEach((f) => {
+      const wrap = document.createElement("div"); wrap.className = "field";
+      const lab = document.createElement("label"); lab.htmlFor = "f-" + f.id;
+      lab.innerHTML = (f.sym ? `<b>${esc(f.sym)}</b>` : "") + esc(f.label);
+      const box = document.createElement("div"); box.className = "inp";
+      let inp;
+      if (f.select) {
+        inp = document.createElement("select");
+        f.select.forEach(([v, l]) => inp.add(new Option(l, v)));
+      } else {
+        inp = document.createElement("input"); inp.type = "text";
+        inp.placeholder = f.opt ? "необязательно" : "";
+      }
+      inp.id = "f-" + f.id;
+      inp.addEventListener("input", () => { showExampleNote = false; solve(); });
+      inp.addEventListener("change", () => { showExampleNote = false; solve(); });
+      box.appendChild(inp);
+      if (f.unit) { const u = document.createElement("span"); u.className = "u"; u.textContent = f.unit; box.appendChild(u); }
+      wrap.append(lab, box); form.appendChild(wrap);
+    });
+    const ex = t.ex || {};
+    t.fields.forEach((f) => { if (ex[f.id] !== undefined) $("f-" + f.id).value = ex[f.id]; });
+    form.addEventListener("submit", (e) => e.preventDefault(), { once: true });
+  }
+
+  function collect() {
+    const t = task(), x = {}, given = [], missing = [];
+    for (const f of t.fields) {
+      const el = $("f-" + f.id); const raw = el.value.trim();
+      if (f.select) { x[f.id] = raw; continue; }
+      if (raw === "") {
+        if (f.opt) { x[f.id] = ""; continue; }
+        x[f.id] = null; missing.push(f.label); continue;
+      }
+      x[f.id] = raw; given.push(A(f.label, raw, f.unit));
+    }
+    if (missing.length) { const e = new Error("Заполните: " + missing.join(", ") + "."); e.soft = true; throw e; }
+    return { x, given };
+  }
+
+  let lastText = "";
+  function solve() {
+    const paper = $("paper"), t = task();
+    let out, given;
+    try {
+      const c = collect(); given = c.given;
+      out = t.solve(c.x);
+    } catch (e) {
+      paper.innerHTML = `<p class="msg${e.soft ? "" : " err"}">${html(e.message)}</p>`;
+      lastText = ""; return;
+    }
+    let h = "";
+    if (showExampleNote) h += `<p class="note">Подставлен пример. Измените поля слева, разбор пересчитается.</p>`;
+    if (given.length) {
+      h += `<div><h2>Дано</h2><div class="given">${given.map((a) => `<span>${html(a[0])}: <b>${html(a[1])}</b></span>`).join("")}</div></div>`;
+    }
+    h += `<div><h2>Решение</h2>${out.steps.map((s) => s.t ? `<div class="step t">${html(s.t)}</div>` : `<div class="step"><div class="f">${html(s.f)}</div><div class="c">${html(s.c)}</div></div>`).join("")}</div>`;
+    h += `<div><h2>Ответ</h2><div class="answer">${out.answers.map((a) => a[0] === "__grp__" ? `<div class="grp">${html(a[1])}</div>` : `<div>${html(a[0])} — ${html(a[1])}${a[2] ? `<small>${html(a[2])}</small>` : ""}</div>`).join("")}</div></div>`;
+    h += `<div class="actions"><button type="button" id="copy">Копировать разбор</button><span id="copied"></span></div>`;
+    paper.innerHTML = h;
+    const line = (a) => a[0] === "__grp__" ? a[1].toUpperCase() : `${a[0]} — ${a[1]}${a[2] ? " (" + a[2] + ")" : ""}`;
+    lastText = [t.title, "", "Дано:", ...given.map((a) => `${a[0]}: ${a[1]}`), "", "Решение:", ...out.steps.map((s) => (s.t ? s.t : s.f + ": " + s.c)), "", "Ответ:", ...out.answers.map(line)].join("\n");
+    $("copy").onclick = copy;
+  }
+  function copy() {
+    const done = (m) => { $("copied").textContent = m; setTimeout(() => { const c = $("copied"); if (c) c.textContent = ""; }, 2000); };
+    const fallback = () => {
+      const ta = document.createElement("textarea"); ta.value = lastText; document.body.appendChild(ta); ta.select();
+      let ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+      ta.remove(); done(ok ? "Скопировано" : "Не удалось скопировать");
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(lastText).then(() => done("Скопировано"), fallback);
+    else fallback();
+  }
+
+  function selectTask(id) {
+    state.id = id; state.cat = task().cat; showExampleNote = true; save();
+    renderNav(); renderForm(); solve();
+  }
+  $("form").addEventListener("submit", (e) => e.preventDefault());
+  renderNav(); renderForm(); solve();
+})();
+</script>
+
+<style>
+  .ios-hint {
+    position: fixed; left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    z-index: 50; display: none; align-items: flex-start; gap: 12px;
+    max-width: 480px; margin: 0 auto; padding: 12px 14px;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.18); font-size: 14px; line-height: 1.4;
+  }
+  .ios-hint.show { display: flex; }
+  .ios-hint b { font-weight: 600; }
+  .ios-hint button {
+    margin-left: auto; flex: none; min-width: 44px; min-height: 44px; margin-block: -8px -8px;
+    border: 0; background: transparent; color: var(--muted); font-size: 22px; line-height: 1; cursor: pointer;
+  }
+</style>
+<div class="ios-hint" id="iosHint" role="note">
+  <div><b>Установить на iPhone:</b> нажмите «Поделиться»
+    <span aria-hidden="true">&#x2191;&#xFE0E;</span> в Safari и выберите «На экран “Домой”».</div>
+  <button type="button" id="iosHintClose" aria-label="Закрыть подсказку">&times;</button>
+</div>
+<script>
+(function () {
+  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw-russian.js").catch(function () {});
+    });
+  }
+  try {
+    var ua = navigator.userAgent || "";
+    var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    var standalone = window.navigator.standalone === true ||
+      (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+    var seen = false;
+    try { seen = localStorage.getItem("iosHintSeenRussian") === "1"; } catch (e) {}
+    var hint = document.getElementById("iosHint");
+    if (isIOS && !standalone && !seen && hint) {
+      hint.classList.add("show");
+      document.getElementById("iosHintClose").onclick = function () {
+        hint.classList.remove("show");
+        try { localStorage.setItem("iosHintSeenRussian", "1"); } catch (e) {}
+      };
+    }
+  } catch (e) {}
+})();
+</script>
+<script src="ads.js"></script>
+</body>
+</html>
