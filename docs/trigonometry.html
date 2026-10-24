@@ -1,0 +1,1173 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Тригонометрия от SvinCompany</title>
+<meta name="description" content="Решатель задач по тригонометрии: значения sin, cos, tg, формулы, уравнения и неравенства: Дано / Решение / Ответ">
+<meta name="theme-color" content="#1d5fbf">
+<link rel="manifest" href="manifest-trigonometry.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Тригонометрия">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  html, body { margin: 0; }
+  body { -webkit-text-size-adjust: 100%; }
+</style>
+<style>
+  /* Та же система, что у остальных решателей: шапка, вкладки разделов, чипы задач,
+     слева форма, справа «тетрадный» лист с Дано / Решение / Ответ. */
+  :root {
+    --bg: #f2f5f9;
+    --surface: #ffffff;
+    --ink: #132033;
+    --muted: #566678;
+    --line: #d6dee8;
+    --accent: #1d5fbf;
+    --accent-ink: #ffffff;
+    --accent-soft: #e3edfa;
+    --grid: #e7edf4;
+    --warn: #b3261e;
+    --sans: "IBM Plex Sans", system-ui, "Segoe UI", Roboto, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e141b; --surface: #16202a; --ink: #e5ecf4; --muted: #92a3b5;
+      --line: #263341; --accent: #6aa6ff; --accent-ink: #0b1522; --accent-soft: #1a2a3f;
+      --grid: #1c2733; --warn: #ff8a80; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e141b; --surface: #16202a; --ink: #e5ecf4; --muted: #92a3b5;
+    --line: #263341; --accent: #6aa6ff; --accent-ink: #0b1522; --accent-soft: #1a2a3f;
+    --grid: #1c2733; --warn: #ff8a80; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font: 15px/1.5 var(--sans);
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 20px 48px;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+  button, input, select { font: inherit; color: inherit; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; }
+  .brand { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .brand svg { display: block; flex: none; }
+  .brand span { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+  h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+
+  .cats { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--line); min-width: 0; }
+  .cats button { border: 0; background: none; padding: 8px 14px; cursor: pointer; color: var(--muted); white-space: nowrap;
+    border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; }
+  .cats button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: 14px; }
+  .chips button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); font-weight: 500; }
+
+  .grid { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 20px; align-items: start; }
+  @media (max-width: 820px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+  .form { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .hint { margin: 0; color: var(--muted); font-size: 13px; }
+  .field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .field label { font-size: 13px; color: var(--muted); }
+  .field label b { font-family: var(--mono); font-weight: 600; color: var(--ink); margin-right: 6px; }
+  .inp { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); min-width: 0; }
+  .inp input, .inp select { flex: 1; min-width: 0; border: 0; background: none; padding: 9px 10px; font-family: var(--mono); font-size: 15px; }
+  .inp select { font-family: var(--sans); }
+  .inp .u { padding: 9px 10px 9px 0; color: var(--muted); font-size: 13px; align-self: center; white-space: nowrap; }
+  .inp:focus-within { border-color: var(--accent); }
+  .note { margin: 0; font-size: 12.5px; color: var(--muted); background: var(--accent-soft); border-radius: 6px; padding: 6px 10px; }
+
+  .paper { border: 1px solid var(--line); border-radius: 10px; padding: 20px; min-width: 0; background-color: var(--surface);
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 24px 24px; display: flex; flex-direction: column; gap: 18px; }
+  .paper h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .given { display: flex; flex-wrap: wrap; gap: 4px 22px; font-family: var(--mono); }
+  .given span { overflow-wrap: anywhere; }
+  .given span em { font-style: normal; color: var(--muted); font-size: 13px; }
+  .step { padding: 8px 0; border-top: 1px dashed var(--line); font-family: var(--mono); font-size: 14px; overflow-x: auto; }
+  .step:first-of-type { border-top: 0; padding-top: 0; }
+  .step .f { color: var(--muted); }
+  .step .c { color: var(--ink); }
+  .step.t { font-family: var(--sans); color: var(--muted); font-size: 14px; }
+  .answer { background: var(--accent-soft); border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; gap: 4px; }
+  .answer div { font-family: var(--mono); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .answer div small { font-weight: 400; font-size: 14px; color: var(--muted); }
+  .msg { color: var(--muted); margin: 0; }
+  .msg.err { color: var(--warn); }
+  .plot { overflow-x: auto; }
+  .plot svg { display: block; max-width: 100%; height: auto; }
+  .actions { display: flex; gap: 8px; align-items: center; }
+  .actions button { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 13px; }
+  .actions span { font-size: 13px; color: var(--muted); }
+  footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); }
+  footer b { font-family: var(--mono); font-weight: 600; color: var(--ink); letter-spacing: 0.04em; }
+  sup { font-size: 0.75em; line-height: 0; }
+</style>
+
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand">
+        <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" rx="5" fill="var(--accent)"/><path d="M3.5 11 Q7 3 11 11 T18.5 11" fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="11" x2="19" y2="11" stroke="var(--accent-ink)" stroke-width="1" opacity=".6"/></svg>
+        <span>SvinCompany</span>
+      </div>
+      <h1>Решатель задач · тригонометрия</h1>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;"><a href="index.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">← Меню</a><a href="physics.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Физика</a><a href="algebra.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Алгебра</a><a href="geometry.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Геометрия</a><a href="stereometry.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Стереометрия</a><a href="probability.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Вероятность</a><a href="chemistry.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Химия</a><a href="russian.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Русский язык</a></div>
+  </header>
+  <nav class="cats" id="cats" aria-label="Раздел"></nav>
+  <div class="chips" id="chips"></div>
+  <div class="grid">
+    <form class="form" id="form" autocomplete="off"></form>
+    <section class="paper" id="paper" aria-live="polite"></section>
+  </div>
+  <div id="adSlot"></div>
+  <footer><span>Сделано в <b>SvinCompany</b></span><span>Углы: число — градусы, с π — радианы</span></footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- Форматирование и общие помощники ---------- */
+  const fmt = (n) => {
+    if (typeof n !== "number") return String(n);
+    if (!isFinite(n)) return "∞";
+    if (n === 0) return "0";
+    const a = Math.abs(n);
+    if (a >= 1e6 || a < 1e-3) {
+      const [m, e] = n.toExponential(3).split("e");
+      return Number(m) + "·10^" + Number(e);
+    }
+    const prec = Math.max(4, Math.floor(Math.log10(a)) + 1);
+    return String(Number(n.toPrecision(prec))).replace("-", "−");
+  };
+  const par = (n) => (n < 0 ? "(" + fmt(n) + ")" : fmt(n));
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const html = (s) => esc(s).replace(/10\^(-?\d+)/g, "10<sup>$1</sup>");
+  const S = (f, c) => ({ f, c });          // шаг: формула + подстановка
+  const N = (t) => ({ t });                // текстовый шаг
+  const A = (sym, val, unit) => [sym, val, unit || ""];
+  const fail = (m) => { throw new Error(m); };
+  const isInt = Number.isInteger;
+  const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a || 1; };
+  const sum = (a) => a.reduce((s, v) => s + v, 0);
+  const D2R = Math.PI / 180, R2D = 180 / Math.PI;
+  const near = (a, b, e) => Math.abs(a - b) < (e === undefined ? 1e-9 : e);
+  const snap = (v) => { const r = Math.round(v); return Math.abs(v - r) < 1e-9 ? r : Number(v.toFixed(9)); };
+  const mn = (s) => String(s).replace(/-/g, "−");
+  const rus = (n, one, few, many) => {
+    const a = Math.abs(n) % 100, b = a % 10;
+    return a > 10 && a < 20 ? many : b === 1 ? one : b >= 2 && b <= 4 ? few : many;
+  };
+
+  /* Безопасное вычисление выражений: числа, + − * / ^, скобки, √, π (например 5π/6, √3/2, 1/4). */
+  function evalExpr(src) {
+    const t = String(src).toLowerCase().replace(/,/g, ".").replace(/[\s ]+/g, "").replace(/[−–—]/g, "-").replace(/×|·/g, "*").replace(/÷/g, "/");
+    if (!t) return NaN;
+    const toks = [];
+    const re = /(\d+\.?\d*|\.\d+)|(π|pi)|(√|sqrt)|([-+*\/^()])/g;
+    let m, last = 0;
+    while ((m = re.exec(t))) {
+      if (m.index !== last) return NaN;
+      last = re.lastIndex;
+      toks.push(m[1] !== undefined ? { n: Number(m[1]) } : m[2] ? { n: Math.PI } : m[3] ? { r: 1 } : { o: m[4] });
+    }
+    if (last !== t.length || !toks.length) return NaN;
+    let i = 0;
+    const peek = () => toks[i];
+    const startsAtom = (k) => k && (k.n !== undefined || k.r || k.o === "(");
+    function expr() {
+      let v = term();
+      while (peek() && (peek().o === "+" || peek().o === "-")) { const o = toks[i++].o; const w = term(); v = o === "+" ? v + w : v - w; }
+      return v;
+    }
+    function term() {
+      let v = unary();
+      for (;;) {
+        const k = peek();
+        if (k && (k.o === "*" || k.o === "/")) { i++; const w = unary(); v = k.o === "*" ? v * w : v / w; }
+        else if (startsAtom(k)) v *= power();   // неявное умножение: 2π, 3√2
+        else break;
+      }
+      return v;
+    }
+    function unary() {
+      const k = peek();
+      if (k && (k.o === "-" || k.o === "+")) { i++; const v = unary(); return k.o === "-" ? -v : v; }
+      return power();
+    }
+    function power() {
+      const b = atom();
+      if (peek() && peek().o === "^") { i++; return Math.pow(b, unary()); }
+      return b;
+    }
+    function atom() {
+      const k = toks[i++];
+      if (!k) throw 0;
+      if (k.n !== undefined) return k.n;
+      if (k.r) { const v = atom(); return Math.sqrt(v); }
+      if (k.o === "(") { const v = expr(); if (!peek() || peek().o !== ")") throw 0; i++; return v; }
+      throw 0;
+    }
+    try { const v = expr(); return i === toks.length ? v : NaN; } catch (e) { return NaN; }
+  }
+  const toNum = (s) => evalExpr(s);
+
+  /* Угол: число — градусы; с π или «рад» — радианы. Возвращает градусы (или NaN). */
+  function parseAngle(raw) {
+    let s = String(raw).toLowerCase().replace(/°|град\.?|deg/g, "");
+    const rad = /π|pi|рад|rad/.test(s);
+    s = s.replace(/рад\.?|rad/g, "");
+    const v = evalExpr(s);
+    if (!isFinite(v)) return NaN;
+    return snap(rad ? v * R2D : v);
+  }
+
+  /* Список чисел через пробел или «;» (запятая внутри числа — десятичная; «1,2,3» без пробелов — три числа). */
+  function parseList(raw) {
+    const s = String(raw).trim();
+    if (!s) return { vals: [] };
+    let toks;
+    if (/[;\s]/.test(s)) toks = s.split(/[;\s]+/);
+    else if ((s.match(/,/g) || []).length >= 2) toks = s.split(",");
+    else toks = [s];
+    toks = toks.map((t) => t.replace(/^,+|,+$/g, "")).filter(Boolean);
+    const vals = [];
+    for (const t of toks) {
+      const v = toNum(t);
+      if (!isFinite(v)) return { vals: [], bad: t };
+      vals.push(v);
+    }
+    return { vals };
+  }
+  const listStr = (a, max) => {
+    max = max || 16;
+    return a.length > max ? a.slice(0, max).map(fmt).join("; ") + `; … (всего ${a.length})` : a.map(fmt).join("; ");
+  };
+  const joinT = (arr, sep, max) => {
+    max = max || 10;
+    return arr.length > max ? arr.slice(0, max).join(sep) + sep + "…" : arr.join(sep);
+  };
+  const svgWrap = (W, H, label, g) =>
+    `<svg viewBox="0 0 ${W} ${H}" width="${W}" role="img" aria-label="${esc(label)}" style="font:11px var(--mono);fill:var(--muted)">${g}</svg>`;
+
+  /* =====================================================================
+     ТРИГОНОМЕТРИЯ: базовые функции (углы в градусах, точные нули на осях)
+     ===================================================================== */
+  const norm360 = (d) => { const r = ((d % 360) + 360) % 360; return near(r, 360) ? 0 : r; };
+  const sinD = (d) => { d = norm360(d); if (near(d, 0) || near(d, 180)) return 0; if (near(d, 90)) return 1; if (near(d, 270)) return -1; return Math.sin(d * D2R); };
+  const cosD = (d) => { d = norm360(d); if (near(d, 90) || near(d, 270)) return 0; if (near(d, 0)) return 1; if (near(d, 180)) return -1; return Math.cos(d * D2R); };
+  const tanD = (d) => { const c = cosD(d); return c === 0 ? NaN : sinD(d) / c; };
+  const cotD = (d) => { const s = sinD(d); return s === 0 ? NaN : cosD(d) / s; };
+  const FN = { sin: sinD, cos: cosD, tg: tanD, ctg: cotD };
+  const quadrantOf = (d) => { d = norm360(d); return d === 0 || d === 90 || d === 180 || d === 270 ? 0 : d < 90 ? 1 : d < 180 ? 2 : d < 270 ? 3 : 4; };
+  const QNAME = ["на оси координат", "I четверти", "II четверти", "III четверти", "IV четверти"];
+  const SIGNS = { sin: [1, 1, -1, -1], cos: [1, -1, -1, 1], tg: [1, -1, 1, -1], ctg: [1, -1, 1, -1] };
+  const signWord = (v) => (v > 0 ? "положителен" : v < 0 ? "отрицателен" : "равен нулю");
+  const FNAME = { sin: "синус", cos: "косинус", tg: "тангенс", ctg: "котангенс" };
+
+  /* Угол в долях π: 5π/6, −π/4, 0; если дроби нет — десятичные радианы. */
+  function piStr(d, unit) {
+    d = snap(d);
+    if (d === 0) return "0";
+    const t = d / 180;
+    for (let q = 1; q <= 360; q++) {
+      const p = t * q;
+      if (Math.abs(p - Math.round(p)) < 1e-9) {
+        let n = Math.round(p), den = q;
+        const g = gcd(n, den); n /= g; den /= g;
+        const sg = n < 0 ? "−" : ""; n = Math.abs(n);
+        return sg + (n === 1 ? "π" : n + "π") + (den === 1 ? "" : "/" + den);
+      }
+    }
+    return fmt(d * D2R) + (unit ? " рад" : "");
+  }
+  const degStr = (d) => String(Number(snap(d).toFixed(2))).replace("-", "−") + "°";
+  const angBoth = (d) => `${degStr(d)} = ${piStr(d, true)}`;
+
+  /* Точные значения для углов с опорным углом 30°, 45°, 60° и для осей. */
+  const EX = { 30: ["1/2", "√3/2", "√3/3"], 45: ["√2/2", "√2/2", "1"], 60: ["√3/2", "1/2", "√3"] };
+  function exactTrig(d) {
+    d = norm360(d);
+    const out = { s: null, c: null, t: null, k: null };
+    const r = Math.round(d);
+    if (Math.abs(d - r) > 1e-9) return out;
+    if (r % 90 === 0) {
+      out.s = mn(String(sinD(r))); out.c = mn(String(cosD(r))); out.t = r % 180 === 0 ? "0" : null; out.k = r % 180 === 0 ? null : "0";
+      return out;
+    }
+    const q = r < 90 ? 1 : r < 180 ? 2 : r < 270 ? 3 : 4;
+    const ref = q === 1 ? r : q === 2 ? 180 - r : q === 3 ? r - 180 : 360 - r;
+    const e = EX[ref];
+    if (!e) return out;
+    out.s = (q <= 2 ? "" : "−") + e[0];
+    out.c = (q === 1 || q === 4 ? "" : "−") + e[1];
+    out.t = (q === 1 || q === 3 ? "" : "−") + e[2];
+    const inv = { "1": "1", "√3/3": "√3", "√3": "√3/3" }[e[2]];
+    out.k = (q === 1 || q === 3 ? "" : "−") + inv;
+    return out;
+  }
+  const exKey = { sin: "s", cos: "c", tg: "t", ctg: "k" };
+  /* Значение функции для вывода: «√3/2 ≈ 0.866» или просто число. */
+  function tv(d, fn) {
+    const v = FN[fn](d);
+    if (!isFinite(v)) return "не определён";
+    const ex = exactTrig(d)[exKey[fn]];
+    if (ex !== null && ex !== undefined && !/^-?\d+$|^−?\d+$/.test(ex)) return `${ex} ≈ ${fmt(v)}`;
+    return fmt(snap(v));
+  }
+  const num = (d, fn) => FN[fn](d);
+
+  /* Точки обозначения общих решений */
+  function famDeg(b, p) {
+    b = snap(b);
+    return "x = " + (b === 0 ? "" : degStr(b) + " + ") + `${p}°·n`;
+  }
+  function famRad(b, p) {
+    const bs = piStr(b);
+    return "x = " + (bs === "0" ? "" : bs + " + ") + (p === 360 ? "2π" : "π") + "n";
+  }
+  /* Корни семейств x = b + p·n на промежутке [lo; hi] */
+  function rootsIn(fams, lo, hi) {
+    const out = [];
+    fams.forEach(({ b, p }) => {
+      const n0 = Math.ceil((lo - b) / p - 1e-9), n1 = Math.floor((hi - b) / p + 1e-9);
+      for (let n = n0; n <= n1 && out.length < 400; n++) out.push(snap(b + p * n));
+    });
+    out.sort((u, v) => u - v);
+    return out.filter((v, i) => i === 0 || Math.abs(v - out[i - 1]) > 1e-7);
+  }
+  const rootsText = (arr, conv) => {
+    if (!arr.length) return "корней нет";
+    const sh = arr.slice(0, 40).map(conv);
+    return sh.join("; ") + (arr.length > 40 ? `; … (всего ${arr.length})` : "");
+  };
+
+  /* =====================================================================
+     РИСУНОК: единичная окружность
+     ===================================================================== */
+  function circleSvg(o) {
+    o = o || {};
+    const W = 300, H = 300, cx = 150, cy = 150, R = 100;
+    const X = (d, k) => (cx + (k || R) * Math.cos(d * D2R)).toFixed(1);
+    const Y = (d, k) => (cy - (k || R) * Math.sin(d * D2R)).toFixed(1);
+    let g = `<line x1="${cx - R - 22}" y1="${cy}" x2="${cx + R + 22}" y2="${cy}" style="stroke:var(--line)"/><line x1="${cx}" y1="${cy - R - 22}" x2="${cx}" y2="${cy + R + 22}" style="stroke:var(--line)"/>`;
+    g += `<circle cx="${cx}" cy="${cy}" r="${R}" style="fill:none;stroke:var(--muted)" stroke-width="1"/>`;
+    g += `<text x="${cx + R + 6}" y="${cy - 5}">0°</text><text x="${cx + 5}" y="${cy - R - 8}">90°</text><text x="${cx - R - 32}" y="${cy - 5}">180°</text><text x="${cx + 5}" y="${cy + R + 20}">270°</text>`;
+    g += `<text x="${cx + 44}" y="${cy - 40}" style="opacity:.55">I</text><text x="${cx - 52}" y="${cy - 40}" style="opacity:.55">II</text><text x="${cx - 56}" y="${cy + 50}" style="opacity:.55">III</text><text x="${cx + 44}" y="${cy + 50}" style="opacity:.55">IV</text>`;
+    (o.arcs || []).forEach((a) => {
+      const span = a.to - a.from;
+      if (span <= 1e-9) return;
+      if (span >= 360 - 1e-9) { g += `<circle cx="${cx}" cy="${cy}" r="${R}" style="fill:none;stroke:var(--accent)" stroke-width="6" opacity=".75"/>`; return; }
+      const large = span > 180 ? 1 : 0;
+      g += `<path d="M ${X(a.from)} ${Y(a.from)} A ${R} ${R} 0 ${large} 0 ${X(a.to)} ${Y(a.to)}" style="fill:none;stroke:var(--accent)" stroke-width="6" stroke-linecap="butt" opacity=".75"/>`;
+      [[a.from, a.c1], [a.to, a.c2]].forEach(([d, closed]) => {
+        g += `<circle cx="${X(d)}" cy="${Y(d)}" r="4.5" style="fill:${closed ? "var(--accent)" : "var(--surface)"};stroke:var(--accent)" stroke-width="2"/>`;
+        g += `<text x="${X(d, R + 17)}" y="${(Number(Y(d, R + 17)) + 4).toFixed(1)}" text-anchor="middle">${esc(fmt(snap(norm360(d))))}°</text>`;
+      });
+    });
+    (o.dots || []).forEach((d) => {
+      g += `<circle cx="${X(d)}" cy="${Y(d)}" r="4.5" style="fill:var(--accent);stroke:var(--accent)" stroke-width="2"/>`;
+      g += `<text x="${X(d, R + 17)}" y="${(Number(Y(d, R + 17)) + 4).toFixed(1)}" text-anchor="middle">${esc(fmt(snap(norm360(d))))}°</text>`;
+    });
+    (o.rays || []).forEach((r) => {
+      const d = r.deg, rr = r.len ? R * r.len : R;
+      if (r.angle) {
+        const dd = norm360(d);
+        if (dd > 1e-9) g += `<path d="M ${X(0, 26)} ${Y(0, 26)} A 26 26 0 ${dd > 180 ? 1 : 0} 0 ${X(dd, 26)} ${Y(dd, 26)}" style="fill:none;stroke:var(--accent)" stroke-width="2"/>`;
+      }
+      g += `<line x1="${cx}" y1="${cy}" x2="${X(d, rr)}" y2="${Y(d, rr)}" style="stroke:var(--accent)" stroke-width="2"/>`;
+      g += `<circle cx="${X(d, rr)}" cy="${Y(d, rr)}" r="4.5" style="fill:var(--accent)"/>`;
+      if (r.label) {
+        const lx = Number(X(d, rr + 4)), ly = Number(Y(d, rr + 4));
+        g += `<text x="${(lx + (Math.cos(d * D2R) >= 0 ? 8 : -8)).toFixed(1)}" y="${(ly + (Math.sin(d * D2R) >= 0 ? -6 : 14)).toFixed(1)}" text-anchor="${Math.cos(d * D2R) >= 0 ? "start" : "end"}" style="fill:var(--ink)">${esc(r.label)}</text>`;
+      }
+    });
+    return svgWrap(W, H, o.label || "Единичная окружность", g);
+  }
+
+  /* =====================================================================
+     1. УГЛЫ И ЗНАЧЕНИЯ
+     ===================================================================== */
+
+  /* Градусы ↔ радианы */
+  function solveRadians(x) {
+    const d = x.a, raw = String(x.a_raw || "").toLowerCase();
+    const fromRad = /π|pi|рад|rad/.test(raw);
+    const steps = [];
+    if (fromRad) {
+      steps.push(S("α° = α(рад) · 180° / π", `${piStr(d)} · 180° / π = ${degStr(d)}`));
+      steps.push(N("Радиан — центральный угол, длина дуги которого равна радиусу. Полный оборот 360° = 2π рад, развёрнутый угол 180° = π рад."));
+    } else {
+      steps.push(S("α(рад) = α° · π / 180°", `${degStr(d)} · π / 180° = ${piStr(d)}`));
+      steps.push(S("В десятичных радианах (π ≈ 3,1416)", `${piStr(d)} ≈ ${fmt(d * D2R)} рад`));
+      steps.push(N("Чтобы перевести в радианы, умножаем градусы на π/180, а чтобы обратно — на 180/π."));
+    }
+    const turns = d / 360;
+    steps.push(S("Число оборотов = α / 360°", `${degStr(d)} / 360° = ${fmt(turns)}`));
+    const r = norm360(d);
+    if (r !== snap(d)) steps.push(N(`Положение на окружности: ${degStr(d)} − ${Math.floor(d / 360)}·360° = ${degStr(r)} (${piStr(r)}).`));
+    return { steps, plot: circleSvg({ rays: [{ deg: r, angle: true, label: "α" }] }), answers: [A("В градусах", degStr(d)), A("В радианах (доли π)", piStr(d)), A("В радианах (число)", d * D2R, "рад")] };
+  }
+
+  /* Значения sin, cos, tg, ctg угла */
+  function solveValues(x) {
+    const d = x.a, r = norm360(d), q = quadrantOf(r);
+    const k = Math.floor((d + 1e-12) / 360);
+    const steps = [S("Угол", angBoth(d))];
+    if (Math.abs(d - r) > 1e-9) {
+      steps.push(S("Приводим к промежутку [0°; 360°) — период 360°", `${degStr(d)} = ${degStr(r)} + ${k}·360°`));
+    }
+    steps.push(N(q === 0 ? `Угол ${degStr(r)} лежит на оси координат: значения читаем прямо по окружности.` : `Угол ${degStr(r)} лежит в ${QNAME[q]}.`));
+    if (q > 0) {
+      steps.push(S("Знаки в этой четверти", `sin ${signWord(SIGNS.sin[q - 1])},  cos ${signWord(SIGNS.cos[q - 1])},  tg и ctg ${signWord(SIGNS.tg[q - 1])}`));
+      const ref = q === 1 ? r : q === 2 ? 180 - r : q === 3 ? r - 180 : 360 - r;
+      const rule = q === 1 ? "α" : q === 2 ? "180° − α" : q === 3 ? "α − 180°" : "360° − α";
+      steps.push(S(`Острый опорный угол (${rule})`, `${degStr(r)} → ${degStr(ref)}`));
+      steps.push(N("Значения для 30°, 45°, 60°: sin = 1/2, √2/2, √3/2;  cos = √3/2, √2/2, 1/2;  tg = √3/3, 1, √3."));
+    }
+    const ans = ["sin", "cos", "tg", "ctg"].map((f) => A(`${f} α`, tv(r, f)));
+    steps.push(S("Координаты точки на единичной окружности", `(cos α; sin α) = (${fmt(snap(cosD(r)))}; ${fmt(snap(sinD(r)))})`));
+    if (!isFinite(tanD(r))) steps.push(N("tg α = sin α / cos α, а cos α = 0: тангенс в этой точке не определён."));
+    if (!isFinite(cotD(r))) steps.push(N("ctg α = cos α / sin α, а sin α = 0: котангенс в этой точке не определён."));
+    return { steps, plot: circleSvg({ rays: [{ deg: r, angle: true, label: `(${fmt(snap(cosD(r)))}; ${fmt(snap(sinD(r)))})` }] }), answers: ans };
+  }
+
+  /* По точке на окружности */
+  function solvePoint(x) {
+    const { px, py } = x;
+    const r = Math.hypot(px, py);
+    if (r === 0) fail("Точка совпадает с началом координат — угол не определён.");
+    const ang = snap(norm360(Math.atan2(py, px) * R2D));
+    const steps = [
+      S("r = √(x² + y²)", `r = √(${par(px)}² + ${par(py)}²) = ${fmt(r)}`),
+      S("sin α = y / r", `${fmt(py)} / ${fmt(r)} = ${fmt(py / r)}`),
+      S("cos α = x / r", `${fmt(px)} / ${fmt(r)} = ${fmt(px / r)}`),
+      px === 0 ? N("x = 0: tg α не определён.") : S("tg α = y / x", `${fmt(py)} / ${par(px)} = ${fmt(py / px)}`),
+      py === 0 ? N("y = 0: ctg α не определён.") : S("ctg α = x / y", `${fmt(px)} / ${par(py)} = ${fmt(px / py)}`),
+    ];
+    const q = quadrantOf(ang);
+    steps.push(N(q === 0 ? "Точка лежит на оси координат." : `Точка лежит в ${QNAME[q]}.`));
+    steps.push(S("Угол поворота α (0° ≤ α < 360°)", `α = ${angBoth(ang)}`));
+    const ans = [A("r", r), A("sin α", py / r), A("cos α", px / r), A("tg α", px === 0 ? "не определён" : py / px), A("ctg α", py === 0 ? "не определён" : px / py), A("Угол α", angBoth(ang))];
+    return { steps, plot: circleSvg({ rays: [{ deg: ang, angle: true, label: "M(" + fmt(px) + "; " + fmt(py) + ")" }] }), answers: ans };
+  }
+
+  /* Остальные функции по одной */
+  function solveFromOne(x) {
+    const { fn, v, q: qs } = x, q = Number(qs);
+    const sg = SIGNS;
+    if (fn === "sin" || fn === "cos") {
+      if (Math.abs(v) > 1 + 1e-12) fail(`${fn} α не может быть по модулю больше 1.`);
+      if (Math.abs(v) < 1e-12 || Math.abs(Math.abs(v) - 1) < 1e-12) fail(`При ${fn} α = ${fmt(v)} угол лежит на оси координат, а не в четверти: задача с четвертью не имеет смысла.`);
+    } else if (Math.abs(v) < 1e-12) fail(`При ${fn} α = 0 угол лежит на оси координат, а не в четверти.`);
+    if (Math.sign(v) !== sg[fn][q - 1]) fail(`В ${QNAME[q]} ${fn} α ${signWord(sg[fn][q - 1])}, а задано число с другим знаком (${fmt(v)}).`);
+    const steps = [];
+    let s, c;
+    if (fn === "sin") {
+      s = v; steps.push(S("cos² α = 1 − sin² α", `cos² α = 1 − ${par(v)}² = ${fmt(1 - v * v)}`));
+      c = sg.cos[q - 1] * Math.sqrt(1 - v * v);
+      steps.push(S("cos α = ±√(1 − sin² α), знак по четверти", `в ${QNAME[q]} cos ${signWord(sg.cos[q - 1])}:  cos α = ${fmt(c)}`));
+    } else if (fn === "cos") {
+      c = v; steps.push(S("sin² α = 1 − cos² α", `sin² α = 1 − ${par(v)}² = ${fmt(1 - v * v)}`));
+      s = sg.sin[q - 1] * Math.sqrt(1 - v * v);
+      steps.push(S("sin α = ±√(1 − cos² α), знак по четверти", `в ${QNAME[q]} sin ${signWord(sg.sin[q - 1])}:  sin α = ${fmt(s)}`));
+    } else {
+      const t = fn === "tg" ? v : 1 / v;
+      if (fn === "ctg") steps.push(S("tg α = 1 / ctg α", `tg α = 1 / ${par(v)} = ${fmt(t)}`));
+      const c2 = 1 / (1 + t * t);
+      steps.push(S("1 + tg² α = 1 / cos² α  ⇒  cos² α = 1 / (1 + tg² α)", `cos² α = 1 / (1 + ${par(t)}²) = ${fmt(c2)}`));
+      c = sg.cos[q - 1] * Math.sqrt(c2);
+      steps.push(S("cos α, знак по четверти", `в ${QNAME[q]} cos ${signWord(sg.cos[q - 1])}:  cos α = ${fmt(c)}`));
+      s = t * c;
+      steps.push(S("sin α = tg α · cos α", `sin α = ${par(t)}·${par(c)} = ${fmt(s)}`));
+    }
+    const t = s / c;
+    steps.push(S("tg α = sin α / cos α,  ctg α = 1 / tg α", `tg α = ${fmt(s)} / ${par(c)} = ${fmt(t)},  ctg α = ${fmt(1 / t)}`));
+    steps.push(N(`Проверка: sin² α + cos² α = ${fmt(s * s + c * c)}.`));
+    const ang = snap(norm360(Math.atan2(s, c) * R2D));
+    return { steps, plot: circleSvg({ rays: [{ deg: ang, angle: true, label: "α ≈ " + fmt(ang) + "°" }] }), answers: [A("sin α", s), A("cos α", c), A("tg α", t), A("ctg α", 1 / t), A("Угол α", "≈ " + degStr(ang))] };
+  }
+
+  /* Арксинус, арккосинус, арктангенс, арккотангенс */
+  function solveArc(x) {
+    const { fn, a } = x;
+    let t, rng, def, check;
+    if (fn === "arcsin") {
+      if (Math.abs(a) > 1 + 1e-12) fail("Арксинус определён только для |a| ≤ 1.");
+      t = Math.asin(Math.max(-1, Math.min(1, a))) * R2D; rng = "[−π/2; π/2]"; def = "sin t = a"; check = `sin(${degStr(t)}) = ${fmt(snap(sinD(t)))}`;
+    } else if (fn === "arccos") {
+      if (Math.abs(a) > 1 + 1e-12) fail("Арккосинус определён только для |a| ≤ 1.");
+      t = Math.acos(Math.max(-1, Math.min(1, a))) * R2D; rng = "[0; π]"; def = "cos t = a"; check = `cos(${degStr(t)}) = ${fmt(snap(cosD(t)))}`;
+    } else if (fn === "arctg") {
+      t = Math.atan(a) * R2D; rng = "(−π/2; π/2)"; def = "tg t = a"; check = `tg(${degStr(t)}) = ${fmt(snap(tanD(t)))}`;
+    } else {
+      t = 90 - Math.atan(a) * R2D; rng = "(0; π)"; def = "ctg t = a"; check = `ctg(${degStr(t)}) = ${fmt(snap(cotD(t)))}`;
+    }
+    t = snap(t);
+    const steps = [
+      N(`${fn} a — это такой угол t из промежутка ${rng}, что ${def}.`),
+      S(`t = ${fn}(${fmt(a)})`, `t = ${degStr(t)} = ${piStr(t)} ≈ ${fmt(t * D2R)} рад`),
+      S("Проверка", check),
+    ];
+    if (fn === "arcsin") steps.push(N(`Свойство: arcsin(−a) = −arcsin a, поэтому arcsin(${fmt(-a)}) = ${piStr(-t)}.`));
+    if (fn === "arccos") steps.push(N(`Свойство: arccos(−a) = π − arccos a, поэтому arccos(${fmt(-a)}) = ${piStr(180 - t)}.`));
+    if (fn === "arctg") steps.push(N(`Свойство: arctg(−a) = −arctg a, поэтому arctg(${fmt(-a)}) = ${piStr(-t)}.`));
+    if (fn === "arcctg") steps.push(N(`Свойство: arcctg a = π/2 − arctg a, а arcctg(−a) = π − arcctg a = ${piStr(180 - t)}.`));
+    return { steps, plot: circleSvg({ rays: [{ deg: t, angle: true, label: "t" }] }), answers: [A(`${fn}(${fmt(a)})`, piStr(t)), A("В градусах", degStr(t)), A("В радианах (число)", t * D2R, "рад")] };
+  }
+
+  /* =====================================================================
+     2. ФОРМУЛЫ
+     ===================================================================== */
+
+  function solveAddition(x) {
+    const { a, b, mode } = x;
+    const fn = mode.slice(0, -1), sg = mode.slice(-1), plus = sg === "+";
+    const ang = plus ? a + b : a - b;
+    const sa = sinD(a), ca = cosD(a), sb = sinD(b), cb = cosD(b);
+    const op = plus ? "+" : "−", co = plus ? "−" : "+";
+    const steps = [
+      S("Значения для α", `sin α = ${tv(a, "sin")},  cos α = ${tv(a, "cos")}`),
+      S("Значения для β", `sin β = ${tv(b, "sin")},  cos β = ${tv(b, "cos")}`),
+    ];
+    let res;
+    if (fn === "sin") {
+      res = plus ? sa * cb + ca * sb : sa * cb - ca * sb;
+      steps.push(S(`sin(α ${op} β) = sin α·cos β ${op} cos α·sin β`, `${par(snap(sa))}·${par(snap(cb))} ${op} ${par(snap(ca))}·${par(snap(sb))} = ${fmt(snap(res))}`));
+    } else if (fn === "cos") {
+      res = plus ? ca * cb - sa * sb : ca * cb + sa * sb;
+      steps.push(S(`cos(α ${op} β) = cos α·cos β ${co} sin α·sin β`, `${par(snap(ca))}·${par(snap(cb))} ${co} ${par(snap(sa))}·${par(snap(sb))} = ${fmt(snap(res))}`));
+    } else {
+      const ta = tanD(a), tb = tanD(b);
+      if (!isFinite(ta)) fail("tg α не определён (cos α = 0), формула тангенса суммы неприменима.");
+      if (!isFinite(tb)) fail("tg β не определён (cos β = 0), формула тангенса суммы неприменима.");
+      steps.push(S("tg α, tg β", `tg α = ${fmt(snap(ta))},  tg β = ${fmt(snap(tb))}`));
+      const den = plus ? 1 - ta * tb : 1 + ta * tb, numr = plus ? ta + tb : ta - tb;
+      if (Math.abs(den) < 1e-9) {
+        steps.push(S(`tg(α ${op} β) = (tg α ${op} tg β) / (1 ${co} tg α·tg β)`, `знаменатель 1 ${co} ${par(snap(ta))}·${par(snap(tb))} = 0`));
+        steps.push(N(`Знаменатель равен нулю: угол α ${op} β = ${degStr(ang)}, тангенс не определён.`));
+        return { steps, answers: [A(`tg(α ${op} β)`, "не определён")] };
+      }
+      res = numr / den;
+      steps.push(S(`tg(α ${op} β) = (tg α ${op} tg β) / (1 ${co} tg α·tg β)`, `(${par(snap(ta))} ${op} ${par(snap(tb))}) / (1 ${co} ${par(snap(ta))}·${par(snap(tb))}) = ${fmt(snap(numr))} / ${fmt(snap(den))} = ${fmt(snap(res))}`));
+    }
+    steps.push(S("Проверка прямым вычислением", `${fn}(${degStr(a)} ${op} ${degStr(b)}) = ${fn}(${degStr(ang)}) = ${tv(ang, fn)}`));
+    return { steps, answers: [A(`${fn}(α ${op} β)`, snap(res)), A("Угол α " + op + " β", angBoth(ang))] };
+  }
+
+  function solveDouble(x) {
+    const { a, mode } = x;
+    const sa = sinD(a), ca = cosD(a);
+    const steps = [S("Значения для α", `sin α = ${tv(a, "sin")},  cos α = ${tv(a, "cos")}`)];
+    if (mode === "double") {
+      const s2 = 2 * sa * ca, c2 = ca * ca - sa * sa, ta = tanD(a);
+      steps.push(S("sin 2α = 2·sin α·cos α", `2·${par(snap(sa))}·${par(snap(ca))} = ${fmt(snap(s2))}`));
+      steps.push(S("cos 2α = cos² α − sin² α", `${par(snap(ca))}² − ${par(snap(sa))}² = ${fmt(snap(c2))}`));
+      steps.push(N(`Другие записи: cos 2α = 1 − 2·sin² α = ${fmt(snap(1 - 2 * sa * sa))}, cos 2α = 2·cos² α − 1 = ${fmt(snap(2 * ca * ca - 1))}.`));
+      const ans = [A("sin 2α", snap(s2)), A("cos 2α", snap(c2))];
+      if (isFinite(ta) && Math.abs(1 - ta * ta) > 1e-9) {
+        const t2 = (2 * ta) / (1 - ta * ta);
+        steps.push(S("tg 2α = 2·tg α / (1 − tg² α)", `2·${par(snap(ta))} / (1 − ${par(snap(ta))}²) = ${fmt(snap(t2))}`));
+        ans.push(A("tg 2α", snap(t2)));
+      } else steps.push(N("tg 2α по этой формуле не вычисляется (tg α не определён или tg² α = 1): тангенс 2α равен sin 2α / cos 2α, если cos 2α ≠ 0."));
+      steps.push(S("Проверка прямым вычислением", `sin(${degStr(2 * a)}) = ${tv(2 * a, "sin")},  cos(${degStr(2 * a)}) = ${tv(2 * a, "cos")}`));
+      return { steps, answers: ans };
+    }
+    const h = a / 2, qh = quadrantOf(h);
+    steps.push(S("Половинный угол", `α/2 = ${angBoth(h)}`));
+    steps.push(N(qh === 0 ? "Угол α/2 лежит на оси координат." : `Угол α/2 лежит в ${QNAME[qh]}: sin ${signWord(SIGNS.sin[qh - 1])}, cos ${signWord(SIGNS.cos[qh - 1])}, tg ${signWord(SIGNS.tg[qh - 1])}.`));
+    const sh = Math.sign(snap(sinD(h))) * Math.sqrt(Math.max(0, (1 - ca) / 2));
+    const ch = Math.sign(snap(cosD(h))) * Math.sqrt(Math.max(0, (1 + ca) / 2));
+    steps.push(S("sin(α/2) = ±√((1 − cos α) / 2)", `±√((1 − ${par(snap(ca))}) / 2) = ±√${fmt(snap((1 - ca) / 2))}  ⇒  ${fmt(snap(sh))}`));
+    steps.push(S("cos(α/2) = ±√((1 + cos α) / 2)", `±√((1 + ${par(snap(ca))}) / 2) = ±√${fmt(snap((1 + ca) / 2))}  ⇒  ${fmt(snap(ch))}`));
+    const ans = [A("sin(α/2)", snap(sh)), A("cos(α/2)", snap(ch))];
+    if (Math.abs(1 + ca) > 1e-9) {
+      const th = sa / (1 + ca);
+      steps.push(S("tg(α/2) = sin α / (1 + cos α)", `${fmt(snap(sa))} / (1 + ${par(snap(ca))}) = ${fmt(snap(th))}`));
+      ans.push(A("tg(α/2)", snap(th)));
+    } else steps.push(N("cos α = −1: tg(α/2) не определён."));
+    steps.push(S("Проверка прямым вычислением", `sin(${degStr(h)}) = ${tv(h, "sin")},  cos(${degStr(h)}) = ${tv(h, "cos")}`));
+    return { steps, answers: ans };
+  }
+
+  const RQ = { "90+": 2, "90-": 1, "180+": 3, "180-": 2, "270+": 4, "270-": 3, "360+": 1, "360-": 4 };
+  const BASEPI = { 90: "π/2", 180: "π", 270: "3π/2", 360: "2π" };
+  const SWAP = { sin: "cos", cos: "sin", tg: "ctg", ctg: "tg" };
+  function solveReduction(x) {
+    const { fn, base, op } = x, a = x.a;
+    const key = base + (op === "-" ? "-" : "+");
+    const q = RQ[key], sgn = SIGNS[fn][q - 1];
+    const swap = base === "90" || base === "270";
+    const res = swap ? SWAP[fn] : fn;
+    const opS = op === "-" ? "−" : "+";
+    const steps = [
+      S("Выражение", `${fn}(${base}° ${opS} α) = ${fn}(${BASEPI[base]} ${opS} α)`),
+      N(`Считаем α острым углом. Тогда угол ${base}° ${opS} α лежит в ${QNAME[q]}.`),
+      S("Знак", `в ${QNAME[q]} ${fn} ${signWord(sgn)}, значит перед результатом ставим «${sgn > 0 ? "+" : "−"}»`),
+      N(swap ? `Базовый угол ${base}° (${BASEPI[base]}) — на вертикальной оси: название функции меняется (${fn} → ${res}).` : `Базовый угол ${base}° (${BASEPI[base]}) — на горизонтальной оси: название функции не меняется.`),
+    ];
+    const formula = `${fn}(${base}° ${opS} α) = ${sgn > 0 ? "" : "−"}${res} α`;
+    steps.push(S("Результат", formula));
+    const L = FN[fn](base * (1) + (op === "-" ? -a : a)), Rv = sgn * FN[res](a);
+    if (isFinite(L) && isFinite(Rv)) steps.push(S(`Проверка при α = ${degStr(a)}`, `${fn}(${degStr(Number(base) + (op === "-" ? -a : a))}) = ${fmt(snap(L))},  ${sgn > 0 ? "" : "−"}${res}(${degStr(a)}) = ${fmt(snap(Rv))}`));
+    else steps.push(N("При этом α одна из частей не определена, поэтому числовую проверку пропускаем (формула верна там, где обе части определены)."));
+    return { steps, answers: [A("Формула", formula), A("В радианах", `${fn}(${BASEPI[base]} ${opS} α) = ${sgn > 0 ? "" : "−"}${res} α`)] };
+  }
+
+  function solveSumProd(x) {
+    const { a, b, mode } = x;
+    const u = (a + b) / 2, v = (a - b) / 2;
+    const steps = [S("Полусумма и полуразность", `(α + β)/2 = ${degStr(u)},  (α − β)/2 = ${degStr(v)}`)];
+    let L, Rv, name, form;
+    const sa = sinD(a), sb = sinD(b), ca = cosD(a), cb = cosD(b);
+    switch (mode) {
+      case "s_add": L = sa + sb; Rv = 2 * sinD(u) * cosD(v); name = "sin α + sin β"; form = "2·sin((α+β)/2)·cos((α−β)/2)";
+        steps.push(S("sin α + sin β = 2·sin((α+β)/2)·cos((α−β)/2)", `2·${par(snap(sinD(u)))}·${par(snap(cosD(v)))} = ${fmt(snap(Rv))}`)); break;
+      case "s_sub": L = sa - sb; Rv = 2 * sinD(v) * cosD(u); name = "sin α − sin β"; form = "2·sin((α−β)/2)·cos((α+β)/2)";
+        steps.push(S("sin α − sin β = 2·sin((α−β)/2)·cos((α+β)/2)", `2·${par(snap(sinD(v)))}·${par(snap(cosD(u)))} = ${fmt(snap(Rv))}`)); break;
+      case "c_add": L = ca + cb; Rv = 2 * cosD(u) * cosD(v); name = "cos α + cos β"; form = "2·cos((α+β)/2)·cos((α−β)/2)";
+        steps.push(S("cos α + cos β = 2·cos((α+β)/2)·cos((α−β)/2)", `2·${par(snap(cosD(u)))}·${par(snap(cosD(v)))} = ${fmt(snap(Rv))}`)); break;
+      case "c_sub": L = ca - cb; Rv = -2 * sinD(u) * sinD(v); name = "cos α − cos β"; form = "−2·sin((α+β)/2)·sin((α−β)/2)";
+        steps.push(S("cos α − cos β = −2·sin((α+β)/2)·sin((α−β)/2)", `−2·${par(snap(sinD(u)))}·${par(snap(sinD(v)))} = ${fmt(snap(Rv))}`)); break;
+      case "p_sc": L = sa * cb; Rv = (sinD(a + b) + sinD(a - b)) / 2; name = "sin α·cos β"; form = "½·[sin(α+β) + sin(α−β)]";
+        steps.push(S("sin α·cos β = ½·[sin(α+β) + sin(α−β)]", `½·[${par(snap(sinD(a + b)))} + ${par(snap(sinD(a - b)))}] = ${fmt(snap(Rv))}`)); break;
+      case "p_cc": L = ca * cb; Rv = (cosD(a - b) + cosD(a + b)) / 2; name = "cos α·cos β"; form = "½·[cos(α−β) + cos(α+β)]";
+        steps.push(S("cos α·cos β = ½·[cos(α−β) + cos(α+β)]", `½·[${par(snap(cosD(a - b)))} + ${par(snap(cosD(a + b)))}] = ${fmt(snap(Rv))}`)); break;
+      default: L = sa * sb; Rv = (cosD(a - b) - cosD(a + b)) / 2; name = "sin α·sin β"; form = "½·[cos(α−β) − cos(α+β)]";
+        steps.push(S("sin α·sin β = ½·[cos(α−β) − cos(α+β)]", `½·[${par(snap(cosD(a - b)))} − ${par(snap(cosD(a + b)))}] = ${fmt(snap(Rv))}`));
+    }
+    steps.push(S("Проверка: левая часть напрямую", `${name} = ${fmt(snap(L))}`));
+    return { steps, answers: [A(name, snap(L)), A("Через " + (mode.startsWith("p") ? "сумму" : "произведение"), snap(Rv)), A("Формула", `${name} = ${form}`)] };
+  }
+
+  function solveIdentities(x) {
+    const a = x.a, s = sinD(a), c = cosD(a), t = tanD(a), k = cotD(a);
+    const steps = [S("Значения", `sin α = ${fmt(snap(s))},  cos α = ${fmt(snap(c))}` + (isFinite(t) ? `,  tg α = ${fmt(snap(t))}` : ",  tg α не определён") + (isFinite(k) ? `,  ctg α = ${fmt(snap(k))}` : ",  ctg α не определён"))];
+    const ans = [];
+    steps.push(S("sin² α + cos² α = 1", `${fmt(snap(s * s))} + ${fmt(snap(c * c))} = ${fmt(snap(s * s + c * c))}`));
+    ans.push(A("sin² α + cos² α", snap(s * s + c * c)));
+    if (isFinite(t)) {
+      steps.push(S("1 + tg² α = 1 / cos² α", `1 + ${fmt(snap(t * t))} = ${fmt(snap(1 + t * t))};  1 / ${fmt(snap(c * c))} = ${fmt(snap(1 / (c * c)))}`));
+      ans.push(A("1 + tg² α", snap(1 + t * t)));
+    } else steps.push(N("tg α не определён (cos α = 0), тождество 1 + tg² α = 1 / cos² α для этого угла не проверяем."));
+    if (isFinite(k)) {
+      steps.push(S("1 + ctg² α = 1 / sin² α", `1 + ${fmt(snap(k * k))} = ${fmt(snap(1 + k * k))};  1 / ${fmt(snap(s * s))} = ${fmt(snap(1 / (s * s)))}`));
+      ans.push(A("1 + ctg² α", snap(1 + k * k)));
+    } else steps.push(N("ctg α не определён (sin α = 0), тождество 1 + ctg² α = 1 / sin² α для этого угла не проверяем."));
+    if (isFinite(t) && isFinite(k)) {
+      steps.push(S("tg α · ctg α = 1", `${fmt(snap(t))}·${fmt(snap(k))} = ${fmt(snap(t * k))}`));
+      ans.push(A("tg α · ctg α", snap(t * k)));
+    }
+    steps.push(N("Чётность: sin(−α) = −sin α, cos(−α) = cos α, tg(−α) = −tg α. Период: sin и cos — 360°, tg и ctg — 180°."));
+    return { steps, answers: ans };
+  }
+
+  /* =====================================================================
+     3. УРАВНЕНИЯ
+     ===================================================================== */
+
+  /* Общие решения cos x = a, sin x = a, tg x = a: семейства x = b + p·n (градусы) */
+  function trigEq(fn, a) {
+    const steps = [];
+    let fams = [], line = "", lineDeg = "";
+    if (fn === "cos" || fn === "sin") {
+      if (Math.abs(a) > 1 + 1e-12) {
+        steps.push(N(`|${fmt(a)}| > 1, а значения ${fn === "cos" ? "косинуса" : "синуса"} лежат в промежутке [−1; 1]: решений нет.`));
+        return { fams, steps, none: true, line: "решений нет", lineDeg: "решений нет" };
+      }
+      a = Math.max(-1, Math.min(1, a));
+    }
+    if (fn === "cos") {
+      steps.push(S("cos x = a  ⇒  x = ±arccos a + 2πn", `a = ${fmt(a)}`));
+      if (near(a, 1)) { fams = [{ b: 0, p: 360 }]; steps.push(S("Частный случай cos x = 1", "x = 2πn")); }
+      else if (near(a, -1)) { fams = [{ b: 180, p: 360 }]; steps.push(S("Частный случай cos x = −1", "x = π + 2πn")); }
+      else if (near(a, 0)) { fams = [{ b: 90, p: 180 }]; steps.push(S("Частный случай cos x = 0", "x = π/2 + πn")); }
+      else {
+        const t = snap(Math.acos(a) * R2D);
+        steps.push(S("arccos a", `arccos(${fmt(a)}) = ${degStr(t)} = ${piStr(t)}`));
+        fams = [{ b: t, p: 360 }, { b: -t, p: 360 }];
+        line = `x = ±${piStr(t)} + 2πn`; lineDeg = `x = ±${degStr(t)} + 360°·n`;
+      }
+    } else if (fn === "sin") {
+      steps.push(S("sin x = a  ⇒  x = (−1)ⁿ·arcsin a + πn", `a = ${fmt(a)}`));
+      if (near(a, 1)) { fams = [{ b: 90, p: 360 }]; steps.push(S("Частный случай sin x = 1", "x = π/2 + 2πn")); }
+      else if (near(a, -1)) { fams = [{ b: -90, p: 360 }]; steps.push(S("Частный случай sin x = −1", "x = −π/2 + 2πn")); }
+      else if (near(a, 0)) { fams = [{ b: 0, p: 180 }]; steps.push(S("Частный случай sin x = 0", "x = πn")); }
+      else {
+        const t = snap(Math.asin(a) * R2D);
+        steps.push(S("arcsin a", `arcsin(${fmt(a)}) = ${degStr(t)} = ${piStr(t)}`));
+        fams = [{ b: t, p: 360 }, { b: 180 - t, p: 360 }];
+        line = `x = (−1)ⁿ·${piStr(t)} + πn`; lineDeg = `x = (−1)ⁿ·${degStr(t)} + 180°·n`;
+        steps.push(N(`Это то же самое, что две серии: ${famRad(t, 360)} и ${famRad(180 - t, 360)}.`));
+      }
+    } else {
+      steps.push(S("tg x = a  ⇒  x = arctg a + πn", `a = ${fmt(a)}`));
+      const t = snap(Math.atan(a) * R2D);
+      steps.push(S("arctg a", `arctg(${fmt(a)}) = ${degStr(t)} = ${piStr(t)}`));
+      fams = [{ b: t, p: 180 }];
+    }
+    if (!line) { line = fams.map((f) => famRad(f.b, f.p)).join(";  "); lineDeg = fams.map((f) => famDeg(f.b, f.p)).join(";  "); }
+    return { fams, steps, none: false, line, lineDeg };
+  }
+  function intervalPart(x, fams, steps, answers, plotDots) {
+    const { lo, hi } = x;
+    if ((lo === null) !== (hi === null)) fail("Заполните обе границы промежутка или оставьте обе пустыми.");
+    if (lo === null) return;
+    if (hi < lo) fail("Левая граница промежутка больше правой.");
+    if (hi - lo > 360 * 50) fail("Промежуток слишком длинный (допустимо не больше 50 оборотов).");
+    const roots = rootsIn(fams, lo, hi);
+    steps.push(S(`Выбираем корни на промежутке [${degStr(lo)}; ${degStr(hi)}]`, `${rootsText(roots, degStr)}`));
+    answers.push(A(`Корни на [${degStr(lo)}; ${degStr(hi)}] (градусы)`, rootsText(roots, degStr)));
+    answers.push(A("То же в радианах", rootsText(roots, (v) => piStr(v, true))));
+    return roots;
+  }
+  const EQ_INT = [
+    { id: "lo", sym: "от", label: "левая граница промежутка (необязательно)", ang: true, opt: true, ph: "например 0" },
+    { id: "hi", sym: "до", label: "правая граница промежутка (необязательно)", ang: true, opt: true, ph: "например 2π или 360" },
+  ];
+  function solveBasicEq(fn) {
+    return (x) => {
+      const r = trigEq(fn, x.a);
+      const steps = r.steps, answers = [];
+      if (r.none) return { steps, answers: [A("Решение", "решений нет")] };
+      answers.push(A("Решение (радианы)", r.line + ",  n ∈ ℤ"));
+      answers.push(A("Решение (градусы)", r.lineDeg + ",  n ∈ ℤ"));
+      const roots = intervalPart(x, r.fams, steps, answers);
+      return { steps, plot: circleSvg({ dots: (roots && roots.length ? roots : rootsIn(r.fams, 0, 359.999)).map(norm360).slice(0, 12), label: "Решения на окружности" }), answers };
+    };
+  }
+
+  /* a·sin x + b·cos x = c — метод вспомогательного угла */
+  function solveAux(x) {
+    const { a, b, c } = x;
+    const R = Math.hypot(a, b);
+    if (R === 0) fail("a и b не могут быть равны нулю одновременно.");
+    const phi = snap(Math.atan2(b, a) * R2D);
+    const s = c / R;
+    const steps = [
+      S("R = √(a² + b²)", `R = √(${par(a)}² + ${par(b)}²) = ${fmt(R)}`),
+      S("a·sin x + b·cos x = R·sin(x + φ),  cos φ = a/R,  sin φ = b/R", `cos φ = ${fmt(snap(a / R))},  sin φ = ${fmt(snap(b / R))}  ⇒  φ = ${degStr(phi)} = ${piStr(phi)}`),
+      S("R·sin(x + φ) = c  ⇒  sin(x + φ) = c / R", `sin(x + φ) = ${fmt(c)} / ${fmt(R)} = ${fmt(s)}`),
+    ];
+    if (Math.abs(s) > 1 + 1e-12) {
+      steps.push(N(`|c / R| = ${fmt(Math.abs(s))} > 1: синус не может быть больше 1, поэтому решений нет (нужно |c| ≤ R = ${fmt(R)}).`));
+      return { steps, answers: [A("Решение", "решений нет")] };
+    }
+    const r = trigEq("sin", s);
+    r.steps.slice(1).forEach((st) => steps.push(st));
+    const fams = r.fams.map((f) => ({ b: f.b - phi, p: f.p }));
+    steps.push(S("x = (серии для x + φ) − φ", fams.map((f) => famDeg(f.b, f.p)).join(";  ")));
+    const answers = [A("Решение (градусы)", fams.map((f) => famDeg(f.b, f.p)).join(";  ") + ",  n ∈ ℤ"), A("Решение (радианы)", fams.map((f) => famRad(f.b, f.p)).join(";  ") + ",  n ∈ ℤ")];
+    const roots = intervalPart(x, fams, steps, answers);
+    return { steps, plot: circleSvg({ dots: (roots && roots.length ? roots : rootsIn(fams, 0, 359.999)).map(norm360).slice(0, 12), label: "Решения на окружности" }), answers };
+  }
+
+  /* a·sin² x + b·sin x·cos x + c·cos² x = 0 */
+  function solveHomog(x) {
+    const { a, b, c } = x;
+    const steps = [N("Однородное уравнение: если cos x = 0, то sin² x = 1, и уравнение превращается в a = 0.")];
+    let fams = [];
+    if (a === 0) {
+      steps.push(N("a = 0, поэтому cos x выносится за скобку: cos x·(b·sin x + c·cos x) = 0."));
+      fams.push({ b: 90, p: 180 });
+      steps.push(S("cos x = 0", "x = π/2 + πn"));
+      if (b !== 0) {
+        const t = -c / b;
+        steps.push(S("b·sin x + c·cos x = 0 ⇒ tg x = −c / b", `tg x = ${fmt(-c)} / ${par(b)} = ${fmt(t)}`));
+        fams.push({ b: snap(Math.atan(t) * R2D), p: 180 });
+      } else if (c === 0) {
+        steps.push(N("Все коэффициенты равны нулю: уравнение превращается в 0 = 0, подходит любое x."));
+        return { steps, answers: [A("Решение", "x — любое число")] };
+      }
+    } else {
+      steps.push(N("a ≠ 0, значит cos x ≠ 0: делим обе части на cos² x и вводим t = tg x."));
+      const D = b * b - 4 * a * c;
+      steps.push(S("a·t² + b·t + c = 0,  D = b² − 4ac", `D = ${par(b)}² − 4·${par(a)}·${par(c)} = ${fmt(D)}`));
+      if (D < 0) {
+        steps.push(N("D < 0: уравнение для t корней не имеет, поэтому и исходное уравнение решений не имеет."));
+        return { steps, answers: [A("Решение", "решений нет")] };
+      }
+      const t1 = (-b - Math.sqrt(D)) / (2 * a), t2 = (-b + Math.sqrt(D)) / (2 * a);
+      const ts = D === 0 ? [t2] : [Math.min(t1, t2), Math.max(t1, t2)];
+      steps.push(S("t = (−b ± √D) / (2a)", ts.map((t, i) => `t${ts.length > 1 ? i + 1 : ""} = ${fmt(snap(t))}`).join(",  ")));
+      ts.forEach((t) => {
+        const th = snap(Math.atan(t) * R2D);
+        steps.push(S(`tg x = ${fmt(snap(t))}`, `x = arctg(${fmt(snap(t))}) + πn = ${piStr(th)} + πn`));
+        fams.push({ b: th, p: 180 });
+      });
+    }
+    const answers = [A("Решение (градусы)", fams.map((f) => famDeg(f.b, f.p)).join(";  ") + ",  n ∈ ℤ"), A("Решение (радианы)", fams.map((f) => famRad(f.b, f.p)).join(";  ") + ",  n ∈ ℤ")];
+    const roots = intervalPart(x, fams, steps, answers);
+    return { steps, plot: circleSvg({ dots: (roots && roots.length ? roots : rootsIn(fams, 0, 359.999)).map(norm360).slice(0, 12), label: "Решения на окружности" }), answers };
+  }
+
+  /* a·f(x)² + b·f(x) + c = 0, f = sin, cos, tg */
+  function solveQuadTrig(x) {
+    const { fn, a, b, c } = x;
+    const steps = [S(`Замена t = ${fn} x`, `${fmt(a)}·t² + ${par(b)}·t + ${par(c)} = 0`)];
+    let ts;
+    if (a === 0) {
+      if (b === 0) fail("При a = 0 и b = 0 уравнения относительно t нет.");
+      ts = [-c / b];
+      steps.push(S("a = 0 — линейное уравнение: t = −c / b", `t = ${fmt(-c)} / ${par(b)} = ${fmt(ts[0])}`));
+    } else {
+      const D = b * b - 4 * a * c;
+      steps.push(S("D = b² − 4ac", `D = ${par(b)}² − 4·${par(a)}·${par(c)} = ${fmt(D)}`));
+      if (D < 0) {
+        steps.push(N("D < 0: корней по t нет, значит и решений нет."));
+        return { steps, answers: [A("Решение", "решений нет")] };
+      }
+      const t1 = (-b - Math.sqrt(D)) / (2 * a), t2 = (-b + Math.sqrt(D)) / (2 * a);
+      ts = D === 0 ? [t2] : [Math.min(t1, t2), Math.max(t1, t2)];
+      steps.push(S("t = (−b ± √D) / (2a)", ts.map((t, i) => `t${ts.length > 1 ? i + 1 : ""} = ${fmt(snap(t))}`).join(",  ")));
+    }
+    const answers = [];
+    let allFams = [];
+    ts.forEach((t) => {
+      t = snap(t);
+      if ((fn === "sin" || fn === "cos") && Math.abs(t) > 1 + 1e-12) {
+        steps.push(N(`t = ${fmt(t)}: |t| > 1, а ${fn === "sin" ? "синус" : "косинус"} не бывает по модулю больше 1 — корень не подходит.`));
+        return;
+      }
+      steps.push(N(`Решаем ${fn} x = ${fmt(t)}:`));
+      const r = trigEq(fn, t);
+      r.steps.slice(1).forEach((st) => steps.push(st));
+      allFams = allFams.concat(r.fams);
+      answers.push(A(`${fn} x = ${fmt(t)} (радианы)`, r.line + ",  n ∈ ℤ"));
+      answers.push(A(`${fn} x = ${fmt(t)} (градусы)`, r.lineDeg + ",  n ∈ ℤ"));
+    });
+    if (!answers.length) return { steps, answers: [A("Решение", "решений нет")] };
+    const roots = intervalPart(x, allFams, steps, answers);
+    return { steps, plot: circleSvg({ dots: (roots && roots.length ? roots : rootsIn(allFams, 0, 359.999)).map(norm360).slice(0, 12), label: "Решения на окружности" }), answers };
+  }
+
+  /* =====================================================================
+     4. НЕРАВЕНСТВА sin x ∨ a, cos x ∨ a, tg x ∨ a
+     ===================================================================== */
+  const CMPS = [["gt", "больше ( > )"], ["ge", "больше или равно ( ≥ )"], ["lt", "меньше ( < )"], ["le", "меньше или равно ( ≤ )"]];
+  const CMPSYM = { gt: ">", ge: "≥", lt: "<", le: "≤" };
+
+  /* Дуга окружности: { from, to, c1, c2 } в градусах. Возвращает класс множества. */
+  function arcSet(from, to, c1, c2) {
+    const span = to - from;
+    if (span < 1e-9) return c1 && c2 ? { kind: "points", at: from } : { kind: "none" };
+    if (span > 360 - 1e-9 && c1 && c2) return { kind: "all" };
+    return { kind: "arc", from, to, c1, c2 };
+  }
+  function solveIneq(x) {
+    const { fn, cmp, a } = x;
+    const sym = CMPSYM[cmp];
+    const steps = [S("Неравенство", `${fn} x ${sym} ${fmt(a)}`)];
+    let set, period = 360, arcs = [], text = "", textRad = "";
+    const shiftFrom = (f) => f - 360 * Math.floor((f + 180) / 360);
+    if (fn === "tg") {
+      const t = snap(Math.atan(a) * R2D);
+      steps.push(S("Граница: arctg a", `arctg(${fmt(a)}) = ${degStr(t)} = ${piStr(t)}`));
+      steps.push(N("На промежутке (−π/2; π/2) тангенс возрастает, период π: решаем на одном промежутке длиной π и добавляем πn."));
+      period = 180;
+      const arc = cmp === "gt" ? [t, 90, false, false] : cmp === "ge" ? [t, 90, true, false] : cmp === "lt" ? [-90, t, false, false] : [-90, t, false, true];
+      set = { kind: "arc", from: arc[0], to: arc[1], c1: arc[2], c2: arc[3] };
+      arcs = [{ from: arc[0], to: arc[1], c1: arc[2], c2: arc[3] }, { from: arc[0] + 180, to: arc[1] + 180, c1: arc[2], c2: arc[3] }];
+      const br = (o, v, cl) => (o ? (cl ? "[" : "(") : cl ? "]" : ")");
+      text = `x ∈ ${br(1, 0, arc[2])}${degStr(arc[0])} + 180°·n; ${degStr(arc[1])} + 180°·n${br(0, 0, arc[3])}`;
+      textRad = `x ∈ ${br(1, 0, arc[2])}${piStr(arc[0])} + πn; ${piStr(arc[1])} + πn${br(0, 0, arc[3])}`;
+      steps.push(N("Точки π/2 + πn, где тангенс не определён, всегда выколоты."));
+    } else {
+      const c = fn === "sin" ? 90 : 0;
+      let w;
+      let kind = null;
+      if (a > 1 + 1e-12) kind = cmp === "gt" || cmp === "ge" ? "none" : "all";
+      else if (a < -1 - 1e-12) kind = cmp === "gt" || cmp === "ge" ? "all" : "none";
+      if (kind) {
+        steps.push(N(`Значения ${fn === "sin" ? "синуса" : "косинуса"} лежат в [−1; 1], а a = ${fmt(a)} ${a > 1 ? "больше 1" : "меньше −1"}: ${kind === "all" ? "неравенство верно при любом x" : "решений нет"}.`));
+        set = { kind };
+      } else {
+        w = snap(Math.acos(Math.max(-1, Math.min(1, a))) * R2D);
+        steps.push(S("Опорный угол", fn === "sin" ? `arcsin(${fmt(a)}) = ${degStr(90 - w)} = ${piStr(90 - w)}` : `arccos(${fmt(a)}) = ${degStr(w)} = ${piStr(w)}`));
+        steps.push(N(fn === "sin" ? "Точки с sin x ≥ a образуют дугу от arcsin a до π − arcsin a." : "Точки с cos x ≥ a образуют дугу от −arccos a до arccos a."));
+        const ge = arcSet(c - w, c + w, true, true), gt = arcSet(c - w, c + w, false, false);
+        const lt = arcSet(c + w, c - w + 360, false, false), le = arcSet(c + w, c - w + 360, true, true);
+        set = { ge, gt, lt, le }[cmp];
+        steps.push(N(cmp === "gt" || cmp === "ge" ? "Нужна дуга выше линии y = a (для синуса) или правее линии x = a (для косинуса)." : "Нужна дополнительная дуга окружности — остальные точки."));
+      }
+      if (set.kind === "arc") {
+        let f = shiftFrom(set.from), t2 = f + (set.to - set.from);
+        arcs = [{ from: f, to: t2, c1: set.c1, c2: set.c2 }];
+        text = `x ∈ ${set.c1 ? "[" : "("}${degStr(f)} + 360°·n; ${degStr(t2)} + 360°·n${set.c2 ? "]" : ")"}`;
+        textRad = `x ∈ ${set.c1 ? "[" : "("}${piStr(f)} + 2πn; ${piStr(t2)} + 2πn${set.c2 ? "]" : ")"}`;
+      }
+    }
+    let answers, dots = [];
+    if (set.kind === "all") answers = [A("Решение", "x — любое число")];
+    else if (set.kind === "none") answers = [A("Решение", "решений нет")];
+    else if (set.kind === "points") {
+      const at = shiftFrom(set.at);
+      dots = [at];
+      answers = [A("Решение (градусы)", `x = ${degStr(at)} + 360°·n,  n ∈ ℤ`), A("Решение (радианы)", `x = ${piStr(at)} + 2πn,  n ∈ ℤ`)];
+      steps.push(N("Дуга выродилась в одну точку: подходят только эти значения."));
+    } else {
+      answers = [A("Решение (градусы)", text + ",  n ∈ ℤ"), A("Решение (радианы)", textRad + ",  n ∈ ℤ")];
+    }
+    return { steps, plot: circleSvg({ arcs: set.kind === "all" ? [{ from: 0, to: 360, c1: true, c2: true }] : arcs, dots, label: "Решение на окружности" }), answers };
+  }
+
+  /* ---------- Каталог задач ---------- */
+  const fl = (id, sy, label, unit, extra) => Object.assign({ id, sym: sy, label, unit }, extra || {});
+  const ANG = { ang: true, ph: "30, 5π/6 или 1,2 рад" };
+  const TASKS = [
+    { cat: "Углы и значения", id: "radians", title: "Градусы и радианы", hint: "Число — градусы; с π или «рад» — радианы: 150, 5π/6, 1,2 рад.",
+      fields: [fl("a", "α", "угол", "", ANG)], ex: { a: "150" }, solve: solveRadians },
+    { cat: "Углы и значения", id: "values", title: "sin, cos, tg, ctg угла", hint: "Точные значения для углов с опорным углом 30°, 45°, 60° и для осей; для остальных — десятичные.",
+      fields: [fl("a", "α", "угол", "", ANG)], ex: { a: "210" }, solve: solveValues },
+    { cat: "Углы и значения", id: "point", title: "По точке на окружности", hint: "Координаты точки M(x; y): найдём sin, cos, tg и угол.",
+      fields: [fl("px", "x", "абсцисса точки", ""), fl("py", "y", "ордината точки", "")], ex: { px: "-3", py: "4" }, solve: solvePoint },
+    { cat: "Углы и значения", id: "fromone", title: "Найти остальные по одной", hint: "Известна одна функция и четверть угла: найдём остальные.",
+      fields: [fl("fn", "", "известная функция", "", { select: [["sin", "sin α"], ["cos", "cos α"], ["tg", "tg α"], ["ctg", "ctg α"]] }), fl("v", "a", "значение функции (можно √3/2, 3/5)", "", { ph: "например 3/5" }),
+               fl("q", "", "четверть", "", { select: [["1", "I"], ["2", "II"], ["3", "III"], ["4", "IV"]] })],
+      ex: { fn: "sin", v: "3/5", q: "2" }, solve: solveFromOne },
+    { cat: "Углы и значения", id: "arc", title: "Арксинус, арккосинус, арктангенс", hint: "Обратные функции: угол по значению. Допустимо √3/2, 1/2.",
+      fields: [fl("fn", "", "функция", "", { select: [["arcsin", "arcsin a"], ["arccos", "arccos a"], ["arctg", "arctg a"], ["arcctg", "arcctg a"]] }), fl("a", "a", "число", "", { ph: "например √3/2" })],
+      ex: { fn: "arcsin", a: "√3/2" }, solve: solveArc },
+
+    { cat: "Формулы", id: "addition", title: "Формулы сложения", hint: "sin, cos, tg суммы и разности двух углов.",
+      fields: [fl("a", "α", "первый угол", "", ANG), fl("b", "β", "второй угол", "", ANG),
+               fl("mode", "", "что найти", "", { select: [["sin+", "sin(α + β)"], ["sin-", "sin(α − β)"], ["cos+", "cos(α + β)"], ["cos-", "cos(α − β)"], ["tg+", "tg(α + β)"], ["tg-", "tg(α − β)"]] })],
+      ex: { a: "45", b: "30", mode: "sin+" }, solve: solveAddition },
+    { cat: "Формулы", id: "double", title: "Двойной и половинный угол", hint: "Через значения для α найдём функции угла 2α или α/2.",
+      fields: [fl("a", "α", "угол", "", ANG), fl("mode", "", "формулы", "", { select: [["double", "двойной угол (2α)"], ["half", "половинный угол (α/2)"]] })],
+      ex: { a: "60", mode: "double" }, solve: solveDouble },
+    { cat: "Формулы", id: "reduction", title: "Формулы приведения", hint: "Приводим sin(90° ± α), cos(180° ± α) и т. д. к функции острого угла α.",
+      fields: [fl("fn", "", "функция", "", { select: [["sin", "sin"], ["cos", "cos"], ["tg", "tg"], ["ctg", "ctg"]] }),
+               fl("base", "", "базовый угол", "", { select: [["90", "90° (π/2)"], ["180", "180° (π)"], ["270", "270° (3π/2)"], ["360", "360° (2π)"]] }),
+               fl("op", "", "знак перед α", "", { select: [["+", "+ α"], ["-", "− α"]] }),
+               fl("a", "α", "значение α для числовой проверки", "", Object.assign({ def: 30 }, ANG))],
+      ex: { fn: "sin", base: "180", op: "-", a: "30" }, solve: solveReduction },
+    { cat: "Формулы", id: "sumprod", title: "Сумма и произведение", hint: "Сумму и разность синусов и косинусов — в произведение, и наоборот.",
+      fields: [fl("a", "α", "первый угол", "", ANG), fl("b", "β", "второй угол", "", ANG),
+               fl("mode", "", "формула", "", { select: [["s_add", "sin α + sin β"], ["s_sub", "sin α − sin β"], ["c_add", "cos α + cos β"], ["c_sub", "cos α − cos β"], ["p_sc", "sin α·cos β"], ["p_cc", "cos α·cos β"], ["p_ss", "sin α·sin β"]] })],
+      ex: { a: "75", b: "15", mode: "s_add" }, solve: solveSumProd },
+    { cat: "Формулы", id: "identities", title: "Проверка тождеств", hint: "Основное тригонометрическое тождество и его следствия на числовом примере.",
+      fields: [fl("a", "α", "угол", "", ANG)], ex: { a: "40" }, solve: solveIdentities },
+
+    { cat: "Уравнения", id: "cosx", title: "cos x = a", hint: "Допустимо √2/2, 1/2. Промежуток можно не заполнять.",
+      fields: [fl("a", "a", "правая часть", "", { ph: "например 1/2" })].concat(EQ_INT), ex: { a: "1/2", lo: "0", hi: "2π" }, solve: solveBasicEq("cos") },
+    { cat: "Уравнения", id: "sinx", title: "sin x = a", hint: "Допустимо √3/2, 1/2. Промежуток можно не заполнять.",
+      fields: [fl("a", "a", "правая часть", "", { ph: "например √3/2" })].concat(EQ_INT), ex: { a: "√3/2", lo: "0", hi: "2π" }, solve: solveBasicEq("sin") },
+    { cat: "Уравнения", id: "tgx", title: "tg x = a", hint: "Допустимо √3, √3/3, 1/√3. Промежуток можно не заполнять.",
+      fields: [fl("a", "a", "правая часть", "", { ph: "например 1" })].concat(EQ_INT), ex: { a: "1", lo: "0", hi: "2π" }, solve: solveBasicEq("tg") },
+    { cat: "Уравнения", id: "aux", title: "a·sin x + b·cos x = c", hint: "Метод вспомогательного угла.",
+      fields: [fl("a", "a", "коэффициент при sin x", ""), fl("b", "b", "коэффициент при cos x", ""), fl("c", "c", "правая часть", "")].concat(EQ_INT),
+      ex: { a: "1", b: "1", c: "1", lo: "0", hi: "2π" }, solve: solveAux },
+    { cat: "Уравнения", id: "homog", title: "Однородное: a·sin² + b·sin·cos + c·cos²", hint: "a·sin² x + b·sin x·cos x + c·cos² x = 0. Делим на cos² x.",
+      fields: [fl("a", "a", "при sin² x", ""), fl("b", "b", "при sin x·cos x", ""), fl("c", "c", "при cos² x", "")].concat(EQ_INT),
+      ex: { a: "1", b: "-1", c: "-2", lo: "0", hi: "2π" }, solve: solveHomog },
+    { cat: "Уравнения", id: "quadtrig", title: "Квадратное относительно sin, cos, tg", hint: "a·f²(x) + b·f(x) + c = 0, где f — sin, cos или tg.",
+      fields: [fl("fn", "", "функция f", "", { select: [["sin", "sin x"], ["cos", "cos x"], ["tg", "tg x"]] }), fl("a", "a", "коэффициент при f²", ""), fl("b", "b", "коэффициент при f", ""), fl("c", "c", "свободный член", "")].concat(EQ_INT),
+      ex: { fn: "cos", a: "2", b: "-3", c: "1", lo: "0", hi: "2π" }, solve: solveQuadTrig },
+
+    { cat: "Неравенства", id: "ineq", title: "sin x, cos x, tg x ∨ a", hint: "Решение — дуги единичной окружности, ответ записан для любого n.",
+      fields: [fl("fn", "", "функция", "", { select: [["sin", "sin x"], ["cos", "cos x"], ["tg", "tg x"]] }), fl("cmp", "", "знак неравенства", "", { select: CMPS }), fl("a", "a", "число (можно 1/2, √2/2)", "", { ph: "например 1/2" })],
+      ex: { fn: "sin", cmp: "gt", a: "1/2" }, solve: solveIneq },
+  ];
+
+  /* ---------- Состояние ---------- */
+  const $ = (id) => document.getElementById(id);
+  const state = { id: TASKS[0].id, cat: TASKS[0].cat };
+  try {
+    const st = localStorage.getItem("trigonometry.task"); const t = TASKS.find((k) => k.id === st);
+    if (t) { state.id = t.id; state.cat = t.cat; }
+  } catch (e) { /* хранилище недоступно */ }
+  const save = () => { try { localStorage.setItem("trigonometry.task", state.id); } catch (e) {} };
+  const task = () => TASKS.find((k) => k.id === state.id);
+  let showExampleNote = true;
+
+  /* ---------- Интерфейс ---------- */
+  function renderNav() {
+    const cats = [...new Set(TASKS.map((k) => k.cat))];
+    $("cats").innerHTML = "";
+    cats.forEach((c) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = c; b.setAttribute("aria-pressed", String(c === state.cat));
+      b.onclick = () => { state.cat = c; selectTask(TASKS.find((k) => k.cat === c).id); };
+      $("cats").appendChild(b);
+    });
+    $("chips").innerHTML = "";
+    TASKS.filter((k) => k.cat === state.cat).forEach((k) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = k.title; b.setAttribute("aria-pressed", String(k.id === state.id));
+      b.onclick = () => selectTask(k.id);
+      $("chips").appendChild(b);
+    });
+  }
+
+  function renderForm() {
+    const t = task(), form = $("form");
+    form.innerHTML = "";
+    const hint = document.createElement("p"); hint.className = "hint"; hint.textContent = t.hint; form.appendChild(hint);
+    t.fields.forEach((f) => {
+      const wrap = document.createElement("div"); wrap.className = "field";
+      const lab = document.createElement("label"); lab.htmlFor = "f-" + f.id;
+      lab.innerHTML = (f.sym ? `<b>${esc(f.sym)}</b>` : "") + esc(f.label);
+      const box = document.createElement("div"); box.className = "inp";
+      let inp;
+      if (f.select) {
+        inp = document.createElement("select");
+        f.select.forEach(([v, l]) => inp.add(new Option(l, v)));
+      } else {
+        inp = document.createElement("input"); inp.type = "text";
+        inp.inputMode = "text";
+        inp.autocapitalize = "off"; inp.autocomplete = "off"; inp.spellcheck = false;
+        inp.placeholder = f.ph || (f.opt ? "необязательно" : (f.def !== undefined ? String(f.def) : ""));
+      }
+      inp.id = "f-" + f.id;
+      inp.addEventListener("input", () => { showExampleNote = false; solve(); });
+      inp.addEventListener("change", () => { showExampleNote = false; solve(); });
+      box.appendChild(inp);
+      if (f.unit) { const u = document.createElement("span"); u.className = "u"; u.textContent = f.unit; box.appendChild(u); }
+      wrap.append(lab, box); form.appendChild(wrap);
+    });
+    const ex = t.ex || {};
+    t.fields.forEach((f) => { if (ex[f.id] !== undefined) $("f-" + f.id).value = ex[f.id]; });
+  }
+
+  function collect() {
+    const t = task(), x = {}, given = [], missing = [];
+    for (const f of t.fields) {
+      const el = $("f-" + f.id); const raw = el.value.trim();
+      const name = f.sym || f.label;
+      if (f.select) { x[f.id] = raw; continue; }
+      if (raw === "") {
+        if (f.def !== undefined) { x[f.id] = f.def; continue; }
+        x[f.id] = null; if (!f.opt) missing.push(name); continue;
+      }
+      if (f.text) { x[f.id] = raw; given.push(A(name, raw, f.unit)); continue; }
+      if (f.list || f.vec) {
+        const r = parseList(raw);
+        if (r.bad !== undefined) throw new Error(`Поле «${name}»: не удалось прочитать «${r.bad}». Введите числа через пробел.`);
+        if (f.vec && r.vals.length !== 3) throw new Error(`Поле «${name}»: нужно ровно три числа (x y z), сейчас ${r.vals.length}.`);
+        x[f.id] = r.vals; given.push(A(name, f.vec ? "(" + r.vals.map(fmt).join("; ") + ")" : listStr(r.vals), f.unit)); continue;
+      }
+      if (f.ang) {
+        const d = parseAngle(raw);
+        if (!isFinite(d)) throw new Error(`Поле «${name}»: введите угол — число (градусы) или с π (радианы), например 30, 5π/6, 1,2 рад.`);
+        x[f.id] = d; x[f.id + "_raw"] = raw; given.push(A(name, d, "°")); continue;
+      }
+      const n = toNum(raw);
+      if (!isFinite(n)) throw new Error(`Поле «${name}»: введите число.`);
+      x[f.id] = n; given.push(A(name, /[√π\/^]|sqrt|pi/i.test(raw) ? `${raw} ≈ ${fmt(n)}` : n, f.unit));
+    }
+    if (missing.length) { const e = new Error("Заполните: " + missing.join(", ") + "."); e.soft = true; throw e; }
+    return { x, given };
+  }
+
+  let lastText = "";
+  function solve() {
+    const paper = $("paper"), t = task();
+    let out, given;
+    try {
+      const c = collect(); given = c.given;
+      out = t.solve(c.x);
+    } catch (e) {
+      paper.innerHTML = `<p class="msg${e.soft ? "" : " err"}">${html(e.message)}</p>`;
+      lastText = ""; return;
+    }
+    const line = (a) => `${a[0]} = ${typeof a[1] === "number" ? fmt(a[1]) : a[1]}${a[2] ? " " + a[2] : ""}`;
+    let h = "";
+    if (showExampleNote) h += `<p class="note">Подставлен пример. Измените числа слева, решение пересчитается.</p>`;
+    if (given.length) {
+      h += `<div><h2>Дано</h2><div class="given">${given.map((a) => `<span>${html(a[0])} = ${html(fmt(a[1]))} <em>${html(a[2])}</em></span>`).join("")}</div></div>`;
+    }
+    h += `<div><h2>Решение</h2>${out.steps.map((s) => s.t ? `<div class="step t">${html(s.t)}</div>` : `<div class="step"><div class="f">${html(s.f)}</div><div class="c">${html(s.c)}</div></div>`).join("")}</div>`;
+    if (out.plot) h += `<div class="plot">${out.plot}</div>`;
+    h += `<div><h2>Ответ</h2><div class="answer">${out.answers.map((a) => `<div>${html(a[0])} = ${html(typeof a[1] === "number" ? fmt(a[1]) : a[1])} <small>${html(a[2])}</small></div>`).join("")}</div></div>`;
+    h += `<div class="actions"><button type="button" id="copy">Копировать решение</button><span id="copied"></span></div>`;
+    paper.innerHTML = h;
+    lastText = [t.title, "", "Дано:", ...given.map(line), "", "Решение:", ...out.steps.map((s) => (s.t ? s.t : s.f + "\n" + s.c)), "", "Ответ:", ...out.answers.map(line)].join("\n");
+    $("copy").onclick = copy;
+  }
+  function copy() {
+    const done = (m) => { $("copied").textContent = m; setTimeout(() => { const c = $("copied"); if (c) c.textContent = ""; }, 2000); };
+    const fallback = () => {
+      const ta = document.createElement("textarea"); ta.value = lastText; document.body.appendChild(ta); ta.select();
+      let ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+      ta.remove(); done(ok ? "Скопировано" : "Не удалось скопировать");
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(lastText).then(() => done("Скопировано"), fallback);
+    else fallback();
+  }
+
+  function selectTask(id) {
+    state.id = id; state.cat = task().cat; showExampleNote = true; save();
+    renderNav(); renderForm(); solve();
+  }
+  $("form").addEventListener("submit", (e) => e.preventDefault());
+  renderNav(); renderForm(); solve();
+})();
+</script>
+
+<style>
+  .ios-hint {
+    position: fixed; left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    z-index: 50; display: none; align-items: flex-start; gap: 12px;
+    max-width: 480px; margin: 0 auto; padding: 12px 14px;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.18); font-size: 14px; line-height: 1.4;
+  }
+  .ios-hint.show { display: flex; }
+  .ios-hint b { font-weight: 600; }
+  .ios-hint button {
+    margin-left: auto; flex: none; min-width: 44px; min-height: 44px; margin-block: -8px -8px;
+    border: 0; background: transparent; color: var(--muted); font-size: 22px; line-height: 1; cursor: pointer;
+  }
+</style>
+<div class="ios-hint" id="iosHint" role="note">
+  <div><b>Установить на iPhone:</b> нажмите «Поделиться»
+    <span aria-hidden="true">&#x2191;&#xFE0E;</span> в Safari и выберите «На экран “Домой”».</div>
+  <button type="button" id="iosHintClose" aria-label="Закрыть подсказку">&times;</button>
+</div>
+<script>
+(function () {
+  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw-trigonometry.js").catch(function () {});
+    });
+  }
+  try {
+    var ua = navigator.userAgent || "";
+    var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    var standalone = window.navigator.standalone === true ||
+      (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+    var seen = false;
+    try { seen = localStorage.getItem("iosHintSeenTrigonometry") === "1"; } catch (e) {}
+    var hint = document.getElementById("iosHint");
+    if (isIOS && !standalone && !seen && hint) {
+      hint.classList.add("show");
+      document.getElementById("iosHintClose").onclick = function () {
+        hint.classList.remove("show");
+        try { localStorage.setItem("iosHintSeenTrigonometry", "1"); } catch (e) {}
+      };
+    }
+  } catch (e) {}
+})();
+</script>
+<script src="ads.js"></script>
+</body>
+</html>

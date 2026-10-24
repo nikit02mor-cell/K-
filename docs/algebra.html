@@ -128,7 +128,7 @@
       </div>
       <h1>Решатель задач по алгебре · 7–9 класс</h1>
     </div>
-    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;"><a href="index.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">← Меню</a><a href="physics.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Физика</a><a href="geometry.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Геометрия →</a><a href="chemistry.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Химия</a><a href="probability.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Вероятность →</a><a href="russian.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Русский →</a></div>
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;"><a href="index.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">← Меню</a><a href="physics.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Физика</a><a href="geometry.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Геометрия →</a><a href="chemistry.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Химия</a><a href="probability.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Вероятность →</a><a href="russian.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Русский →</a><a href="trigonometry.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Тригонометрия</a><a href="stereometry.html" style="color:var(--muted); text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; font-size:0.9em; white-space:nowrap;">Стереометрия</a></div>
   </header>
   <nav class="cats" id="cats" aria-label="Раздел"></nav>
   <div class="chips" id="chips"></div>
@@ -688,6 +688,346 @@
     return { steps, answers: [A("Значение выражения", left)] };
   }
 
+  /* Безопасное вычисление выражений: числа, + − * / ^, скобки, √, π (например 5π/6, √3/2, 1/4). */
+  function evalExpr(src) {
+    const t = String(src).toLowerCase().replace(/,/g, ".").replace(/[\s ]+/g, "").replace(/[−–—]/g, "-").replace(/×|·/g, "*").replace(/÷/g, "/");
+    if (!t) return NaN;
+    const toks = [];
+    const re = /(\d+\.?\d*|\.\d+)|(π|pi)|(√|sqrt)|([-+*\/^()])/g;
+    let m, last = 0;
+    while ((m = re.exec(t))) {
+      if (m.index !== last) return NaN;
+      last = re.lastIndex;
+      toks.push(m[1] !== undefined ? { n: Number(m[1]) } : m[2] ? { n: Math.PI } : m[3] ? { r: 1 } : { o: m[4] });
+    }
+    if (last !== t.length || !toks.length) return NaN;
+    let i = 0;
+    const peek = () => toks[i];
+    const startsAtom = (k) => k && (k.n !== undefined || k.r || k.o === "(");
+    function expr() {
+      let v = term();
+      while (peek() && (peek().o === "+" || peek().o === "-")) { const o = toks[i++].o; const w = term(); v = o === "+" ? v + w : v - w; }
+      return v;
+    }
+    function term() {
+      let v = unary();
+      for (;;) {
+        const k = peek();
+        if (k && (k.o === "*" || k.o === "/")) { i++; const w = unary(); v = k.o === "*" ? v * w : v / w; }
+        else if (startsAtom(k)) v *= power();   // неявное умножение: 2π, 3√2
+        else break;
+      }
+      return v;
+    }
+    function unary() {
+      const k = peek();
+      if (k && (k.o === "-" || k.o === "+")) { i++; const v = unary(); return k.o === "-" ? -v : v; }
+      return power();
+    }
+    function power() {
+      const b = atom();
+      if (peek() && peek().o === "^") { i++; return Math.pow(b, unary()); }
+      return b;
+    }
+    function atom() {
+      const k = toks[i++];
+      if (!k) throw 0;
+      if (k.n !== undefined) return k.n;
+      if (k.r) { const v = atom(); return Math.sqrt(v); }
+      if (k.o === "(") { const v = expr(); if (!peek() || peek().o !== ")") throw 0; i++; return v; }
+      throw 0;
+    }
+    try { const v = expr(); return i === toks.length ? v : NaN; } catch (e) { return NaN; }
+  }
+  const toNum = (s) => evalExpr(s);
+
+  /* Список чисел через пробел или «;» (запятая внутри числа — десятичная; «1,2,3» без пробелов — три числа). */
+  function parseList(raw) {
+    const s = String(raw).trim();
+    if (!s) return { vals: [] };
+    let toks;
+    if (/[;\s]/.test(s)) toks = s.split(/[;\s]+/);
+    else if ((s.match(/,/g) || []).length >= 2) toks = s.split(",");
+    else toks = [s];
+    toks = toks.map((t) => t.replace(/^,+|,+$/g, "")).filter(Boolean);
+    const vals = [];
+    for (const t of toks) {
+      const v = toNum(t);
+      if (!isFinite(v)) return { vals: [], bad: t };
+      vals.push(v);
+    }
+    return { vals };
+  }
+  const listStr = (a, max) => {
+    max = max || 16;
+    return a.length > max ? a.slice(0, max).map(fmt).join("; ") + `; … (всего ${a.length})` : a.map(fmt).join("; ");
+  };
+
+  /* =====================================================================
+     МЕТОД ИНТЕРВАЛОВ
+     ===================================================================== */
+  const mnI = (s) => String(s).replace(/-/g, "−");
+  const gcdI = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) { [a, b] = [b, a % b]; } return a; };
+  const SUP = { 0: "⁰", 1: "¹", 2: "²", 3: "³", 4: "⁴", 5: "⁵", 6: "⁶", 7: "⁷", 8: "⁸", 9: "⁹" };
+  const supI = (n) => String(n).split("").map((d) => SUP[d]).join("");
+  const SYM2 = { ">": ">", "<": "<", ">=": "≥", "<=": "≤" };
+
+  /* Решение неравенства f(x) ∨ 0 по точкам. points: [{v, label, m, d}] по возрастанию (m — кратность в числителе, d — в знаменателе),
+     k — знак выражения при x → +∞. Возвращает знаки промежутков и объединение промежутков-решений. */
+  function ivSolve(points, k, cmp) {
+    const n = points.length, signs = new Array(n + 1);
+    signs[n] = k;
+    for (let i = n - 1; i >= 0; i--) signs[i] = (points[i].m + points[i].d) % 2 ? -signs[i + 1] : signs[i + 1];
+    const wantPos = cmp === ">" || cmp === ">=", nonstrict = cmp === ">=" || cmp === "<=";
+    const piece = [];
+    for (let i = 0; i <= n; i++) {
+      piece.push({ kind: "I", i, sel: (signs[i] > 0) === wantPos });
+      if (i < n) piece.push({ kind: "P", i, sel: nonstrict && points[i].d === 0 && points[i].m > 0 });
+    }
+    const segs = [];
+    for (let j = 0; j < piece.length;) {
+      if (!piece[j].sel) { j++; continue; }
+      let e = j;
+      while (e + 1 < piece.length && piece[e + 1].sel) e++;
+      const first = piece[j], last = piece[e], sg = {};
+      if (first.kind === "I") { sg.lo = first.i === 0 ? -Infinity : first.i - 1; sg.loC = false; } else { sg.lo = first.i; sg.loC = true; }
+      if (last.kind === "I") { sg.hi = last.i === n ? Infinity : last.i; sg.hiC = false; } else { sg.hi = last.i; sg.hiC = true; }
+      segs.push(sg); j = e + 1;
+    }
+    const lab = (i) => points[i].label;
+    const text = segs.length
+      ? segs.map((sg) => (sg.lo === sg.hi && sg.loC && sg.hiC ? `{${lab(sg.lo)}}` : `${sg.loC ? "[" : "("}${sg.lo === -Infinity ? "−∞" : lab(sg.lo)}; ${sg.hi === Infinity ? "+∞" : lab(sg.hi)}${sg.hiC ? "]" : ")"}`)).join(" ∪ ")
+      : "решений нет";
+    const included = points.map((pt, i) => piece.find((q) => q.kind === "P" && q.i === i).sel);
+    return { signs, segs, text, included };
+  }
+
+  /* Числовая ось: «змейка» знаков, точки, решение. */
+  function ivSvg(points, res) {
+    const n = points.length, gap = 84, W = Math.max(520, (n + 1) * gap + 40), H = 190, y0 = 70, amp = 36;
+    const xL = 18, xR = W - 18;
+    const xs = points.map((_, i) => xL + 22 + ((xR - xL - 44) * (i + 1)) / (n + 1));
+    const xa = (i) => (i === 0 ? xL : xs[i - 1]), xb = (i) => (i === n ? xR : xs[i]);
+    let g = `<line x1="${xL}" y1="${y0}" x2="${xR}" y2="${y0}" style="stroke:var(--muted)" stroke-width="1.5"/><path d="M ${xR - 8} ${y0 - 4} L ${xR} ${y0} L ${xR - 8} ${y0 + 4}" style="fill:none;stroke:var(--muted)" stroke-width="1.5"/><text x="${xR - 6}" y="${y0 + 18}" text-anchor="end">x</text>`;
+    for (let i = 0; i <= n; i++) {
+      const s = res.signs[i], a = xa(i), b = xb(i), top = y0 - s * amp * 2 * 0.8;
+      g += `<path d="M ${a.toFixed(1)} ${y0} Q ${((a + b) / 2).toFixed(1)} ${top.toFixed(1)} ${b.toFixed(1)} ${y0}" style="fill:none;stroke:var(--accent)" stroke-width="1.6"/>`;
+      g += `<text x="${((a + b) / 2).toFixed(1)}" y="${(y0 - s * (amp * 0.8 + 10) + 4).toFixed(1)}" text-anchor="middle" style="font-size:16px;fill:var(--ink)">${s > 0 ? "+" : "−"}</text>`;
+    }
+    points.forEach((pt, i) => {
+      g += `<circle cx="${xs[i].toFixed(1)}" cy="${y0}" r="5.5" style="fill:${res.included[i] ? "var(--accent)" : "var(--surface)"};stroke:var(--accent)" stroke-width="2"/>`;
+      g += `<text x="${xs[i].toFixed(1)}" y="${y0 + 24}" text-anchor="middle" style="fill:var(--ink)">${esc(pt.short || pt.label)}</text>`;
+    });
+    const px = (v) => (v === -Infinity ? xL : v === Infinity ? xR : xs[v]);
+    res.segs.forEach((sg) => {
+      const a = px(sg.lo), b = px(sg.hi);
+      if (sg.lo === sg.hi) g += `<circle cx="${a.toFixed(1)}" cy="${y0 + 52}" r="4.5" style="fill:var(--accent)"/>`;
+      else g += `<line x1="${a.toFixed(1)}" y1="${y0 + 52}" x2="${b.toFixed(1)}" y2="${y0 + 52}" style="stroke:var(--accent)" stroke-width="6" opacity=".8"/>`;
+    });
+    g += `<text x="${xL}" y="${y0 + 82}" text-anchor="start">толстая линия — решение</text>`;
+    return `<svg viewBox="0 0 ${W} ${H}" width="${W}" role="img" aria-label="Числовая ось со знаками" style="font:11px var(--mono);fill:var(--muted)">${g}</svg>`;
+  }
+
+  const ivCmpWord = { ">": "положительные («+»)", ">=": "неотрицательные: «+» и нули", "<": "отрицательные («−»)", "<=": "неположительные: «−» и нули" };
+  function ivSteps(points, k, cmp, res, steps, why) {
+    steps.push(S("Знак при x → +∞", why || `все множители (x − r) положительны, значит знак выражения равен знаку коэффициента: «${k > 0 ? "+" : "−"}»`));
+    steps.push(N("Идём справа налево. При переходе через точку нечётной кратности знак меняется, чётной — сохраняется; выколотые точки (знаменатель) ничем не отличаются по смене знака."));
+    const n = points.length;
+    const name = (i) => (i === 0 ? "−∞" : points[i - 1].label), name2 = (i) => (i === n ? "+∞" : points[i].label);
+    for (let i = n; i >= 0; i--) steps.push(S(`Промежуток (${name(i)}; ${name2(i)})`, res.signs[i] > 0 ? "+" : "−"));
+    steps.push(N(`Нужны промежутки: ${ivCmpWord[cmp]}. ${cmp === ">=" || cmp === "<=" ? "Нули числителя входят в ответ, нули знаменателя — никогда." : "Точки не входят в ответ (неравенство строгое)."}`));
+  }
+  const factorTxt = (arr) => {
+    const m = new Map();
+    arr.forEach((r) => m.set(r, (m.get(r) || 0) + 1));
+    return [...m.entries()].map(([r, c]) => `(x ${r < 0 ? "+" : "−"} ${fmt(Math.abs(r))})${c > 1 ? supI(c) : ""}`).join("");
+  };
+
+  /* Метод интервалов по готовым корням */
+  function solveIvFactors(x) {
+    const { a, cmp } = x;
+    const num = x.num || [], den = x.den || [];
+    if (a === 0) fail("Коэффициент a не должен быть равен нулю.");
+    if (num.length + den.length > 14) fail("Слишком много множителей (допустимо не больше 14).");
+    if (!num.length && !den.length) fail("Введите хотя бы один корень числителя или знаменателя.");
+    const vals = [...new Set([...num, ...den].map((v) => Number(v.toPrecision(12))))].sort((u, v) => u - v);
+    const points = vals.map((v) => ({ v, label: mnI(fmt(v)), m: num.filter((u) => Math.abs(u - v) < 1e-9).length, d: den.filter((u) => Math.abs(u - v) < 1e-9).length }));
+    const steps = [S("Неравенство", `${fmt(a)}·${factorTxt(num) || "1"}${den.length ? " / " + factorTxt(den) : ""} ${SYM2[cmp]} 0`)];
+    steps.push(S("Нули числителя", num.length ? num.map(fmt).join(";  ") : "нет"));
+    steps.push(S("Нули знаменателя (выколотые точки)", den.length ? den.map(fmt).join(";  ") : "нет"));
+    const evens = points.filter((pt) => (pt.m + pt.d) % 2 === 0);
+    if (evens.length) steps.push(N(`Точки чётной кратности (${evens.map((pt) => pt.label).join(", ")}): знак при переходе через них не меняется.`));
+    const res = ivSolve(points, a > 0 ? 1 : -1, cmp);
+    ivSteps(points, a > 0 ? 1 : -1, cmp, res, steps);
+    return { steps, plot: ivSvg(points, res), answers: [A("Решение", "x ∈ " + res.text)] };
+  }
+
+  /* ---- Разложение многочлена на множители (рациональные корни + квадратный остаток) ---- */
+  function polyScaleI(c) {
+    for (let k = 0; k <= 6; k++) {
+      const f = Math.pow(10, k);
+      if (c.every((v) => Math.abs(v * f - Math.round(v * f)) < 1e-7 * Math.max(1, Math.abs(v * f)))) {
+        const a = c.map((v) => Math.round(v * f));
+        const g = a.reduce((u, v) => gcdI(u, v), 0) || 1;
+        return a.map((v) => v / g);
+      }
+    }
+    return null;
+  }
+  const divisorsI = (n) => {
+    n = Math.abs(n); const out = [];
+    for (let i = 1; i * i <= n; i++) if (n % i === 0) { out.push(i); if (i * i !== n) out.push(n / i); }
+    return out;
+  };
+  function isRootI(a, p, q) {
+    const n = a.length - 1, P = BigInt(p), Q = BigInt(q);
+    let s = 0n;
+    for (let i = 0; i <= n; i++) s += BigInt(a[i]) * P ** BigInt(n - i) * Q ** BigInt(i);
+    return s === 0n;
+  }
+  function polyStr(c) {
+    const n = c.length - 1;
+    let out = "";
+    c.forEach((v, i) => {
+      if (v === 0) return;
+      const e = n - i, av = Math.abs(v);
+      const body = e === 0 ? fmt(av) : (av === 1 ? "" : fmt(av)) + "x" + (e > 1 ? supI(e) : "");
+      out += out ? ` ${v < 0 ? "−" : "+"} ${body}` : `${v < 0 ? "−" : ""}${body}`;
+    });
+    return out || "0";
+  }
+  function quadRootLabel(b, D, a, sgn) {
+    // корень (−b + sgn·√D) / (2a) в упрощённом виде
+    let s = 1, t = D;
+    for (let f = 2; f * f <= t; f++) while (t % (f * f) === 0) { t /= f * f; s *= f; }
+    let B = -b, A2 = 2 * a, sg = sgn;
+    if (A2 < 0) { A2 = -A2; B = -B; sg = -sg; }
+    const g = gcdI(gcdI(B, s), A2);
+    B /= g; s /= g; A2 /= g;
+    const rad = (s === 1 ? "" : s) + "√" + t;
+    const num = B === 0 ? (sg < 0 ? "−" : "") + rad : `${B} ${sg < 0 ? "−" : "+"} ${rad}`;
+    const wrapped = A2 === 1 ? (B === 0 ? num : `(${num})`) : B === 0 ? `${num}/${A2}` : `(${num})/${A2}`;
+    return mnI(wrapped);
+  }
+  /* Действительные корни многочлена (коэффициенты от старшего): рекурсия по производной + деление отрезка пополам.
+     null, если есть кратный корень. */
+  function realRootsNum(c) {
+    const ev = (q, x) => q.reduce((s, v) => s * x + v, 0);
+    const der = (q) => q.slice(0, -1).map((v, i) => v * (q.length - 1 - i));
+    const rec = (q) => {
+      if (q.length === 2) return [-q[1] / q[0]];
+      const crit = rec(der(q));
+      const B = 1 + Math.max(...q.slice(1).map((v) => Math.abs(v / q[0])));
+      const pts = [-B, ...crit, B], out = [];
+      for (let i = 0; i + 1 < pts.length; i++) {
+        let lo = pts[i], hi = pts[i + 1], fl = ev(q, lo), fh = ev(q, hi);
+        if (Math.abs(fl) < 1e-12 && i > 0) { out.push(lo); continue; }
+        if (fl * fh < 0) {
+          for (let k = 0; k < 200; k++) { const m = (lo + hi) / 2, fm = ev(q, m); if (fm * fl <= 0) { hi = m; fh = fm; } else { lo = m; fl = fm; } }
+          out.push((lo + hi) / 2);
+        }
+      }
+      return out;
+    };
+    const r = rec(c).sort((u, v) => u - v);
+    const dq = der(c);
+    const scale = Math.max(...c.map(Math.abs));
+    for (const v of r) if (Math.abs(ev(dq, v)) < 1e-7 * scale) return null;
+    return r.filter((v, i) => i === 0 || Math.abs(v - r[i - 1]) > 1e-9);
+  }
+  function factorPolyI(coefs, name) {
+    let c = coefs.slice();
+    while (c.length > 1 && c[0] === 0) c.shift();
+    if (c.length === 1 && c[0] === 0) fail(`${name}(x) — нулевой многочлен.`);
+    if (c.length > 9) fail(`${name}(x): степень не выше 8.`);
+    let a = polyScaleI(c);
+    if (!a || a.some((v) => Math.abs(v) > 1e6)) fail(`${name}(x): коэффициенты должны быть целыми или десятичными с небольшим числом знаков (до 6), по модулю не больше миллиона.`);
+    const roots = [];
+    const addRoot = (p, q) => {
+      const g = gcdI(p, q) || 1; p /= g; q /= g;
+      const ex = roots.find((r) => r.p === p && r.q === q);
+      if (ex) ex.mult++; else roots.push({ p, q, v: p / q, label: mnI(q === 1 ? String(p) : p + "/" + q), mult: 1 });
+    };
+    let zeros = 0;
+    while (a.length > 1 && a[a.length - 1] === 0) { a.pop(); zeros++; }
+    for (let i = 0; i < zeros; i++) addRoot(0, 1);
+    for (let guard = 0; guard < 20 && a.length > 1; guard++) {
+      const n = a.length - 1, dp = divisorsI(a[n]), dq = divisorsI(a[0]);
+      let found = null;
+      outer: for (const q of dq) for (const p of dp) {
+        if (gcdI(p, q) !== 1) continue;
+        for (const sg of [1, -1]) if (isRootI(a, sg * p, q)) { found = [sg * p, q]; break outer; }
+      }
+      if (!found) break;
+      const [p, q] = found, P = BigInt(p), Q = BigInt(q), b = [];
+      let prev = 0n;
+      for (let i = 0; i < n; i++) { const num = BigInt(a[i]) + (i === 0 ? 0n : P * prev); prev = num / Q; b.push(Number(prev)); }
+      addRoot(p, q);
+      a = b;
+    }
+    const lead = Math.sign(c[0]);
+    let resid = null, numeric = false;
+    if (a.length === 3) {
+      const [qa, qb, qc] = a, D = qb * qb - 4 * qa * qc;
+      if (D > 0) {
+        [-1, 1].forEach((sg) => roots.push({ irr: true, v: (-qb + sg * Math.sqrt(D)) / (2 * qa), label: quadRootLabel(qb, D, qa, sg), short: mnI(fmt((-qb + sg * Math.sqrt(D)) / (2 * qa))), mult: 1 }));
+      } else if (D === 0) fail(`${name}(x): внутренняя ошибка разложения.`);
+      else resid = a;
+    } else if (a.length > 3) {
+      const rr = realRootsNum(a);
+      if (rr === null) fail(`${name}(x) = ${polyStr(c)}: есть кратные иррациональные корни, такое разложение здесь не поддерживается. Разложите на множители вручную и введите корни в разделе «По корням».`);
+      rr.forEach((v) => roots.push({ irr: true, num: true, v, label: "≈" + mnI(fmt(v)), short: mnI(fmt(v)), mult: 1 }));
+      numeric = true;
+      if (rr.length < a.length - 1) resid = a.length - 1 - rr.length >= 2 ? [] : null;
+    }
+    roots.sort((u, v) => u.v - v.v);
+    const fstr = roots.map((r) => (r.irr ? `(x − ${r.label})` : `(x ${r.v < 0 ? "+" : "−"} ${mnI(r.q === 1 ? Math.abs(r.p) : Math.abs(r.p) + "/" + r.q)})`) + (r.mult > 1 ? supI(r.mult) : "")).join("");
+    const residTxt = resid && resid.length === 3 ? "(" + polyStr([1, resid[1] / resid[0], resid[2] / resid[0]]) + ")" : "";
+    const text = fstr + residTxt;
+    return { roots, lead, resid, text, c, numeric };
+  }
+
+  /* Метод интервалов по многочленам P(x) / Q(x) */
+  function solveIvPoly(x) {
+    const cmp = x.cmp;
+    const p = x.p, q = x.q && x.q.length ? x.q : [1];
+    if (!p.length) fail("Введите коэффициенты числителя.");
+    if (p.length > 9 || q.length > 9) fail("Степень многочленов не выше 8.");
+    const fp = factorPolyI(p, "P"), fq = factorPolyI(q, "Q");
+    const steps = [S("Неравенство", `(${polyStr(fp.c)})${q.length > 1 || q[0] !== 1 ? " / (" + polyStr(fq.c) + ")" : ""} ${SYM2[cmp]} 0`)];
+    steps.push(S("Разложение числителя", `P(x) = ${f2(fp)}`));
+    if (q.length > 1 || q[0] !== 1) steps.push(S("Разложение знаменателя", `Q(x) = ${f2(fq)}`));
+    function f2(f) {
+      const lc = f.c[0];
+      const pre = Math.abs(lc) === 1 ? (lc < 0 ? "−" : "") : mnI(fmt(lc)) + "·";
+      return pre + (f.text || "1");
+    }
+    const pts = [];
+    const add = (r, which) => {
+      let pt = pts.find((u) => Math.abs(u.v - r.v) < 1e-9);
+      if (!pt) { pt = { v: r.v, label: r.label, short: r.short, m: 0, d: 0 }; pts.push(pt); }
+      pt[which] += r.mult;
+    };
+    fp.roots.forEach((r) => add(r, "m"));
+    fq.roots.forEach((r) => add(r, "d"));
+    pts.sort((u, v) => u.v - v.v);
+    if (fp.numeric || fq.numeric) steps.push(N("Часть корней иррациональна (нет рациональных): они найдены численно и отмечены знаком «≈»."));
+    if (fp.resid && fp.resid.length === 3) steps.push(N(`Множитель ${polyStr(fp.resid)} не имеет действительных корней (D < 0) и сохраняет знак, поэтому на расстановку знаков не влияет (его знак учтён в коэффициенте при старшем члене).`));
+    if (fq.resid && fq.resid.length === 3) steps.push(N(`Множитель ${polyStr(fq.resid)} в знаменателе не имеет корней (D < 0) и тоже не влияет на смену знака.`));
+    const k = fp.lead * fq.lead;
+    const why = `при больших x знак задаёт отношение старших коэффициентов: ${mnI(fmt(fp.c[0]))}·${mnI(fmt(fq.c[0]))} → «${k > 0 ? "+" : "−"}»`;
+    if (!pts.length) {
+      const holds = (k > 0) === (cmp === ">" || cmp === ">=");
+      steps.push(N("Действительных корней нет: выражение имеет один и тот же знак при всех x."));
+      return { steps, answers: [A("Решение", holds ? "x — любое число" : "решений нет")] };
+    }
+    steps.push(S("Нули числителя", fp.roots.length ? fp.roots.map((r) => r.label + (r.mult > 1 ? ` (кратность ${r.mult})` : "")).join(";  ") : "нет"));
+    steps.push(S("Нули знаменателя (выколотые)", fq.roots.length ? fq.roots.map((r) => r.label + (r.mult > 1 ? ` (кратность ${r.mult})` : "")).join(";  ") : "нет"));
+    const res = ivSolve(pts, k, cmp);
+    ivSteps(pts, k, cmp, res, steps, why);
+    return { steps, plot: ivSvg(pts, res), answers: [A("Решение", "x ∈ " + res.text)] };
+  }
+
   /* ---------- Каталог задач ---------- */
   const fl = (id, sy, label, unit, extra) => Object.assign({ id, sym: sy, label, unit }, extra || {});
   const CMP_OPTS = [[">", "> (больше)"], ["<", "< (меньше)"], [">=", "≥ (больше или равно)"], ["<=", "≤ (меньше или равно)"]];
@@ -770,6 +1110,15 @@
       fields: [fl("a", "a", "первое число", ""), fl("b", "b", "второе число", ""),
                fl("mode", "", "формула", "", { select: [["sum_sq", "(a + b)²"], ["diff_sq", "(a − b)²"], ["diff_squares", "a² − b²"]] })],
       ex: { a: "7", b: "3", mode: "sum_sq" }, solve: solveAbbrevMult },
+
+    { cat: "Метод интервалов", id: "iv_roots", title: "По корням (разложено)", hint: "a·(x − x₁)(x − x₂)… / ((x − y₁)…) ∨ 0. Кратный корень записывайте несколько раз: «1 1» — это (x − 1)². Допустимы дроби: 1/2.",
+      fields: [fl("a", "a", "коэффициент перед скобками", "", { def: 1 }), fl("num", "x", "корни числителя через пробел", "", { list: true, ph: "-3 1 1 5" }),
+               fl("den", "y", "корни знаменателя (необязательно)", "", { list: true, opt: true, ph: "2" }), fl("cmp", "", "знак неравенства", "", { select: CMP_OPTS })],
+      ex: { a: "1", num: "-3 1 1 5", den: "2", cmp: ">=" }, solve: solveIvFactors },
+    { cat: "Метод интервалов", id: "iv_poly", title: "По многочленам P(x) / Q(x)", hint: "Коэффициенты от старшего: x² − 3x − 4 → «1 -3 -4». Корни ищутся среди рациональных, остаток — квадратный трёхчлен.",
+      fields: [fl("p", "P", "коэффициенты числителя через пробел", "", { list: true, ph: "1 -1 -2" }), fl("q", "Q", "коэффициенты знаменателя (необязательно)", "", { list: true, opt: true, ph: "1 -4 3" }),
+               fl("cmp", "", "знак неравенства", "", { select: CMP_OPTS })],
+      ex: { p: "1 -1 -2", q: "1 -4 3", cmp: "<=" }, solve: solveIvPoly },
   ];
 
   /* ---------- Состояние ---------- */
@@ -816,8 +1165,8 @@
         inp = document.createElement("select");
         f.select.forEach(([v, l]) => inp.add(new Option(l, v)));
       } else {
-        inp = document.createElement("input"); inp.type = "text"; inp.inputMode = "decimal";
-        inp.placeholder = f.opt ? "неизвестно" : (f.def !== undefined ? String(f.def) : "");
+        inp = document.createElement("input"); inp.type = "text"; inp.inputMode = f.list ? "text" : "decimal";
+        inp.placeholder = f.ph || (f.opt ? "необязательно" : (f.def !== undefined ? String(f.def) : ""));
       }
       inp.id = "f-" + f.id;
       inp.addEventListener("input", () => { showExampleNote = false; solve(); });
@@ -840,7 +1189,12 @@
         if (f.def !== undefined) { x[f.id] = f.def; continue; }
         x[f.id] = null; if (!f.opt) missing.push(f.sym || f.label); continue;
       }
-      const n = Number(raw.replace(",", "."));
+      if (f.list) {
+        const r = parseList(raw);
+        if (r.bad !== undefined) throw new Error(`Поле «${f.sym || f.label}»: не удалось прочитать «${r.bad}». Введите числа через пробел.`);
+        x[f.id] = r.vals; given.push(A(f.sym, listStr(r.vals), f.unit)); continue;
+      }
+      const n = toNum(raw);
       if (!isFinite(n)) throw new Error(`Поле «${f.sym || f.label}»: введите число.`);
       x[f.id] = n; given.push(A(f.sym, n, f.unit));
     }

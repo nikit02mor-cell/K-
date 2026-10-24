@@ -1,6 +1,6 @@
 // Service worker: делает страницу доступной офлайн и подтягивает обновления.
 // При выпуске новой версии достаточно поменять номер в CACHE.
-const CACHE = "russian-svincompany-v1";
+const CACHE = "russian-svincompany-v2";
 const CORE = [
   "./russian.html",
   "./manifest-russian.webmanifest",

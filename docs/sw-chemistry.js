@@ -1,6 +1,6 @@
 // Service worker: делает страницу доступной офлайн и подтягивает обновления.
 // При выпуске новой версии достаточно поменять номер в CACHE.
-const CACHE = "chemistry-svincompany-v3";
+const CACHE = "chemistry-svincompany-v4";
 const CORE = [
   "./chemistry.html",
   "./manifest-chemistry.webmanifest",
